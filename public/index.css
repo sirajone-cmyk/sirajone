@@ -1,0 +1,2 @@
+﻿/* Compatibility file to prevent 404s from stale /index.css requests. */
+/* Main styling is loaded from src/styles/globals.css and src/styles/animations.css. */

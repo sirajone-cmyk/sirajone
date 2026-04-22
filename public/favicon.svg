@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#16A34A"/>
+    </linearGradient>
+  </defs>
+  <title>SirajOne</title>
+  <rect width="64" height="64" rx="14" fill="#0A0F0D"/>
+  <path d="M14 24L32 14L50 24V40L32 50L14 40Z" fill="none" stroke="url(#g)" stroke-width="3.5"/>
+  <text x="32" y="37" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="url(#g)">S</text>
+</svg>
