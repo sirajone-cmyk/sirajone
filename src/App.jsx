@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AuthGateway } from './components/auth/AuthGateway';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Navbar } from './components/layout/Navbar';
+import { Navigation } from './components/layout/Navigation';
 import { Footer } from './components/layout/Footer';
-import { HeroSection } from './components/sections/Hero';
-import { ProgramsSection } from './components/sections/Programs';
 import { FeatureBlocksSection } from './components/sections/FeatureBlocks';
-import { LetterGuideSection } from './components/sections/LetterGuide';
-import { StatsSection } from './components/sections/Stats';
-import { TestimonialsSection } from './components/sections/Testimonials';
-import { ContactSection } from './components/sections/Contact';
-import { CTASection } from './components/sections/CTA';
 import { SupportSystemsSection } from './components/sections/SupportSystems';
 import { usePlatform } from './state/PlatformContext';
+import DashboardPage from './pages/DashboardPage';
+import LearnPage from './pages/LearnPage';
+import ProgramsPage from './pages/ProgramsPage';
+import EnrollPage from './pages/EnrollPage';
+import LibraryPage from './pages/LibraryPage';
+import TeachersPage from './pages/TeachersPage';
+import ContactPage from './pages/ContactPage';
+import MessagesPage from './pages/MessagesPage';
 
 const ROUTES = {
   AUTH: '/',
@@ -32,32 +35,50 @@ function navigateTo(path, replace = false) {
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
-function PublicPlatformShell() {
+function StudentAppPage() {
+  const { state } = usePlatform();
+  const [page, setPage] = useState('dashboard');
+
+  const studentLibraryBooks = useMemo(
+    () =>
+      (state.libraryBooks || []).filter(
+        (book) => book.publishStatus === 'published' && book.visibility === 'public'
+      ),
+    [state.libraryBooks]
+  );
+
+  function renderStudentPage() {
+    if (page === 'dashboard' || page === 'home') return <DashboardPage setPage={setPage} />;
+    if (page === 'programs') return <ProgramsPage setPage={setPage} />;
+    if (page === 'enroll') return <EnrollPage setPage={setPage} />;
+    if (page === 'library')
+      return <LibraryPage libraryItems={studentLibraryBooks} onAddLibraryItem={() => {}} canManage={false} />;
+    if (page === 'teachers') return <TeachersPage setPage={setPage} />;
+    if (page === 'contact') return <ContactPage />;
+    if (page === 'messages') return <MessagesPage />;
+    return <LearnPage />;
+  }
+
   return (
     <div className="app">
-      <Navbar />
-      <main>
-        <HeroSection />
-        <StatsSection />
-        <ProgramsSection />
-        <FeatureBlocksSection />
-        <SupportSystemsSection />
-        <TestimonialsSection />
-        <LetterGuideSection />
-        <ContactSection />
-        <CTASection />
-      </main>
+      <Navigation page={page} onNavigate={setPage} />
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">{renderStudentPage()}</main>
       <Footer />
     </div>
   );
 }
 
-function StudentAppPage() {
-  return <PublicPlatformShell />;
-}
-
 function Phase4PlatformPage() {
-  return <PublicPlatformShell />;
+  return (
+    <div className="app">
+      <Navbar />
+      <main>
+        <SupportSystemsSection />
+        <FeatureBlocksSection />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 export default function App() {
@@ -98,14 +119,18 @@ export default function App() {
   const currentRoute = useMemo(() => normalizePath(window.location.pathname), [route]);
 
   if (currentRoute === ROUTES.APP) {
-    return currentUser ? <StudentAppPage /> : <AuthGateway onAuthenticated={() => navigateTo(ROUTES.APP, true)} />;
+    return (
+      <ProtectedRoute>
+        <StudentAppPage />
+      </ProtectedRoute>
+    );
   }
 
   if (currentRoute === ROUTES.ADMIN) {
-    return currentUser && isAdmin ? (
-      <Phase4PlatformPage />
-    ) : (
-      <AuthGateway onAuthenticated={() => navigateTo(ROUTES.ADMIN, true)} />
+    return (
+      <ProtectedRoute requireAdmin>
+        <Phase4PlatformPage />
+      </ProtectedRoute>
     );
   }
 
