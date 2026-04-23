@@ -429,6 +429,9 @@ export function FeatureBlocksSection() {
       }
     }
 
+    const nextMainCategory = bookForm.mainCategory || 'Storybooks';
+    const nextSubcategory = bookForm.subcategory || 'All';
+
     upsertLibraryBook({
       ...(existing || {}),
       id: editingBookId || undefined,
@@ -446,6 +449,10 @@ export function FeatureBlocksSection() {
       previewPageCount: Number(bookForm.previewPageCount) || 3,
       readerPages: nextReaderPages,
     });
+
+    setSelectedMainCategory(nextMainCategory);
+    setSelectedSubcategory(nextSubcategory);
+    setLibrarySearch('');
 
     resetBookForm();
   }

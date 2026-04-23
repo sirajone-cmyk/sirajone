@@ -63,9 +63,9 @@ const initialState = {
   transactions: [],
   libraryBooks: [],
   counselorProfile: {
-    name: 'Dr. Aisha Peer',
+    name: 'Counsellor Aisha Pierre',
     title: 'Student Support and Guidance',
-    bio: 'Dr. Aisha Peer provides professional counseling and student support in a compassionate, structured, and confidential environment. With extensive experience working with large numbers of students in an educational setting, she offers guidance that is thoughtful, supportive, and practical for learners and families.',
+    bio: 'Counsellor Aisha Pierre provides professional counseling and student support in a compassionate, structured, and confidential environment. With extensive experience working with large numbers of students in an educational setting, she offers guidance that is thoughtful, supportive, and practical for learners and families.',
     durationPrices: {
       '30m': null,
       '45m': null,

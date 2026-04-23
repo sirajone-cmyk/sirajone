@@ -1,7 +1,7 @@
-﻿export const SUPPORT_PROFILE = {
-  name: 'Aisha Peer',
+export const SUPPORT_PROFILE = {
+  name: 'Counsellor Aisha Pierre',
   title: 'Student Support & Guidance',
-  bio: 'Aisha Peer supports students and families in an educational setting with calm, practical guidance. She is known for helping learners stay emotionally steady, focused, and motivated through structured Islamic learning journeys.',
+  bio: 'Counsellor Aisha Pierre supports students and families in an educational setting with calm, practical guidance. She is known for helping learners stay emotionally steady, focused, and motivated through structured Islamic learning journeys.',
   highlights: [
     'Experienced in supporting large student communities',
     'Trusted by learners and parents for steady guidance',
@@ -154,3 +154,4 @@ export const PLATFORM_SPLIT = {
   teacherPercent: 70,
   platformPercent: 30,
 };
+

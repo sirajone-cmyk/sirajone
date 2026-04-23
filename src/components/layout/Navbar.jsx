@@ -8,9 +8,12 @@ import {
   LayoutDashboard,
   Phone,
   MessageCircle,
+  LogOut,
   GraduationCap,
   Shield,
   DollarSign,
+  LifeBuoy,
+  BusFront,
 } from 'lucide-react';
 import { useScrollPosition } from '../../hooks/useScrollPosition';
 import { cn } from '../../utils/cn';
@@ -25,6 +28,8 @@ const NAV_LINKS = [
   { label: 'Dashboard', href: '#dashboard', icon: LayoutDashboard },
   { label: 'Contact', href: '#contact', icon: Phone },
   { label: 'Messages', href: '#messages', icon: MessageCircle },
+  { label: 'Counselling', href: '#support', icon: LifeBuoy },
+  { label: 'Transport', href: '#transport', icon: BusFront },
   { label: 'Roles', href: '#roles', icon: Shield },
   { label: 'Finance', href: '#finance', icon: DollarSign },
 ];
@@ -33,7 +38,7 @@ export function Navbar({ className }) {
   const scrollY = useScrollPosition();
   const [open, setOpen] = useState(false);
   const scrolled = scrollY > 24;
-  const { isAdmin } = usePlatform();
+  const { isAdmin, currentUser, logout } = usePlatform();
   const visibleLinks = NAV_LINKS.filter(
     (item) => (item.label !== 'Roles' && item.label !== 'Finance') || isAdmin
   );
@@ -85,6 +90,14 @@ export function Navbar({ className }) {
           >
             Letter Guide
           </a>
+          <button
+            type="button"
+            onClick={logout}
+            className="hidden min-w-[92px] items-center justify-center rounded-xl border border-[rgba(34,197,94,0.35)] bg-[rgba(6,18,13,0.82)] px-3 py-2 text-[14px] font-semibold text-[#97ffca] transition-colors hover:bg-[rgba(34,197,94,0.16)] md:inline-flex"
+          >
+            <LogOut size={15} className="mr-1" />
+            Logout
+          </button>
 
           <button
             type="button"
@@ -99,6 +112,11 @@ export function Navbar({ className }) {
 
       <div className={cn('overflow-hidden border-t border-[rgba(34,197,94,0.16)] bg-[rgba(6,14,11,0.98)] transition-all duration-300 md:hidden', open ? 'max-h-[520px]' : 'max-h-0')}>
         <nav className="space-y-1 p-3">
+          {currentUser ? (
+            <div className="mb-2 rounded-lg border border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.08)] px-3 py-2 text-xs text-[rgba(217,251,232,0.86)]">
+              Signed in as {currentUser.name}
+            </div>
+          ) : null}
           {visibleLinks.map(({ label, href, icon: Icon }) => (
             <a
               key={label}
@@ -117,6 +135,17 @@ export function Navbar({ className }) {
           >
             Letter Guide
           </a>
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              setOpen(false);
+            }}
+            className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[rgba(34,197,94,0.3)] bg-[rgba(6,18,13,0.82)] px-3 py-2.5 text-[14px] font-semibold text-[#a4ffd1]"
+          >
+            <LogOut size={15} />
+            Logout
+          </button>
         </nav>
       </div>
     </header>

@@ -1234,6 +1234,74 @@ export function SupportSystemsSection() {
         </Section>
       ) : null}
 
+      {!currentUser ? (
+        <>
+          <Section id="messages" variant="alt" py="py-12 md:py-16">
+            <div className="mb-4">
+              <p className="section-eyebrow">Messaging</p>
+              <h2 className="section-title inline-flex items-center gap-2">
+                <MessageCircle size={28} className="text-[#42e59a]" /> Messages
+              </h2>
+              <p className="section-subtitle !mx-0">
+                Your conversations will appear here after sign-in. No messages yet.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-[rgba(34,197,94,0.2)] bg-[rgba(17,26,21,0.82)] p-5">
+              <TransportEmptyState
+                icon={MessageCircle}
+                title="No messages yet"
+                description="Sign in to start secure conversations with admin and support."
+              />
+              <div className="mt-4">
+                <Button variant="secondary" size="sm" href="#platform-auth">
+                  Sign In to Open Messages
+                </Button>
+              </div>
+            </div>
+          </Section>
+
+          <Section id="support" variant="pattern" py="py-12 md:py-16">
+            <div className="mb-8 text-center">
+              <p className="section-eyebrow">Student Support</p>
+              <h2 className="section-title">Counseling and Guidance</h2>
+              <p className="section-subtitle">
+                Professional educational support in a calm and trusted environment.
+              </p>
+            </div>
+            <SupportProfileCard profile={counselorView} />
+            <div className="mt-5 rounded-2xl border border-[rgba(34,197,94,0.2)] bg-[rgba(17,26,21,0.82)] p-4 text-sm text-[rgba(217,251,232,0.72)]">
+              Sign in with an approved account to request a counseling booking.
+            </div>
+          </Section>
+
+          <Section id="transport" variant="alt" py="py-12 md:py-16">
+            <div className="mb-6">
+              <p className="section-eyebrow">Transport Service</p>
+              <h2 className="section-title">Madrasa and Masjid Ride Requests</h2>
+              <p className="section-subtitle !mx-0">
+                Register as a provider or submit a ride request after account sign-in.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <TransportEmptyState
+                title="Provider registration requires sign-in"
+                description="Create or sign in to your account to submit and manage provider applications."
+              />
+              <TransportEmptyState
+                icon={Route}
+                title="Ride request requires sign-in"
+                description="Sign in to submit transport requests and track matching status updates."
+              />
+            </div>
+            <div className="mt-4">
+              <Button variant="secondary" size="sm" href="#platform-auth">
+                Go to Account Access
+              </Button>
+            </div>
+          </Section>
+        </>
+      ) : null}
+
       {currentUser ? (
         <>
           <Section id="sessions" variant="pattern" py="py-12 md:py-16">
