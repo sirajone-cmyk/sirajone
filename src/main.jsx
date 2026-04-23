@@ -1,7 +1,7 @@
-﻿import React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { PlatformProvider } from './state/PlatformContext';
+import { AuthProvider } from './state/PlatformContext';
 import './styles/globals.css';
 import './styles/animations.css';
 
@@ -15,8 +15,8 @@ if ('serviceWorker' in navigator) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <PlatformProvider>
+    <AuthProvider>
       <App />
-    </PlatformProvider>
+    </AuthProvider>
   </React.StrictMode>,
 );

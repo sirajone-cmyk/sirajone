@@ -1147,6 +1147,8 @@ export function PlatformProvider({ children }) {
   return <PlatformContext.Provider value={value}>{children}</PlatformContext.Provider>;
 }
 
+export const AuthProvider = PlatformProvider;
+
 export function usePlatform() {
   const ctx = useContext(PlatformContext);
   if (!ctx) {

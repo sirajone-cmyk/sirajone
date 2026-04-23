@@ -13,7 +13,7 @@ function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
 }
 
-export function AuthGateway() {
+export function AuthGateway({ onAuthenticated }) {
   const { state, roles, ensureOwner, registerApplication, login } = usePlatform();
   const [mode, setMode] = useState(AUTH_MODES.LOGIN);
   const [busy, setBusy] = useState(false);
@@ -87,6 +87,7 @@ export function AuthGateway() {
         email: loginForm.email,
         password: loginForm.password,
       });
+      onAuthenticated?.();
     } catch (authError) {
       setError(authError.message || 'Login failed. Please try again.');
     } finally {
@@ -111,6 +112,7 @@ export function AuthGateway() {
       if (!hasAdmin) {
         // First secure owner bootstrap: first account becomes approved Admin.
         ensureOwner(payload);
+        onAuthenticated?.();
       } else {
         registerApplication({
           ...payload,
