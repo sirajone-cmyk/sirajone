@@ -4,8 +4,9 @@ import {
   PERMISSION_LABELS,
   ROLE_DEFINITIONS,
 } from '../data/rbac';
+import { INITIAL_LIBRARY_ITEMS, TEACHERS } from '../data/platformSeed';
 
-const STORAGE_KEY = 'rahla_platform_v2';
+const STORAGE_KEY = 'rahla_platform_v3';
 
 const ROLES = {
   ADMIN: 'Admin',
@@ -54,32 +55,26 @@ const SUBSCRIPTION_TIERS = {
   PREMIUM: 'premium',
 };
 
-const initialState = {
-  initializedAt: null,
-  users: [],
-  currentUserId: null,
-  conversations: [],
-  sessions: [],
-  transactions: [],
-  libraryBooks: [],
-  counselorProfile: {
-    name: 'Counsellor Aisha Pierre',
-    title: 'Student Support and Guidance',
-    bio: 'Counsellor Aisha Pierre provides professional counseling and student support in a compassionate, structured, and confidential environment. With extensive experience working with large numbers of students in an educational setting, she offers guidance that is thoughtful, supportive, and practical for learners and families.',
-    durationPrices: {
-      '30m': null,
-      '45m': null,
-      '60m': null,
-    },
-    availabilityNotes: '',
-  },
-  audioByLetter: {},
-  transportProviders: [],
-  transportRequests: [],
-  rolePermissions: buildDefaultRolePermissions(),
+const TEACHER_REQUEST_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  DECLINED: 'declined',
+  CANCELLED: 'cancelled',
 };
 
-const PlatformContext = createContext(null);
+const ASSIGNMENT_STATUS = {
+  ACTIVE: 'active',
+  ARCHIVED: 'archived',
+};
+
+const CONVERSATION_CHANNELS = {
+  SUPPORT: 'support',
+  TEACHER_PRIVATE: 'teacher_private',
+  ADMIN_OVERSIGHT: 'admin_oversight',
+  GENERAL: 'general',
+};
+
+const COUNSELLOR_USER_ID = 'staff_counsellor_aisha_peer';
 const MAX_STORED_BOOK_FILE_DATA_URL = 2 * 1024 * 1024;
 const MAX_STORED_COVER_DATA_URL = 900 * 1024;
 
@@ -91,6 +86,151 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function slugify(value) {
+  return (
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'record'
+  );
+}
+
+function titleCase(value) {
+  return String(value || '')
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function sanitizeRole(rawRole) {
+  const role = String(rawRole || '').trim();
+  const allowed = Object.values(ROLES);
+  return allowed.includes(role) ? role : ROLES.STUDENT;
+}
+
+function sanitizeRolePermissions(rawPermissions) {
+  const defaults = buildDefaultRolePermissions();
+  if (!rawPermissions || typeof rawPermissions !== 'object') return defaults;
+
+  const safe = {};
+  Object.entries(defaults).forEach(([roleName, permissionMap]) => {
+    const incomingMap =
+      rawPermissions[roleName] && typeof rawPermissions[roleName] === 'object'
+        ? rawPermissions[roleName]
+        : {};
+
+    safe[roleName] = {};
+    Object.keys(permissionMap).forEach((permissionKey) => {
+      safe[roleName][permissionKey] = Boolean(incomingMap[permissionKey]);
+    });
+  });
+
+  return safe;
+}
+
+function seedTeacherUsers() {
+  const seededTeachers = TEACHERS.map((teacher) => ({
+    id: `staff_${slugify(teacher.name)}`,
+    name: teacher.name,
+    email: `${slugify(teacher.name)}@sirajone.local`,
+    password: '',
+    role: ROLES.TEACHER,
+    subscriptionTier: SUBSCRIPTION_TIERS.PREMIUM,
+    status: USER_STATUS.APPROVED,
+    createdAt: '2026-01-01T08:00:00.000Z',
+    approvedAt: '2026-01-01T08:00:00.000Z',
+    experience: teacher.experience,
+    subjects: teacher.subjects,
+    audience: teacher.audience,
+    featured: Boolean(teacher.featured),
+    bio: teacher.bio,
+    availability: teacher.featured ? 'limited' : 'available',
+  }));
+
+  return [
+    ...seededTeachers,
+    {
+      id: COUNSELLOR_USER_ID,
+      name: 'Counsellor Aisha Peer',
+      email: 'aisha.peer@sirajone.local',
+      password: '',
+      role: ROLES.COUNSELOR,
+      subscriptionTier: SUBSCRIPTION_TIERS.PREMIUM,
+      status: USER_STATUS.APPROVED,
+      createdAt: '2026-01-01T08:00:00.000Z',
+      approvedAt: '2026-01-01T08:00:00.000Z',
+      experience: 'Student wellness support',
+      subjects: 'Counselling, family support, wellbeing guidance',
+      audience: 'Students & families',
+      featured: true,
+      bio: 'Aisha Peer supports students and families with confidential guidance, wellbeing check-ins, and practical counselling referrals.',
+      availability: 'available',
+    },
+  ];
+}
+
+function buildInitialLibraryBooks() {
+  return INITIAL_LIBRARY_ITEMS.map((item, index) => ({
+    id: `book_seed_${index + 1}`,
+    title: item.title,
+    description: item.description,
+    mainCategory: item.category,
+    subcategory: item.category,
+    author: 'SirajOne Library',
+    visibility: 'public',
+    publishStatus: 'published',
+    requiredTier: index < 2 ? SUBSCRIPTION_TIERS.FREE : SUBSCRIPTION_TIERS.BASIC,
+    pageCount: 24,
+    previewPageCount: 4,
+    readerPages: [
+      `${item.title}\n\n${item.description}`,
+      'Use this resource with your teacher or independently as part of your weekly SirajOne routine.',
+      'Progress note:\n- Review key definitions\n- Practice aloud\n- Bring questions to your next lesson',
+      'Reference note:\nThis reader is prepared for guided study inside the protected student app.',
+    ],
+    coverDataUrl: '',
+    coverFileName: '',
+    fileUrl: '',
+    fileDataUrl: '',
+    fileName: '',
+    createdAt: '2026-01-01T08:00:00.000Z',
+    updatedAt: '2026-01-01T08:00:00.000Z',
+  }));
+}
+
+const initialState = {
+  initializedAt: null,
+  users: seedTeacherUsers(),
+  currentUserId: null,
+  conversations: [],
+  sessions: [],
+  transactions: [],
+  libraryBooks: buildInitialLibraryBooks(),
+  teacherRequests: [],
+  teacherAssignments: [],
+  teacherReviews: [],
+  counselorProfile: {
+    name: 'Counsellor Aisha Peer',
+    title: 'Student Support and Guidance',
+    bio: 'Counsellor Aisha Peer provides structured, compassionate, and confidential support for students and families navigating learning, wellbeing, and personal challenges.',
+    durationPrices: {
+      '30m': null,
+      '45m': null,
+      '60m': null,
+    },
+    availabilityNotes:
+      'Appointments are reviewed by the platform team and scheduled with appropriate privacy and care.',
+  },
+  audioByLetter: {},
+  transportProviders: [],
+  transportRequests: [],
+  rolePermissions: buildDefaultRolePermissions(),
+};
+
+const PlatformContext = createContext(null);
+
 function sanitizeUserRecord(user) {
   if (!user || typeof user !== 'object') return null;
   const name = String(user.name || '').trim();
@@ -100,6 +240,7 @@ function sanitizeUserRecord(user) {
   const role = sanitizeRole(user.role);
   const statusValues = Object.values(USER_STATUS);
   const status = statusValues.includes(user.status) ? user.status : USER_STATUS.PENDING;
+  const incomingTier = String(user.subscriptionTier || '').trim().toLowerCase();
 
   return {
     id: typeof user.id === 'string' && user.id ? user.id : uid('usr'),
@@ -108,9 +249,9 @@ function sanitizeUserRecord(user) {
     password: typeof user.password === 'string' ? user.password : '',
     role,
     subscriptionTier:
-      String(user.subscriptionTier || '').trim().toLowerCase() === SUBSCRIPTION_TIERS.PREMIUM
+      incomingTier === SUBSCRIPTION_TIERS.PREMIUM
         ? SUBSCRIPTION_TIERS.PREMIUM
-        : String(user.subscriptionTier || '').trim().toLowerCase() === SUBSCRIPTION_TIERS.BASIC
+        : incomingTier === SUBSCRIPTION_TIERS.BASIC
         ? SUBSCRIPTION_TIERS.BASIC
         : role === ROLES.ADMIN ||
           role === ROLES.CO_ADMIN ||
@@ -121,7 +262,39 @@ function sanitizeUserRecord(user) {
     status,
     createdAt: user.createdAt || nowIso(),
     approvedAt: user.approvedAt || null,
+    experience: String(user.experience || '').trim(),
+    subjects: String(user.subjects || '').trim(),
+    audience: String(user.audience || '').trim(),
+    featured: Boolean(user.featured),
+    bio: String(user.bio || '').trim(),
+    availability: ['available', 'limited', 'unavailable'].includes(
+      String(user.availability || '').trim().toLowerCase()
+    )
+      ? String(user.availability || '').trim().toLowerCase()
+      : role === ROLES.TEACHER || role === ROLES.COUNSELOR
+      ? 'available'
+      : '',
   };
+}
+
+function ensureSeededUsers(users) {
+  const seeded = seedTeacherUsers();
+  const byId = new Map(users.map((user) => [user.id, user]));
+  seeded.forEach((seedUser) => {
+    const existing = byId.get(seedUser.id);
+    if (!existing) {
+      byId.set(seedUser.id, seedUser);
+      return;
+    }
+
+    byId.set(seedUser.id, {
+      ...seedUser,
+      ...existing,
+      status: existing.status || USER_STATUS.APPROVED,
+      role: existing.role || seedUser.role,
+    });
+  });
+  return Array.from(byId.values());
 }
 
 function sanitizeLibraryBookRecord(book) {
@@ -133,26 +306,23 @@ function sanitizeLibraryBookRecord(book) {
       : requiredTier === SUBSCRIPTION_TIERS.BASIC
       ? SUBSCRIPTION_TIERS.BASIC
       : SUBSCRIPTION_TIERS.FREE;
-  const previewPageCount = Math.max(1, Number(book.previewPageCount) || 3);
-  const pageCount = Math.max(1, Number(book.pageCount) || 1);
-  const readerPages = Array.isArray(book.readerPages)
-    ? book.readerPages.map((page) => String(page || '').trim()).filter(Boolean)
-    : [];
 
   return {
     ...book,
     id: typeof book.id === 'string' && book.id ? book.id : uid('book'),
     title: String(book.title || '').trim(),
     description: String(book.description || '').trim(),
-    mainCategory: String(book.mainCategory || '').trim(),
-    subcategory: String(book.subcategory || '').trim(),
+    mainCategory: String(book.mainCategory || book.category || '').trim(),
+    subcategory: String(book.subcategory || book.category || '').trim(),
     author: String(book.author || '').trim(),
     visibility: book.visibility === 'private' ? 'private' : 'public',
     publishStatus: book.publishStatus === 'draft' ? 'draft' : 'published',
     requiredTier: normalizedTier,
-    pageCount,
-    previewPageCount,
-    readerPages,
+    pageCount: Math.max(1, Number(book.pageCount) || 1),
+    previewPageCount: Math.max(1, Number(book.previewPageCount) || 3),
+    readerPages: Array.isArray(book.readerPages)
+      ? book.readerPages.map((page) => String(page || '').trim()).filter(Boolean)
+      : [],
     coverDataUrl: String(book.coverDataUrl || ''),
     coverFileName: String(book.coverFileName || ''),
     fileUrl: String(book.fileUrl || '').trim(),
@@ -197,6 +367,10 @@ function sanitizeConversationRecord(conversation, validUserIds) {
     participantIds,
     createdAt: conversation.createdAt || nowIso(),
     updatedAt: conversation.updatedAt || nowIso(),
+    channel: Object.values(CONVERSATION_CHANNELS).includes(conversation.channel)
+      ? conversation.channel
+      : CONVERSATION_CHANNELS.GENERAL,
+    subject: String(conversation.subject || '').trim(),
     messages,
     readBy: Array.isArray(conversation.readBy)
       ? conversation.readBy.filter((id) => participantIds.includes(id))
@@ -221,24 +395,63 @@ function sanitizeSessionRecord(session, validUserIds) {
   };
 }
 
+function sanitizeTeacherRequestRecord(record, validUserIds) {
+  if (!record || typeof record !== 'object') return null;
+  const studentId = String(record.studentId || '');
+  const teacherId = String(record.teacherId || '');
+  if (!validUserIds.has(studentId) || !validUserIds.has(teacherId)) return null;
+  return {
+    id: typeof record.id === 'string' && record.id ? record.id : uid('treq'),
+    studentId,
+    teacherId,
+    note: String(record.note || '').trim(),
+    status: Object.values(TEACHER_REQUEST_STATUS).includes(record.status)
+      ? record.status
+      : TEACHER_REQUEST_STATUS.PENDING,
+    adminNotes: String(record.adminNotes || '').trim(),
+    createdAt: record.createdAt || nowIso(),
+    updatedAt: record.updatedAt || nowIso(),
+  };
+}
+
+function sanitizeTeacherAssignmentRecord(record, validUserIds) {
+  if (!record || typeof record !== 'object') return null;
+  const studentId = String(record.studentId || '');
+  const teacherId = String(record.teacherId || '');
+  if (!validUserIds.has(studentId) || !validUserIds.has(teacherId)) return null;
+  return {
+    id: typeof record.id === 'string' && record.id ? record.id : uid('tassign'),
+    studentId,
+    teacherId,
+    status: Object.values(ASSIGNMENT_STATUS).includes(record.status)
+      ? record.status
+      : ASSIGNMENT_STATUS.ACTIVE,
+    assignedAt: record.assignedAt || nowIso(),
+    adminNotes: String(record.adminNotes || '').trim(),
+  };
+}
+
+function sanitizeTeacherReviewRecord(record, validUserIds) {
+  if (!record || typeof record !== 'object') return null;
+  const studentId = String(record.studentId || '');
+  const teacherId = String(record.teacherId || '');
+  if (!validUserIds.has(studentId) || !validUserIds.has(teacherId)) return null;
+  return {
+    id: typeof record.id === 'string' && record.id ? record.id : uid('trev'),
+    studentId,
+    teacherId,
+    rating: Math.max(1, Math.min(5, Number(record.rating) || 0)),
+    review: String(record.review || '').trim(),
+    createdAt: record.createdAt || nowIso(),
+  };
+}
+
 function sanitizeTransportProviderRecord(provider, validUserIds) {
   if (!provider || typeof provider !== 'object') return null;
   const userId = String(provider.userId || '');
   if (!validUserIds.has(userId)) return null;
 
   const allowedStatus = Object.values(TRANSPORT_PROVIDER_STATUS);
-  const status = allowedStatus.includes(provider.status)
-    ? provider.status
-    : TRANSPORT_PROVIDER_STATUS.SUBMITTED;
-
-  const serviceTypeRaw = String(provider.serviceType || '').trim().toLowerCase();
-  const serviceType =
-    serviceTypeRaw === 'volunteer' || serviceTypeRaw === 'mixed'
-      ? serviceTypeRaw
-      : 'paid';
-
-  const seats = Math.max(1, Number(provider.seats) || 1);
-
   return {
     id: typeof provider.id === 'string' && provider.id ? provider.id : uid('trp'),
     userId,
@@ -257,8 +470,12 @@ function sanitizeTransportProviderRecord(provider, validUserIds) {
       : [],
     timeWindowStart: String(provider.timeWindowStart || '').trim(),
     timeWindowEnd: String(provider.timeWindowEnd || '').trim(),
-    seats,
-    serviceType,
+    seats: Math.max(1, Number(provider.seats) || 1),
+    serviceType: ['paid', 'volunteer', 'mixed'].includes(
+      String(provider.serviceType || '').trim().toLowerCase()
+    )
+      ? String(provider.serviceType || '').trim().toLowerCase()
+      : 'paid',
     vehicleType: String(provider.vehicleType || '').trim(),
     vehicleRegistration: String(provider.vehicleRegistration || '').trim(),
     vehicleNotes: String(provider.vehicleNotes || provider.notes || '').trim(),
@@ -270,7 +487,9 @@ function sanitizeTransportProviderRecord(provider, validUserIds) {
       vehiclePhoto: Boolean(provider.verification?.vehiclePhoto),
     },
     verifiedByAdmin: Boolean(provider.verifiedByAdmin),
-    status,
+    status: allowedStatus.includes(provider.status)
+      ? provider.status
+      : TRANSPORT_PROVIDER_STATUS.SUBMITTED,
     adminNotes: String(provider.adminNotes || '').trim(),
     createdAt: provider.createdAt || nowIso(),
     updatedAt: provider.updatedAt || nowIso(),
@@ -283,19 +502,6 @@ function sanitizeTransportRequestRecord(request, validUserIds) {
   if (!validUserIds.has(requesterId)) return null;
 
   const allowedStatus = Object.values(TRANSPORT_REQUEST_STATUS);
-  const status = allowedStatus.includes(request.status)
-    ? request.status
-    : TRANSPORT_REQUEST_STATUS.SUBMITTED;
-
-  const affordabilityRaw = String(request.affordability || '').trim().toLowerCase();
-  const affordability =
-    affordabilityRaw === 'free' || affordabilityRaw === 'depends'
-      ? affordabilityRaw
-      : 'paid';
-
-  const rideFrequencyRaw = String(request.rideFrequency || '').trim().toLowerCase();
-  const rideFrequency = rideFrequencyRaw === 'recurring' ? 'recurring' : 'one_time';
-
   return {
     id: typeof request.id === 'string' && request.id ? request.id : uid('trq'),
     requesterId,
@@ -311,12 +517,21 @@ function sanitizeTransportRequestRecord(request, validUserIds) {
     requiredDays: Array.isArray(request.requiredDays)
       ? request.requiredDays.map((item) => String(item || '').trim()).filter(Boolean)
       : [],
-    affordability,
-    rideFrequency,
+    affordability: ['paid', 'free', 'depends'].includes(
+      String(request.affordability || '').trim().toLowerCase()
+    )
+      ? String(request.affordability || '').trim().toLowerCase()
+      : 'paid',
+    rideFrequency:
+      String(request.rideFrequency || '').trim().toLowerCase() === 'recurring'
+        ? 'recurring'
+        : 'one_time',
     notes: String(request.notes || '').trim(),
     matchedProviderId: String(request.matchedProviderId || '').trim(),
     adminNotes: String(request.adminNotes || '').trim(),
-    status,
+    status: allowedStatus.includes(request.status)
+      ? request.status
+      : TRANSPORT_REQUEST_STATUS.SUBMITTED,
     createdAt: request.createdAt || nowIso(),
     updatedAt: request.updatedAt || nowIso(),
   };
@@ -327,31 +542,30 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initialState;
     const parsed = JSON.parse(raw);
-    const users = (parsed.users || []).map(sanitizeUserRecord).filter(Boolean);
+    const users = ensureSeededUsers((parsed.users || []).map(sanitizeUserRecord).filter(Boolean));
     const validUserIds = new Set(users.map((user) => user.id));
-    const conversations = (parsed.conversations || [])
-      .map((conversation) => sanitizeConversationRecord(conversation, validUserIds))
-      .filter(Boolean);
-    const sessions = (parsed.sessions || [])
-      .map((session) => sanitizeSessionRecord(session, validUserIds))
-      .filter(Boolean);
-    const validSessionIds = new Set(sessions.map((session) => session.id));
-    const transactions = (parsed.transactions || []).filter(
-      (tx) =>
-        tx &&
-        typeof tx === 'object' &&
-        typeof tx.id === 'string' &&
-        validSessionIds.has(tx.sessionId)
-    );
 
     return {
       ...initialState,
       ...parsed,
       users,
-      conversations,
-      sessions,
-      transactions,
+      conversations: (parsed.conversations || [])
+        .map((conversation) => sanitizeConversationRecord(conversation, validUserIds))
+        .filter(Boolean),
+      sessions: (parsed.sessions || [])
+        .map((session) => sanitizeSessionRecord(session, validUserIds))
+        .filter(Boolean),
+      transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
       libraryBooks: (parsed.libraryBooks || []).map(sanitizeLibraryBookRecord).filter(Boolean),
+      teacherRequests: (parsed.teacherRequests || [])
+        .map((record) => sanitizeTeacherRequestRecord(record, validUserIds))
+        .filter(Boolean),
+      teacherAssignments: (parsed.teacherAssignments || [])
+        .map((record) => sanitizeTeacherAssignmentRecord(record, validUserIds))
+        .filter(Boolean),
+      teacherReviews: (parsed.teacherReviews || [])
+        .map((record) => sanitizeTeacherReviewRecord(record, validUserIds))
+        .filter(Boolean),
       transportProviders: (parsed.transportProviders || [])
         .map((provider) => sanitizeTransportProviderRecord(provider, validUserIds))
         .filter(Boolean),
@@ -363,6 +577,7 @@ function loadState() {
       counselorProfile: {
         ...initialState.counselorProfile,
         ...(parsed.counselorProfile || {}),
+        name: 'Counsellor Aisha Peer',
         durationPrices: {
           ...initialState.counselorProfile.durationPrices,
           ...((parsed.counselorProfile && parsed.counselorProfile.durationPrices) || {}),
@@ -391,36 +606,61 @@ function buildPersistableState(state) {
   };
 }
 
-function sanitizeRole(rawRole) {
-  const role = (rawRole || '').trim();
-  const allowed = Object.values(ROLES);
-  return allowed.includes(role) ? role : ROLES.STUDENT;
-}
-
-function sanitizeRolePermissions(rawPermissions) {
-  const defaults = buildDefaultRolePermissions();
-  if (!rawPermissions || typeof rawPermissions !== 'object') return defaults;
-
-  const safe = {};
-  Object.entries(defaults).forEach(([roleName, permissionMap]) => {
-    const incomingMap =
-      rawPermissions[roleName] && typeof rawPermissions[roleName] === 'object'
-        ? rawPermissions[roleName]
-        : {};
-
-    safe[roleName] = {};
-    Object.keys(permissionMap).forEach((permissionKey) => {
-      safe[roleName][permissionKey] = Boolean(incomingMap[permissionKey]);
-    });
-  });
-
-  return safe;
-}
-
 function buildConversationTitle(conversation, usersById, currentUserId) {
   const otherId = (conversation.participantIds || []).find((id) => id !== currentUserId);
   const otherUser = otherId ? usersById[otherId] : null;
+  if (conversation.channel === CONVERSATION_CHANNELS.SUPPORT) {
+    return otherUser ? `${otherUser.name} · Support` : 'Support';
+  }
   return otherUser ? otherUser.name : 'Conversation';
+}
+
+function resolveTierLevel(tier) {
+  if (tier === SUBSCRIPTION_TIERS.PREMIUM) return 2;
+  if (tier === SUBSCRIPTION_TIERS.BASIC) return 1;
+  return 0;
+}
+
+function startOfDay(date) {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+function calculateStreak(dates) {
+  const uniqueDays = Array.from(
+    new Set(
+      dates
+        .map((value) => {
+          const parsed = new Date(value);
+          if (Number.isNaN(parsed.getTime())) return null;
+          return startOfDay(parsed).toISOString();
+        })
+        .filter(Boolean)
+    )
+  )
+    .map((value) => new Date(value))
+    .sort((a, b) => b.getTime() - a.getTime());
+
+  if (uniqueDays.length === 0) return 0;
+
+  const today = startOfDay(new Date());
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const first = uniqueDays[0].getTime();
+  if (first !== today.getTime() && first !== yesterday.getTime()) return 0;
+
+  let streak = 1;
+  for (let index = 1; index < uniqueDays.length; index += 1) {
+    const previous = uniqueDays[index - 1];
+    const current = uniqueDays[index];
+    const diff = Math.round((previous.getTime() - current.getTime()) / 86400000);
+    if (diff !== 1) break;
+    streak += 1;
+  }
+
+  return streak;
 }
 
 export function PlatformProvider({ children }) {
@@ -428,8 +668,7 @@ export function PlatformProvider({ children }) {
 
   useEffect(() => {
     try {
-      const persistable = buildPersistableState(state);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(buildPersistableState(state)));
     } catch (error) {
       console.warn('Storage write skipped to keep app stable:', error);
     }
@@ -444,37 +683,361 @@ export function PlatformProvider({ children }) {
   }, [state.users]);
 
   const currentUser = state.currentUserId ? usersById[state.currentUserId] || null : null;
-
-  // Admin accounts always get full platform control in this build.
   const isAdmin = currentUser?.role === ROLES.ADMIN;
+
+  const teacherDirectory = useMemo(
+    () =>
+      state.users
+        .filter((user) => user.role === ROLES.TEACHER && user.status === USER_STATUS.APPROVED)
+        .sort(
+          (a, b) =>
+            Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name)
+        ),
+    [state.users]
+  );
+
+  const studentUsers = useMemo(
+    () => state.users.filter((user) => user.role === ROLES.STUDENT),
+    [state.users]
+  );
+
+  const supportTarget = useMemo(() => {
+    const admin = state.users.find(
+      (user) => user.role === ROLES.ADMIN && user.status === USER_STATUS.APPROVED
+    );
+    if (admin) return admin;
+    return state.users.find((user) => user.id === COUNSELLOR_USER_ID) || null;
+  }, [state.users]);
+
+  const currentTeacherAssignment = useMemo(() => {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return null;
+    return (
+      [...state.teacherAssignments]
+        .filter(
+          (assignment) =>
+            assignment.studentId === currentUser.id &&
+            assignment.status === ASSIGNMENT_STATUS.ACTIVE
+        )
+        .sort((a, b) => (b.assignedAt || '').localeCompare(a.assignedAt || ''))[0] || null
+    );
+  }, [state.teacherAssignments, currentUser]);
+
+  const currentAssignedTeacher = currentTeacherAssignment
+    ? usersById[currentTeacherAssignment.teacherId] || null
+    : null;
+
+  const currentTeacherRequest = useMemo(() => {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return null;
+    return (
+      [...state.teacherRequests]
+        .filter((request) => request.studentId === currentUser.id)
+        .sort((a, b) =>
+          (b.updatedAt || b.createdAt || '').localeCompare(
+            a.updatedAt || a.createdAt || ''
+          )
+        )[0] || null
+    );
+  }, [state.teacherRequests, currentUser]);
 
   const visibleConversations = useMemo(() => {
     if (!currentUser) return [];
+
     if (isAdmin) {
-      return [...state.conversations]
-        .filter((conversation) => {
-          const ids = conversation.participantIds || [];
-          return (
-            ids.length >= 2 &&
-            ids.every((id) => usersById[id]?.status === USER_STATUS.APPROVED)
-          );
-        })
-        .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+      return [...state.conversations].sort((a, b) =>
+        (b.updatedAt || '').localeCompare(a.updatedAt || '')
+      );
     }
+
     return state.conversations
+      .filter((conversation) => (conversation.participantIds || []).includes(currentUser.id))
       .filter((conversation) => {
-        const ids = conversation.participantIds || [];
-        if (!ids.includes(currentUser.id)) return false;
-        const otherId = ids.find((id) => id !== currentUser.id);
-        const otherUser = otherId ? usersById[otherId] : null;
-        return Boolean(otherUser && otherUser.status === USER_STATUS.APPROVED && otherUser.role === ROLES.ADMIN);
+        if (currentUser.role === ROLES.STUDENT) {
+          return [
+            CONVERSATION_CHANNELS.SUPPORT,
+            CONVERSATION_CHANNELS.TEACHER_PRIVATE,
+            CONVERSATION_CHANNELS.GENERAL,
+          ].includes(conversation.channel);
+        }
+        return true;
       })
       .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
-  }, [state.conversations, currentUser, isAdmin, usersById]);
+  }, [state.conversations, currentUser, isAdmin]);
+
+  const visibleLibraryBooks = useMemo(() => {
+    if (!currentUser) {
+      return state.libraryBooks.filter(
+        (book) => book.publishStatus === 'published' && book.visibility === 'public'
+      );
+    }
+
+    const currentTier = resolveTierLevel(currentUser.subscriptionTier);
+    return state.libraryBooks.filter((book) => {
+      if (book.publishStatus !== 'published' || book.visibility !== 'public') return false;
+      return currentTier >= resolveTierLevel(book.requiredTier);
+    });
+  }, [state.libraryBooks, currentUser]);
+
+  const completedSessions = useMemo(() => {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return [];
+    return state.sessions.filter(
+      (session) =>
+        session.studentId === currentUser.id &&
+        session.status === SESSION_STATUS.COMPLETED
+    );
+  }, [state.sessions, currentUser]);
+
+  const upcomingSessions = useMemo(() => {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return [];
+    return state.sessions
+      .filter(
+        (session) =>
+          session.studentId === currentUser.id &&
+          session.status === SESSION_STATUS.UPCOMING
+      )
+      .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+  }, [state.sessions, currentUser]);
+
+  const currentWorkUpdate = useMemo(() => {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return null;
+
+    const latestRequest = [...state.teacherRequests]
+      .filter((request) => request.studentId === currentUser.id)
+      .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))[0];
+
+    const latestTransport = [...state.transportRequests]
+      .filter((request) => request.requesterId === currentUser.id)
+      .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))[0];
+
+    const nextSession = upcomingSessions[0];
+
+    if (nextSession) {
+      return {
+        title: nextSession.title || 'Upcoming lesson scheduled',
+        detail: `Your next session is ${new Date(nextSession.start).toLocaleString('en-ZA', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })}.`,
+      };
+    }
+
+    if (latestRequest && latestRequest.status === TEACHER_REQUEST_STATUS.PENDING) {
+      return {
+        title: 'Teacher request pending review',
+        detail:
+          'Admin is reviewing your teacher preference and matching you to the right instructor.',
+      };
+    }
+
+    if (latestTransport) {
+      return {
+        title: `Transport request: ${titleCase(latestTransport.status)}`,
+        detail:
+          latestTransport.adminNotes ||
+          'Your route request is in the support workflow and visible to admin.',
+      };
+    }
+
+    return {
+      title: 'No lessons started yet',
+      detail:
+        'Choose a teacher, open the letter guide, or contact support to begin your learning journey.',
+    };
+  }, [currentUser, state.teacherRequests, state.transportRequests, upcomingSessions]);
+
+  const studentDashboardData = useMemo(() => {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return null;
+    const latestTeacherReview = [...state.teacherReviews]
+      .filter((review) => review.studentId === currentUser.id)
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))[0];
+
+    const supportConversation = visibleConversations.find(
+      (conversation) => conversation.channel === CONVERSATION_CHANNELS.SUPPORT
+    );
+    const lastSupportMessage =
+      supportConversation?.messages?.[supportConversation.messages.length - 1] || null;
+    const hasTeacher = Boolean(currentAssignedTeacher);
+    const hasLessonsStarted = completedSessions.length > 0 || Boolean(upcomingSessions[0]);
+    const isInactive = completedSessions.length > 0 && !upcomingSessions[0];
+    const activityDates = [
+      ...completedSessions.map((session) => session.createdAt || session.start),
+      ...upcomingSessions.map((session) => session.createdAt || session.start),
+      ...(supportConversation?.messages || []).map((message) => message.createdAt),
+    ];
+    const streakDays = calculateStreak(activityDates);
+    const progressState = !hasTeacher
+      ? 'no_teacher'
+      : !hasLessonsStarted
+      ? 'teacher_selected_no_lessons'
+      : isInactive
+      ? 'inactive'
+      : 'active';
+
+    const nextStep =
+      progressState === 'no_teacher'
+        ? {
+            title: 'Choose your teacher to begin',
+            description:
+              'Select a teacher so your learning path can be structured around the right guidance and pace.',
+            actionLabel: 'Choose teacher',
+            page: 'teachers',
+          }
+        : progressState === 'teacher_selected_no_lessons'
+        ? {
+            title: 'Start your first lesson',
+            description:
+              'Your teacher relationship is ready. Open the foundations and begin your first real lesson.',
+            actionLabel: 'Start first lesson',
+            page: 'letters',
+          }
+        : progressState === 'inactive'
+        ? {
+            title: 'Resume your progress',
+            description:
+              'You have already started. Re-enter your lesson flow and continue building consistency.',
+            actionLabel: 'Resume learning',
+            page: 'learn',
+          }
+        : {
+            title: 'Continue your learning',
+            description:
+              'Keep your momentum going with your next lesson, revision, or teacher follow-up.',
+            actionLabel: 'Continue learning',
+            page: 'learn',
+          };
+
+    const todaysFocus =
+      progressState === 'no_teacher'
+        ? {
+            title: 'Choose your teacher today',
+            detail: 'A teacher connection is the first meaningful step toward structured progress.',
+            instruction: 'Browse teachers and request the one that fits your level.',
+            actionLabel: 'Choose teacher',
+            page: 'teachers',
+          }
+        : progressState === 'teacher_selected_no_lessons'
+        ? {
+            title: 'Start your first lesson today',
+            detail: 'Your teacher is in place. Begin with the foundations so real progress can start.',
+            instruction: 'Open the letter guide and complete your first focused lesson.',
+            actionLabel: 'Start first lesson',
+            page: 'letters',
+          }
+        : {
+            title: upcomingSessions[0]?.title || 'Continue your current lesson',
+            detail: assignedTeacher
+              ? `Stay connected with ${assignedTeacher.name} and keep building consistent recitation habits.`
+              : 'Keep your learning rhythm moving forward today.',
+            instruction: upcomingSessions[0]
+              ? 'Open your lesson, review the teacher guidance, and continue from your current point.'
+              : 'Return to your learning materials and complete the next practical step today.',
+            actionLabel: progressState === 'inactive' ? 'Resume lesson' : 'Continue lesson',
+            page: 'learn',
+          };
+
+    const level =
+      progressPercent >= 65
+        ? 'Intermediate'
+        : progressPercent >= 30
+        ? 'Foundations'
+        : 'Beginner';
+    const nextMilestone =
+      level === 'Beginner'
+        ? 'Foundations'
+        : level === 'Foundations'
+        ? 'Tajwid Rules'
+        : 'Applied Recitation';
+    const streakMessage =
+      streakDays === 0
+        ? 'Start again today'
+        : streakDays >= 3
+        ? "Don't break your streak"
+        : "You're building consistency";
+
+    const encouragement =
+      progressState === 'no_teacher'
+        ? 'A strong start begins with the right teacher.'
+        : progressState === 'teacher_selected_no_lessons'
+        ? 'Everything is set up. Your first lesson is the next meaningful step.'
+        : progressState === 'inactive'
+        ? 'You already began this journey. A small return step will get you moving again.'
+        : 'Steady effort builds beautiful, lasting progress.';
+
+    const learningPath = [
+      {
+        label: 'Teacher',
+        status: hasTeacher ? 'complete' : 'current',
+        text: hasTeacher
+          ? `Connected with ${currentAssignedTeacher.name}`
+          : 'Choose your teacher',
+      },
+      {
+        label: 'Foundations',
+        status: hasLessonsStarted ? 'complete' : hasTeacher ? 'current' : 'upcoming',
+        text: hasLessonsStarted ? 'First lesson started' : 'Start with letters and foundations',
+      },
+      {
+        label: 'Progress',
+        status: completedSessions.length > 0 ? 'current' : 'upcoming',
+        text:
+          completedSessions.length > 0
+            ? `${completedSessions.length} completed lesson${completedSessions.length === 1 ? '' : 's'}`
+            : 'Build your first streak',
+      },
+    ];
+
+    return {
+      displayName: currentUser.name,
+      firstName: currentUser.name.split(' ')[0] || currentUser.name,
+      tier: currentUser.subscriptionTier || SUBSCRIPTION_TIERS.FREE,
+      completedLessons: completedSessions.length,
+      progressPercent:
+        completedSessions.length === 0
+          ? 0
+          : Math.min(100, completedSessions.length * 12),
+      streakDays,
+      nextLesson: upcomingSessions[0] || null,
+      assignedTeacher: currentAssignedTeacher,
+      latestTeacherReview,
+      lastSupportMessage,
+      currentWorkUpdate,
+      currentTeacherRequest,
+      progressState,
+      nextStep,
+      todaysFocus,
+      encouragement,
+      learningPath,
+      hasTeacher,
+      hasLessonsStarted,
+      isInactive,
+      level,
+      nextMilestone,
+      streakMessage,
+      motivationMessage:
+        streakDays > 0
+          ? streakDays >= 3
+            ? 'Consistency is the key to success.'
+            : 'Start small, stay consistent.'
+          : progressPercent > 0
+          ? 'You are progressing well.'
+          : 'Start small, stay consistent.',
+    };
+  }, [
+    currentUser,
+    completedSessions,
+    upcomingSessions,
+    currentAssignedTeacher,
+    state.teacherReviews,
+    visibleConversations,
+    currentWorkUpdate,
+    currentTeacherRequest,
+  ]);
 
   function ensureOwner(owner) {
     setState((prev) => {
-      const existingAdmin = prev.users.find((user) => user.role === ROLES.ADMIN && user.status === USER_STATUS.APPROVED);
+      const existingAdmin = prev.users.find(
+        (user) =>
+          user.role === ROLES.ADMIN && user.status === USER_STATUS.APPROVED
+      );
       if (existingAdmin) return prev;
 
       const newOwner = {
@@ -506,20 +1069,19 @@ export function PlatformProvider({ children }) {
       if (prev.users.some((user) => user.email === normalizedEmail)) {
         throw new Error('A user with this email already exists.');
       }
+
       const applicant = {
         id: uid('usr'),
         name: name.trim(),
         email: normalizedEmail,
         password,
         role,
-        subscriptionTier:
-          role === ROLES.TEACHER || role === ROLES.COUNSELOR || role === ROLES.CO_ADMIN
-            ? SUBSCRIPTION_TIERS.BASIC
-            : SUBSCRIPTION_TIERS.FREE,
+        subscriptionTier: SUBSCRIPTION_TIERS.FREE,
         status: USER_STATUS.PENDING,
         createdAt: nowIso(),
         approvedAt: null,
       };
+
       return {
         ...prev,
         users: [...prev.users, applicant],
@@ -529,53 +1091,24 @@ export function PlatformProvider({ children }) {
 
   function login({ email, password }) {
     const normalizedEmail = email.trim().toLowerCase();
-    const account = state.users.find((user) => user.email === normalizedEmail && user.password === password);
+    const account = state.users.find(
+      (user) => user.email === normalizedEmail && user.password === password
+    );
     if (!account) {
       throw new Error('Invalid email or password.');
     }
-    const isAdminAccount = account.role === ROLES.ADMIN;
-    if (account.status !== USER_STATUS.APPROVED && !isAdminAccount) {
-      throw new Error('Your account is not approved yet. Please wait for admin approval.');
+    if (account.status !== USER_STATUS.APPROVED && account.role !== ROLES.ADMIN) {
+      throw new Error(
+        'Your account is not approved yet. Please wait for admin approval.'
+      );
     }
 
-    setState((prev) => {
-      const users = isAdminAccount
-        ? prev.users.map((user) =>
-            user.id === account.id
-              ? {
-                  ...user,
-                  status: USER_STATUS.APPROVED,
-                  approvedAt: user.approvedAt || nowIso(),
-                  subscriptionTier: SUBSCRIPTION_TIERS.PREMIUM,
-                }
-              : user
-          )
-        : prev.users;
-
-      return {
-        ...prev,
-        users,
-        currentUserId: account.id,
-      };
-    });
-  }
-
-  function grantCurrentUserFullAdminAccess() {
-    if (!currentUser) return;
     setState((prev) => ({
       ...prev,
-      users: prev.users.map((user) =>
-        user.id === currentUser.id
-          ? {
-              ...user,
-              role: ROLES.ADMIN,
-              status: USER_STATUS.APPROVED,
-              approvedAt: user.approvedAt || nowIso(),
-              subscriptionTier: SUBSCRIPTION_TIERS.PREMIUM,
-            }
-          : user
-      ),
+      currentUserId: account.id,
     }));
+
+    return account;
   }
 
   function logout() {
@@ -594,7 +1127,10 @@ export function PlatformProvider({ children }) {
           ? {
               ...user,
               status,
-              approvedAt: status === USER_STATUS.APPROVED ? nowIso() : user.approvedAt,
+              approvedAt:
+                status === USER_STATUS.APPROVED
+                  ? user.approvedAt || nowIso()
+                  : user.approvedAt,
             }
           : user
       ),
@@ -606,7 +1142,9 @@ export function PlatformProvider({ children }) {
     const sanitized = sanitizeRole(role);
     setState((prev) => ({
       ...prev,
-      users: prev.users.map((user) => (user.id === userId ? { ...user, role: sanitized } : user)),
+      users: prev.users.map((user) =>
+        user.id === userId ? { ...user, role: sanitized } : user
+      ),
     }));
   }
 
@@ -632,22 +1170,63 @@ export function PlatformProvider({ children }) {
     });
   }
 
+  function grantCurrentUserFullAdminAccess() {
+    if (!currentUser) return;
+    setState((prev) => ({
+      ...prev,
+      users: prev.users.map((user) =>
+        user.id === currentUser.id
+          ? {
+              ...user,
+              role: ROLES.ADMIN,
+              status: USER_STATUS.APPROVED,
+              approvedAt: user.approvedAt || nowIso(),
+              subscriptionTier: SUBSCRIPTION_TIERS.PREMIUM,
+            }
+          : user
+      ),
+    }));
+  }
+
   function deleteUser(userId) {
     if (!isAdmin) return;
     setState((prev) => ({
       ...prev,
       users: prev.users.filter((user) => user.id !== userId),
-      conversations: prev.conversations.filter((conversation) => !(conversation.participantIds || []).includes(userId)),
-      sessions: prev.sessions.filter((session) => session.teacherId !== userId && session.studentId !== userId),
+      conversations: prev.conversations.filter(
+        (conversation) => !(conversation.participantIds || []).includes(userId)
+      ),
+      sessions: prev.sessions.filter(
+        (session) => session.teacherId !== userId && session.studentId !== userId
+      ),
+      teacherRequests: prev.teacherRequests.filter(
+        (request) => request.studentId !== userId && request.teacherId !== userId
+      ),
+      teacherAssignments: prev.teacherAssignments.filter(
+        (assignment) =>
+          assignment.studentId !== userId && assignment.teacherId !== userId
+      ),
+      teacherReviews: prev.teacherReviews.filter(
+        (review) => review.studentId !== userId && review.teacherId !== userId
+      ),
       currentUserId: prev.currentUserId === userId ? null : prev.currentUserId,
     }));
   }
 
-  function getOrCreateConversation(otherUserId) {
-    if (!currentUser) return null;
+  function getOrCreateConversation(otherUserId, options = {}) {
+    if (!currentUser || !otherUserId || otherUserId === currentUser.id) return null;
+    const channel = Object.values(CONVERSATION_CHANNELS).includes(options.channel)
+      ? options.channel
+      : CONVERSATION_CHANNELS.GENERAL;
+
     const existing = state.conversations.find((conversation) => {
       const ids = conversation.participantIds || [];
-      return ids.includes(currentUser.id) && ids.includes(otherUserId) && ids.length === 2;
+      return (
+        ids.length === 2 &&
+        ids.includes(currentUser.id) &&
+        ids.includes(otherUserId) &&
+        conversation.channel === channel
+      );
     });
 
     if (existing) return existing.id;
@@ -657,8 +1236,11 @@ export function PlatformProvider({ children }) {
       participantIds: [currentUser.id, otherUserId],
       createdAt: nowIso(),
       updatedAt: nowIso(),
+      channel,
+      subject: String(options.subject || '').trim(),
       messages: [],
       readBy: [currentUser.id],
+      unreadFor: [otherUserId],
     };
 
     setState((prev) => ({
@@ -669,19 +1251,48 @@ export function PlatformProvider({ children }) {
     return newConversation.id;
   }
 
+  function startSupportConversation() {
+    if (!supportTarget) return null;
+    return getOrCreateConversation(supportTarget.id, {
+      channel: CONVERSATION_CHANNELS.SUPPORT,
+      subject: 'General support',
+    });
+  }
+
+  function startTeacherConversation(teacherId = currentAssignedTeacher?.id) {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return null;
+    const targetTeacherId = String(teacherId || '');
+    if (!targetTeacherId) return null;
+    const assigned = state.teacherAssignments.find(
+      (assignment) =>
+        assignment.studentId === currentUser.id &&
+        assignment.teacherId === targetTeacherId &&
+        assignment.status === ASSIGNMENT_STATUS.ACTIVE
+    );
+    if (!assigned) {
+      throw new Error(
+        'Choose or request a teacher first before opening private teacher chat.'
+      );
+    }
+    return getOrCreateConversation(targetTeacherId, {
+      channel: CONVERSATION_CHANNELS.TEACHER_PRIVATE,
+      subject: 'Teacher chat',
+    });
+  }
+
   function sendMessage(conversationId, text) {
     if (!currentUser || !text.trim()) return;
     setState((prev) => ({
       ...prev,
       conversations: prev.conversations.map((conversation) => {
         if (conversation.id !== conversationId) return conversation;
+        const participantIds = conversation.participantIds || [];
         const message = {
           id: uid('msg'),
           senderId: currentUser.id,
           text: text.trim(),
           createdAt: nowIso(),
         };
-        const participantIds = conversation.participantIds || [];
         return {
           ...conversation,
           messages: [...(conversation.messages || []), message],
@@ -699,62 +1310,187 @@ export function PlatformProvider({ children }) {
       ...prev,
       conversations: prev.conversations.map((conversation) => {
         if (conversation.id !== conversationId) return conversation;
-        const readBy = Array.from(new Set([...(conversation.readBy || []), currentUser.id]));
-        const unreadFor = (conversation.unreadFor || []).filter((id) => id !== currentUser.id);
-        return { ...conversation, readBy, unreadFor };
+        return {
+          ...conversation,
+          readBy: Array.from(new Set([...(conversation.readBy || []), currentUser.id])),
+          unreadFor: (conversation.unreadFor || []).filter(
+            (id) => id !== currentUser.id
+          ),
+        };
       }),
     }));
   }
 
-  function createSession(sessionInput) {
+  function requestTeacherAssignment({ teacherId, note }) {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return;
+    const normalizedTeacherId = String(teacherId || '').trim();
+    if (!normalizedTeacherId) {
+      throw new Error('Choose a teacher to continue.');
+    }
+
+    const teacher = usersById[normalizedTeacherId];
+    if (
+      !teacher ||
+      teacher.role !== ROLES.TEACHER ||
+      teacher.status !== USER_STATUS.APPROVED
+    ) {
+      throw new Error('Selected teacher is not available.');
+    }
+
+    setState((prev) => {
+      const existingPending = prev.teacherRequests.find(
+        (request) =>
+          request.studentId === currentUser.id &&
+          request.teacherId === normalizedTeacherId &&
+          request.status === TEACHER_REQUEST_STATUS.PENDING
+      );
+
+      const nextRequest = {
+        id: existingPending?.id || uid('treq'),
+        studentId: currentUser.id,
+        teacherId: normalizedTeacherId,
+        note: String(note || '').trim(),
+        status: TEACHER_REQUEST_STATUS.PENDING,
+        adminNotes: existingPending?.adminNotes || '',
+        createdAt: existingPending?.createdAt || nowIso(),
+        updatedAt: nowIso(),
+      };
+
+      return {
+        ...prev,
+        teacherRequests: existingPending
+          ? prev.teacherRequests.map((request) =>
+              request.id === existingPending.id ? nextRequest : request
+            )
+          : [nextRequest, ...prev.teacherRequests],
+      };
+    });
+  }
+
+  function reviewTeacher({ rating, review }) {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT || !currentAssignedTeacher) return;
+    if (!review.trim() || Number(rating) < 1) {
+      throw new Error('Provide a rating and short review.');
+    }
+
+    setState((prev) => ({
+      ...prev,
+      teacherReviews: [
+        {
+          id: uid('trev'),
+          studentId: currentUser.id,
+          teacherId: currentAssignedTeacher.id,
+          rating: Math.max(1, Math.min(5, Number(rating) || 1)),
+          review: review.trim(),
+          createdAt: nowIso(),
+        },
+        ...prev.teacherReviews,
+      ],
+    }));
+  }
+
+  function assignTeacherRequest(requestId, decision, adminNotes = '') {
     if (!isAdmin) return;
+    const nextStatus =
+      decision === 'approved'
+        ? TEACHER_REQUEST_STATUS.APPROVED
+        : TEACHER_REQUEST_STATUS.DECLINED;
+
+    setState((prev) => {
+      const request = prev.teacherRequests.find((item) => item.id === requestId);
+      if (!request) return prev;
+
+      const updatedRequests = prev.teacherRequests.map((item) =>
+        item.id === requestId
+          ? {
+              ...item,
+              status: nextStatus,
+              adminNotes: adminNotes.trim(),
+              updatedAt: nowIso(),
+            }
+          : item
+      );
+
+      if (nextStatus !== TEACHER_REQUEST_STATUS.APPROVED) {
+        return {
+          ...prev,
+          teacherRequests: updatedRequests,
+        };
+      }
+
+      const nextAssignments = [
+        ...prev.teacherAssignments.filter(
+          (assignment) => assignment.studentId !== request.studentId
+        ),
+        {
+          id: uid('tassign'),
+          studentId: request.studentId,
+          teacherId: request.teacherId,
+          status: ASSIGNMENT_STATUS.ACTIVE,
+          assignedAt: nowIso(),
+          adminNotes: adminNotes.trim(),
+        },
+      ];
+
+      const existingConversation = prev.conversations.find((conversation) => {
+        const ids = conversation.participantIds || [];
+        return (
+          ids.length === 2 &&
+          ids.includes(request.studentId) &&
+          ids.includes(request.teacherId) &&
+          conversation.channel === CONVERSATION_CHANNELS.TEACHER_PRIVATE
+        );
+      });
+
+      return {
+        ...prev,
+        teacherRequests: updatedRequests,
+        teacherAssignments: nextAssignments,
+        conversations: existingConversation
+          ? prev.conversations
+          : [
+              {
+                id: uid('cnv'),
+                participantIds: [request.studentId, request.teacherId],
+                createdAt: nowIso(),
+                updatedAt: nowIso(),
+                channel: CONVERSATION_CHANNELS.TEACHER_PRIVATE,
+                subject: 'Teacher chat',
+                messages: [],
+                readBy: [],
+                unreadFor: [request.studentId, request.teacherId],
+              },
+              ...prev.conversations,
+            ],
+      };
+    });
+  }
+
+  function updateTeacherAvailability(teacherId, availability) {
+    if (!isAdmin) return;
+    const safeAvailability = ['available', 'limited', 'unavailable'].includes(
+      String(availability || '').trim().toLowerCase()
+    )
+      ? String(availability || '').trim().toLowerCase()
+      : 'available';
+
+    setState((prev) => ({
+      ...prev,
+      users: prev.users.map((user) =>
+        user.id === teacherId && user.role === ROLES.TEACHER
+          ? { ...user, availability: safeAvailability }
+          : user
+      ),
+    }));
+  }
+
+  function createSession(sessionInput) {
+    if (!isAdmin) return null;
     const title = String(sessionInput.title || '').trim();
     const teacherId = String(sessionInput.teacherId || '');
     const studentId = String(sessionInput.studentId || '');
-    const serviceType = ['lesson', 'counseling', 'support'].includes(sessionInput.serviceType)
-      ? sessionInput.serviceType
-      : 'lesson';
-    const mode = ['video', 'audio'].includes(sessionInput.mode) ? sessionInput.mode : 'video';
-    const start = String(sessionInput.start || '');
-    const startDate = new Date(start);
-    const durationMinutes = Number(sessionInput.durationMinutes) || 45;
-    const paymentAmount = Number(sessionInput.paymentAmount) || 0;
-
-    if (!title) {
-      throw new Error('Session title is required.');
-    }
-    if (!teacherId) {
-      throw new Error('Please select an approved teacher or counselor.');
-    }
-    if (!studentId) {
-      throw new Error('Please select an approved student.');
-    }
-    if (teacherId === studentId) {
-      throw new Error('Teacher and student must be different users.');
-    }
-    if (Number.isNaN(startDate.getTime())) {
-      throw new Error('Please provide a valid date and time.');
-    }
-    if (durationMinutes < 15 || durationMinutes > 240) {
-      throw new Error('Session duration must be between 15 and 240 minutes.');
-    }
-
-    const teacherUser = state.users.find((user) => user.id === teacherId);
-    if (
-      !teacherUser ||
-      teacherUser.status !== USER_STATUS.APPROVED ||
-      (teacherUser.role !== ROLES.TEACHER && teacherUser.role !== ROLES.COUNSELOR)
-    ) {
-      throw new Error('Selected teacher/counselor is not approved.');
-    }
-
-    const studentUser = state.users.find((user) => user.id === studentId);
-    if (
-      !studentUser ||
-      studentUser.status !== USER_STATUS.APPROVED ||
-      studentUser.role !== ROLES.STUDENT
-    ) {
-      throw new Error('Selected student is not approved.');
+    if (!title || !teacherId || !studentId) {
+      throw new Error('Session title, teacher, and student are required.');
     }
 
     const session = {
@@ -762,13 +1498,19 @@ export function PlatformProvider({ children }) {
       title,
       teacherId,
       studentId,
-      serviceType,
-      mode,
-      start,
-      durationMinutes,
+      serviceType: ['lesson', 'counseling', 'support'].includes(
+        sessionInput.serviceType
+      )
+        ? sessionInput.serviceType
+        : 'lesson',
+      mode: ['video', 'audio'].includes(sessionInput.mode)
+        ? sessionInput.mode
+        : 'video',
+      start: String(sessionInput.start || nowIso()),
+      durationMinutes: Number(sessionInput.durationMinutes) || 45,
       status: SESSION_STATUS.UPCOMING,
       createdAt: nowIso(),
-      paymentAmount,
+      paymentAmount: Number(sessionInput.paymentAmount) || 0,
       paymentStatus: 'unpaid',
     };
 
@@ -783,13 +1525,14 @@ export function PlatformProvider({ children }) {
     if (!currentUser) return;
     setState((prev) => ({
       ...prev,
-      sessions: prev.sessions.map((session) => (session.id === sessionId ? { ...session, status } : session)),
+      sessions: prev.sessions.map((session) =>
+        session.id === sessionId ? { ...session, status } : session
+      ),
     }));
   }
 
   function recordPayment({ sessionId, amount, status = 'completed' }) {
     if (!isAdmin) return;
-
     const gross = Number(amount) || 0;
     const teacherAmount = Math.round((gross * 70) / 100);
     const platformAmount = gross - teacherAmount;
@@ -827,22 +1570,22 @@ export function PlatformProvider({ children }) {
       ...prev,
       audioByLetter: {
         ...prev.audioByLetter,
-        [key]: sourceUrl.trim(),
+        [key]: String(sourceUrl || '').trim(),
       },
     }));
   }
 
   function bookCounseling({ durationKey, start, notes }) {
     if (!currentUser) return;
-    const admin = state.users.find((user) => user.role === ROLES.ADMIN && user.status === USER_STATUS.APPROVED);
-    if (!admin) return;
+    const counselor = usersById[COUNSELLOR_USER_ID] || supportTarget;
+    if (!counselor) return;
 
     const session = {
       id: uid('ses'),
-      title: `Counseling Session (${durationKey})`,
-      teacherId: admin.id,
+      title: `Counselling Session (${durationKey})`,
+      teacherId: counselor.id,
       studentId: currentUser.id,
-      counselorName: state.counselorProfile.name,
+      counselorName: 'Counsellor Aisha Peer',
       serviceType: 'counseling',
       mode: 'video',
       start,
@@ -851,7 +1594,7 @@ export function PlatformProvider({ children }) {
       createdAt: nowIso(),
       paymentAmount: Number(state.counselorProfile.durationPrices[durationKey]) || 0,
       paymentStatus: 'unpaid',
-      notes,
+      notes: String(notes || '').trim(),
     };
 
     setState((prev) => ({
@@ -876,40 +1619,11 @@ export function PlatformProvider({ children }) {
 
   function registerTransportProvider(payload) {
     if (!currentUser) return;
-    const fullName = String(payload.fullName || payload.name || '').trim();
-    const coverageArea = String(payload.coverageArea || payload.area || '').trim();
-    if (!fullName || !coverageArea) {
-      throw new Error('Provider name and coverage area are required.');
-    }
-
-    const serviceTypeRaw = String(payload.serviceType || '').trim().toLowerCase();
-    const serviceType =
-      serviceTypeRaw === 'volunteer' || serviceTypeRaw === 'mixed'
-        ? serviceTypeRaw
-        : 'paid';
-
-    const seats = Math.max(1, Number(payload.seats) || 1);
-
     const provider = sanitizeTransportProviderRecord(
       {
         id: uid('trp'),
         userId: currentUser.id,
-        fullName,
-        contactNumber: payload.contactNumber,
-        email: payload.email,
-        coverageArea,
-        pickupZones: payload.pickupZones,
-        dropoffZones: payload.dropoffZones,
-        availableDays: payload.availableDays,
-        timeWindowStart: payload.timeWindowStart,
-        timeWindowEnd: payload.timeWindowEnd,
-        serviceType,
-        seats,
-        vehicleType: payload.vehicleType,
-        vehicleRegistration: payload.vehicleRegistration,
-        routeNotes: payload.routeNotes || payload.route,
-        vehicleNotes: payload.vehicleNotes || payload.notes,
-        verification: payload.verification,
+        ...payload,
         status: TRANSPORT_PROVIDER_STATUS.SUBMITTED,
         verifiedByAdmin: false,
         createdAt: nowIso(),
@@ -953,8 +1667,7 @@ export function PlatformProvider({ children }) {
   }
 
   function updateTransportProviderStatus(providerId, status) {
-    if (!isAdmin) return;
-    if (!Object.values(TRANSPORT_PROVIDER_STATUS).includes(status)) return;
+    if (!isAdmin || !Object.values(TRANSPORT_PROVIDER_STATUS).includes(status)) return;
     setState((prev) => ({
       ...prev,
       transportProviders: prev.transportProviders.map((provider) =>
@@ -974,9 +1687,7 @@ export function PlatformProvider({ children }) {
   }
 
   function updateTransportRequestStatus(requestId, status, options = {}) {
-    if (!isAdmin) return;
-    if (!Object.values(TRANSPORT_REQUEST_STATUS).includes(status)) return;
-
+    if (!isAdmin || !Object.values(TRANSPORT_REQUEST_STATUS).includes(status)) return;
     setState((prev) => ({
       ...prev,
       transportRequests: prev.transportRequests.map((request) =>
@@ -1001,23 +1712,8 @@ export function PlatformProvider({ children }) {
 
   function assignTransportRequest(requestId, providerId, adminNotes = '') {
     if (!isAdmin) return;
-    const normalizedProviderId = String(providerId || '').trim();
-    if (!normalizedProviderId) {
-      throw new Error('Select a provider to assign this request.');
-    }
-
-    const provider = state.transportProviders.find(
-      (item) =>
-        item.id === normalizedProviderId &&
-        item.status === TRANSPORT_PROVIDER_STATUS.APPROVED
-    );
-
-    if (!provider) {
-      throw new Error('Selected provider is not approved.');
-    }
-
     updateTransportRequestStatus(requestId, TRANSPORT_REQUEST_STATUS.MATCHED, {
-      matchedProviderId: normalizedProviderId,
+      matchedProviderId: String(providerId || '').trim(),
       adminNotes,
     });
   }
@@ -1026,44 +1722,21 @@ export function PlatformProvider({ children }) {
     if (!isAdmin) return;
     setState((prev) => {
       const now = nowIso();
-      const nextBook = {
+      const nextBook = sanitizeLibraryBookRecord({
+        ...bookInput,
         id: bookInput.id || uid('book'),
-        title: (bookInput.title || '').trim(),
-        description: (bookInput.description || '').trim(),
-        mainCategory: (bookInput.mainCategory || '').trim(),
-        subcategory: (bookInput.subcategory || '').trim(),
-        author: (bookInput.author || '').trim(),
-        visibility: bookInput.visibility || 'public',
-        publishStatus: bookInput.publishStatus || 'draft',
-        coverDataUrl: bookInput.coverDataUrl || '',
-        coverFileName: bookInput.coverFileName || '',
-        fileUrl: (bookInput.fileUrl || '').trim(),
-        fileDataUrl:
-          typeof bookInput.fileDataUrl === 'string' &&
-          bookInput.fileDataUrl.length <= MAX_STORED_BOOK_FILE_DATA_URL
-            ? bookInput.fileDataUrl
-            : '',
-        fileName: bookInput.fileName || '',
-        requiredTier:
-          String(bookInput.requiredTier || '').trim().toLowerCase() === SUBSCRIPTION_TIERS.PREMIUM
-            ? SUBSCRIPTION_TIERS.PREMIUM
-            : String(bookInput.requiredTier || '').trim().toLowerCase() === SUBSCRIPTION_TIERS.BASIC
-            ? SUBSCRIPTION_TIERS.BASIC
-            : SUBSCRIPTION_TIERS.FREE,
-        pageCount: Math.max(1, Number(bookInput.pageCount) || 1),
-        previewPageCount: Math.max(1, Number(bookInput.previewPageCount) || 3),
-        readerPages: Array.isArray(bookInput.readerPages)
-          ? bookInput.readerPages.map((page) => String(page || '').trim()).filter(Boolean)
-          : [],
         createdAt: bookInput.createdAt || now,
         updatedAt: now,
-      };
+      });
 
+      if (!nextBook) return prev;
       const exists = prev.libraryBooks.some((item) => item.id === nextBook.id);
       return {
         ...prev,
         libraryBooks: exists
-          ? prev.libraryBooks.map((item) => (item.id === nextBook.id ? { ...item, ...nextBook } : item))
+          ? prev.libraryBooks.map((item) =>
+              item.id === nextBook.id ? nextBook : item
+            )
           : [nextBook, ...prev.libraryBooks],
       };
     });
@@ -1083,12 +1756,8 @@ export function PlatformProvider({ children }) {
         acc.totalRevenue += tx.gross || 0;
         acc.platformEarnings += tx.platformAmount || 0;
         acc.providerEarnings += tx.teacherAmount || 0;
-        if (tx.status === 'pending') {
-          acc.pendingPayouts += tx.teacherAmount || 0;
-        }
-        if (tx.status === 'completed') {
-          acc.completedPayouts += tx.teacherAmount || 0;
-        }
+        if (tx.status === 'pending') acc.pendingPayouts += tx.teacherAmount || 0;
+        if (tx.status === 'completed') acc.completedPayouts += tx.teacherAmount || 0;
         return acc;
       },
       {
@@ -1111,10 +1780,22 @@ export function PlatformProvider({ children }) {
     sessionStatus: SESSION_STATUS,
     transportProviderStatus: TRANSPORT_PROVIDER_STATUS,
     transportRequestStatus: TRANSPORT_REQUEST_STATUS,
+    teacherRequestStatus: TEACHER_REQUEST_STATUS,
+    assignmentStatus: ASSIGNMENT_STATUS,
+    conversationChannels: CONVERSATION_CHANNELS,
     usersById,
     currentUser,
     isAdmin,
+    teacherDirectory,
+    studentUsers,
+    supportTarget,
+    currentTeacherAssignment,
+    currentAssignedTeacher,
+    currentTeacherRequest,
     visibleConversations,
+    visibleLibraryBooks,
+    studentDashboardData,
+    currentWorkUpdate,
     financeSummary,
     buildConversationTitle,
     ensureOwner,
@@ -1127,8 +1808,14 @@ export function PlatformProvider({ children }) {
     grantCurrentUserFullAdminAccess,
     deleteUser,
     getOrCreateConversation,
+    startSupportConversation,
+    startTeacherConversation,
     sendMessage,
     markConversationRead,
+    requestTeacherAssignment,
+    assignTeacherRequest,
+    updateTeacherAvailability,
+    reviewTeacher,
     createSession,
     updateSessionStatus,
     recordPayment,

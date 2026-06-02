@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, BookOpen, KeyRound, LogIn, UserPlus } from 'lucide-react';
-import { usePlatform } from '../../state/PlatformContext';
+import { useAuth } from '../../lib/AuthContext';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -14,7 +14,7 @@ function normalizeEmail(value) {
 }
 
 export function AuthGateway({ onAuthenticated }) {
-  const { state, roles, ensureOwner, registerApplication, login } = usePlatform();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState(AUTH_MODES.LOGIN);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -32,10 +32,7 @@ export function AuthGateway({ onAuthenticated }) {
     confirmPassword: '',
   });
 
-  const hasAdmin = useMemo(
-    () => (state.users || []).some((user) => user.role === roles.ADMIN),
-    [state.users, roles.ADMIN]
-  );
+  const hasAdmin = true; // Firebase handles admin via Firestore roles
 
   function validateLogin() {
     const email = normalizeEmail(loginForm.email);
@@ -83,13 +80,9 @@ export function AuthGateway({ onAuthenticated }) {
 
     setBusy(true);
     try {
-      login({
-        email: loginForm.email,
-        password: loginForm.password,
-      });
-      onAuthenticated?.();
+      await login(loginForm.email, loginForm.password);
     } catch (authError) {
-      setError(authError.message || 'Login failed. Please try again.');
+      setError('Invalid email or password. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -103,33 +96,10 @@ export function AuthGateway({ onAuthenticated }) {
 
     setBusy(true);
     try {
-      const payload = {
-        name: registerForm.fullName.trim(),
-        email: registerForm.email,
-        password: registerForm.password,
-      };
-
-      if (!hasAdmin) {
-        // First secure owner bootstrap: first account becomes approved Admin.
-        ensureOwner(payload);
-        onAuthenticated?.();
-      } else {
-        registerApplication({
-          ...payload,
-          desiredRole: roles.STUDENT,
-        });
-        setMode(AUTH_MODES.LOGIN);
-        setInfo(
-          'Registration submitted successfully. Wait for admin approval, then log in with your credentials.'
-        );
-      }
-
-      setRegisterForm({
-        fullName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      });
+      await register(registerForm.email, registerForm.password, registerForm.fullName.trim());
+      setMode(AUTH_MODES.LOGIN);
+      setInfo('Registration submitted. Wait for admin approval, then log in.');
+      setRegisterForm({ fullName: '', email: '', password: '', confirmPassword: '' });
     } catch (authError) {
       setError(authError.message || 'Registration failed. Please try again.');
     } finally {
@@ -164,15 +134,6 @@ export function AuthGateway({ onAuthenticated }) {
                 Access learning, counselling, transport, and community services through one protected platform.
                 Sign in to continue, or register a new account for admin approval.
               </p>
-
-              <div className="mt-10 grid gap-3 text-sm text-[rgba(201,248,225,0.86)] sm:grid-cols-2">
-                <div className="rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(6,16,12,0.72)] px-4 py-3">
-                  Protected dashboard and communication
-                </div>
-                <div className="rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(6,16,12,0.72)] px-4 py-3">
-                  Role-based access with admin control
-                </div>
-              </div>
             </div>
           </section>
 
@@ -215,7 +176,9 @@ export function AuthGateway({ onAuthenticated }) {
             {mode === AUTH_MODES.LOGIN ? (
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">Email</label>
+                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+                    Email
+                  </label>
                   <Input
                     type="email"
                     value={loginForm.email}
@@ -228,7 +191,9 @@ export function AuthGateway({ onAuthenticated }) {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">Password</label>
+                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+                    Password
+                  </label>
                   <Input
                     type="password"
                     value={loginForm.password}
@@ -259,7 +224,9 @@ export function AuthGateway({ onAuthenticated }) {
             ) : (
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">Full name</label>
+                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+                    Full name
+                  </label>
                   <Input
                     type="text"
                     value={registerForm.fullName}
@@ -272,7 +239,9 @@ export function AuthGateway({ onAuthenticated }) {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">Email</label>
+                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+                    Email
+                  </label>
                   <Input
                     type="email"
                     value={registerForm.email}
@@ -286,7 +255,9 @@ export function AuthGateway({ onAuthenticated }) {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">Password</label>
+                    <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+                      Password
+                    </label>
                     <Input
                       type="password"
                       value={registerForm.password}
@@ -299,7 +270,9 @@ export function AuthGateway({ onAuthenticated }) {
                     />
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">Confirm password</label>
+                    <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+                      Confirm password
+                    </label>
                     <Input
                       type="password"
                       value={registerForm.confirmPassword}

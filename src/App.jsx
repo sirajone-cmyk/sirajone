@@ -1,138 +1,89 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AuthGateway } from './components/auth/AuthGateway';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { Navbar } from './components/layout/Navbar';
-import { Navigation } from './components/layout/Navigation';
-import { Footer } from './components/layout/Footer';
-import { FeatureBlocksSection } from './components/sections/FeatureBlocks';
-import { SupportSystemsSection } from './components/sections/SupportSystems';
-import { usePlatform } from './state/PlatformContext';
-import DashboardPage from './pages/DashboardPage';
-import LearnPage from './pages/LearnPage';
-import ProgramsPage from './pages/ProgramsPage';
-import EnrollPage from './pages/EnrollPage';
-import LibraryPage from './pages/LibraryPage';
-import TeachersPage from './pages/TeachersPage';
-import ContactPage from './pages/ContactPage';
-import MessagesPage from './pages/MessagesPage';
+import { useState } from 'react';
+import { Toaster } from "react-hot-toast"
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import SplashScreen from '@/components/SplashScreen';
 
-const ROUTES = {
-  AUTH: '/',
-  APP: '/app',
-  ADMIN: '/admin',
+// Pages — we will add these one by one
+// For now they show a placeholder until copied from Base44
+const Placeholder = ({ name }) => (
+  <div className="flex items-center justify-center h-screen text-white text-2xl">{name} — coming soon</div>
+);
+
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import Programs from './pages/Programs';
+import Contact from './pages/Contact';
+import Library from './pages/Library';
+import Teachers from './pages/Teachers';
+import Messages from './pages/Messages';
+import AdminMessages from './pages/AdminMessages';
+import RoleManagement from './pages/RoleManagement';
+import Enroll from './pages/Enroll';
+import AdminFinance from './pages/AdminFinance';
+import TeacherPortal from './pages/TeacherPortal';
+import LetterCatalog from './pages/LetterCatalog';
+
+const queryClient = new QueryClient();
+
+// Login page — kept from original Rahla design
+import { AuthGateway } from './components/auth/AuthGateway';
+
+const AuthenticatedApp = () => {
+  const { isAuthenticated, isLoadingAuth, user } = useAuth();
+
+  if (isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-[#0a1a0f]">
+        <div className="w-8 h-8 border-4 border-green-800 border-t-green-400 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthGateway />;
+  }
+
+  const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
+
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/letters" element={<LetterCatalog />} />
+      <Route path="/programs" element={<Programs />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/library" element={<Library />} />
+      <Route path="/teachers" element={<Teachers />} />
+      <Route path="/messages" element={<Messages />} />
+      <Route path="/enroll" element={<Enroll />} />
+      <Route path="/teacher-portal" element={<TeacherPortal />} />
+      {isAdmin && <Route path="/admin" element={<AdminDashboard />} />}
+      {isAdmin && <Route path="/admin/messages" element={<AdminMessages />} />}
+      {isAdmin && <Route path="/admin/roles" element={<RoleManagement />} />}
+      {isAdmin && <Route path="/admin/finance" element={<AdminFinance />} />}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 };
 
-function normalizePath(pathname) {
-  if (!pathname || pathname === ROUTES.AUTH) return ROUTES.AUTH;
-  if (pathname.startsWith(ROUTES.APP)) return ROUTES.APP;
-  if (pathname.startsWith(ROUTES.ADMIN)) return ROUTES.ADMIN;
-  return ROUTES.AUTH;
-}
+function App() {
+  const [splashDone, setSplashDone] = useState(false);
 
-function navigateTo(path, replace = false) {
-  const method = replace ? 'replaceState' : 'pushState';
-  window.history[method]({}, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
-
-function StudentAppPage() {
-  const { state } = usePlatform();
-  const [page, setPage] = useState('dashboard');
-
-  const studentLibraryBooks = useMemo(
-    () =>
-      (state.libraryBooks || []).filter(
-        (book) => book.publishStatus === 'published' && book.visibility === 'public'
-      ),
-    [state.libraryBooks]
-  );
-
-  function renderStudentPage() {
-    if (page === 'dashboard' || page === 'home') return <DashboardPage setPage={setPage} />;
-    if (page === 'programs') return <ProgramsPage setPage={setPage} />;
-    if (page === 'enroll') return <EnrollPage setPage={setPage} />;
-    if (page === 'library')
-      return <LibraryPage libraryItems={studentLibraryBooks} onAddLibraryItem={() => {}} canManage={false} />;
-    if (page === 'teachers') return <TeachersPage setPage={setPage} />;
-    if (page === 'contact') return <ContactPage />;
-    if (page === 'messages') return <MessagesPage />;
-    return <LearnPage />;
-  }
+  if (!splashDone) return <SplashScreen onDone={() => setSplashDone(true)} />;
 
   return (
-    <div className="app">
-      <Navigation page={page} onNavigate={setPage} />
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">{renderStudentPage()}</main>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AuthenticatedApp />
+        </Router>
+        <Toaster position="top-right" />
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
 
-function Phase4PlatformPage() {
-  return (
-    <div className="app">
-      <Navbar />
-      <main>
-        <SupportSystemsSection />
-        <FeatureBlocksSection />
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-export default function App() {
-  const { currentUser, isAdmin } = usePlatform();
-  const [route, setRoute] = useState(() => normalizePath(window.location.pathname));
-  const previousUserRef = useRef(currentUser);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      setRoute(normalizePath(window.location.pathname));
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  useEffect(() => {
-    if (route === ROUTES.APP && !currentUser) {
-      navigateTo(ROUTES.AUTH, true);
-      return;
-    }
-
-    if (route === ROUTES.ADMIN && (!currentUser || !isAdmin)) {
-      navigateTo(ROUTES.AUTH, true);
-    }
-  }, [route, currentUser, isAdmin]);
-
-  useEffect(() => {
-    const previousUser = previousUserRef.current;
-
-    if (!previousUser && currentUser && route === ROUTES.AUTH) {
-      navigateTo(currentUser.role === 'Admin' ? ROUTES.ADMIN : ROUTES.APP, true);
-    }
-
-    previousUserRef.current = currentUser;
-  }, [currentUser, route]);
-
-  const currentRoute = useMemo(() => normalizePath(window.location.pathname), [route]);
-
-  if (currentRoute === ROUTES.APP) {
-    return (
-      <ProtectedRoute>
-        <StudentAppPage />
-      </ProtectedRoute>
-    );
-  }
-
-  if (currentRoute === ROUTES.ADMIN) {
-    return (
-      <ProtectedRoute requireAdmin>
-        <Phase4PlatformPage />
-      </ProtectedRoute>
-    );
-  }
-
-  return <AuthGateway onAuthenticated={() => navigateTo(ROUTES.APP, true)} />;
-}
+export default App;

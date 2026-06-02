@@ -955,8 +955,439 @@ a {
     font-size: 1.5rem;
   }
 
-  .hamzah-view-title {
+.hamzah-view-title {
     font-size: 1.25rem;
+  }
+}
+
+.letter-lesson-section,
+.letter-lesson-experience {
+  width: 100%;
+}
+
+.letter-lesson-head {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.letter-lesson-experience.is-admin .letter-lesson-head {
+  text-align: left;
+}
+
+.letter-lesson-experience.is-admin .section-subtitle {
+  margin-inline: 0;
+  max-width: 100%;
+}
+
+.letter-lesson-card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.letter-lesson-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(34, 197, 94, 0.24);
+  background: linear-gradient(160deg, rgba(10, 24, 18, 0.96), rgba(9, 18, 14, 0.92));
+  border-radius: 22px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.letter-lesson-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(34, 197, 94, 0.44);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.32);
+}
+
+.letter-lesson-card-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.letter-lesson-card-letter {
+  flex-shrink: 0;
+  font-family: var(--font-arabic);
+  font-size: clamp(2.8rem, 7vw, 4rem);
+  line-height: 1;
+  color: #f7fff9;
+}
+
+.letter-lesson-card-kicker {
+  color: #9cd8b8;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.letter-lesson-card h3 {
+  color: #f7fff9;
+  font-size: 1.45rem;
+  margin-top: 0.15rem;
+}
+
+.letter-lesson-card-arabic {
+  color: #c9fce2;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+}
+
+.letter-lesson-open-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  background: rgba(34, 197, 94, 0.16);
+  color: #f3fff8;
+  border-radius: 9999px;
+  padding: 0.72rem 1rem;
+  font-weight: 700;
+}
+
+.letter-lesson-modal {
+  width: min(1080px, 100%);
+  max-height: 92vh;
+}
+
+.letter-lesson-modal .modal-content {
+  padding: 0.95rem;
+  height: calc(92vh - 66px);
+  overflow: hidden;
+}
+
+.letter-lesson-modal-inner {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 0.8rem;
+  height: 100%;
+}
+
+.letter-lesson-workspace-shell {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.8rem;
+  min-height: 0;
+}
+
+.letter-lesson-workspace-hero {
+  border-radius: 18px;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  background: linear-gradient(160deg, #0d3225, #0f2a20 50%, #0b2018);
+  padding: 1.1rem 1.15rem;
+  text-align: center;
+}
+
+.letter-lesson-hero-letter {
+  display: block;
+  font-family: var(--font-arabic);
+  font-size: clamp(2.8rem, 6vw, 4rem);
+  line-height: 1;
+  color: #fafffc;
+}
+
+.letter-lesson-hero-meta {
+  color: #9cd8b8;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  margin-top: 0.35rem;
+}
+
+.letter-lesson-workspace-hero h3 {
+  color: #f2fff7;
+  font-size: clamp(1.7rem, 3.2vw, 2.3rem);
+  margin-top: 0.3rem;
+}
+
+.letter-lesson-hero-arabic {
+  color: #d7fce8;
+  font-size: 1.15rem;
+  margin-top: 0.15rem;
+}
+
+.letter-lesson-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.letter-lesson-tab-btn,
+.letter-lesson-nav-btn,
+.letter-lesson-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(134, 239, 172, 0.24);
+  background: rgba(11, 23, 18, 0.82);
+  color: #c8f6df;
+  padding: 0.55rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.letter-lesson-tab-btn.active,
+.letter-lesson-tab-btn:hover,
+.letter-lesson-nav-btn:hover,
+.letter-lesson-chip-btn:hover {
+  border-color: rgba(16, 185, 129, 0.64);
+  background: rgba(16, 185, 129, 0.18);
+  color: #f3fff8;
+}
+
+.letter-lesson-tab-btn:disabled,
+.letter-lesson-nav-btn:disabled,
+.letter-lesson-chip-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.letter-lesson-workspace-content {
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(8, 24, 18, 0.96), rgba(8, 18, 15, 0.98));
+  min-height: 0;
+  overflow: hidden;
+}
+
+.letter-lesson-tab-panel {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem 1.05rem 1.15rem;
+}
+
+.letter-lesson-view-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.letter-lesson-view-title {
+  color: #f5fff9;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  margin-bottom: 0.75rem;
+}
+
+.letter-lesson-view-head .letter-lesson-view-title {
+  margin-bottom: 0;
+}
+
+.letter-lesson-info-card,
+.letter-lesson-practice-shell,
+.letter-lesson-diagram-shell {
+  border: 1px solid rgba(134, 239, 172, 0.18);
+  border-radius: 18px;
+  background: rgba(13, 32, 24, 0.92);
+  padding: 1rem;
+}
+
+.letter-lesson-info-card p,
+.letter-lesson-practice-shell p {
+  color: #defdea;
+  margin-bottom: 0.7rem;
+  line-height: 1.8;
+}
+
+.letter-lesson-sifaat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.letter-lesson-sifah-card,
+.letter-lesson-step-card {
+  border: 1px solid rgba(134, 239, 172, 0.2);
+  border-radius: 16px;
+  background: rgba(15, 35, 27, 0.9);
+  padding: 0.95rem;
+}
+
+.letter-lesson-sifah-card h4,
+.letter-lesson-step-card h4 {
+  color: #f5fff9;
+  font-size: 1.04rem;
+  margin-bottom: 0.45rem;
+}
+
+.letter-lesson-sifah-card p,
+.letter-lesson-step-card p {
+  color: #defdea;
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+}
+
+.letter-lesson-sifah-meaning {
+  color: #7ff3c0;
+  font-weight: 700;
+}
+
+.letter-lesson-step-flow {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.letter-lesson-diagram-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.letter-lesson-diagram-label {
+  color: #d9fbe8;
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.letter-lesson-diagram-stage {
+  min-height: min(62vh, 560px);
+  max-height: min(68vh, 640px);
+  overflow: auto;
+  border-radius: 16px;
+  background: radial-gradient(circle at center, rgba(17, 26, 21, 0.9), rgba(6, 12, 10, 0.98));
+  border: 1px solid rgba(134, 239, 172, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.letter-lesson-diagram-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transform-origin: center center;
+  transition: transform 160ms ease;
+}
+
+.letter-lesson-practice-grid {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.letter-lesson-practice-card {
+  border: 1px solid rgba(134, 239, 172, 0.18);
+  border-radius: 18px;
+  background: rgba(11, 24, 18, 0.88);
+  padding: 1rem;
+}
+
+.letter-lesson-practice-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.letter-lesson-practice-card h4 {
+  color: #f5fff9;
+  font-size: 1.05rem;
+}
+
+.letter-lesson-practice-meta {
+  color: rgba(217, 251, 232, 0.58);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.letter-lesson-practice-clock {
+  color: rgba(217, 251, 232, 0.65);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.letter-lesson-progress-bar {
+  margin-top: 0.9rem;
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.28);
+  overflow: hidden;
+}
+
+.letter-lesson-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #22c55e, #6ee7b7);
+}
+
+.letter-lesson-practice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.letter-lesson-practice-helper,
+.letter-lesson-practice-status {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(217, 251, 232, 0.78);
+  font-size: 0.9rem;
+  margin-top: 0.9rem;
+}
+
+.letter-lesson-practice-status {
+  color: rgba(217, 251, 232, 0.62);
+  line-height: 1.6;
+}
+
+.letter-lesson-workspace-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .letter-lesson-modal {
+    width: min(96vw, 1080px);
+  }
+
+  .letter-lesson-modal .modal-content {
+    height: calc(90vh - 66px);
+  }
+
+  .letter-lesson-sifaat-grid,
+  .letter-lesson-practice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .letter-lesson-card {
+    border-radius: 18px;
+  }
+
+  .letter-lesson-card-main {
+    align-items: flex-start;
+  }
+
+  .letter-lesson-card-letter {
+    font-size: 3rem;
+  }
+
+  .letter-lesson-workspace-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .letter-lesson-nav-btn,
+  .letter-lesson-open-btn {
+    justify-content: center;
   }
 }
 

@@ -1,0 +1,37 @@
+export const TEACHERS_DATA = [
+  {
+    id: 'hashim',
+    name: "Ustādh Hāshim bin Ḥussain",
+    arabic: "الأستاذ هاشم بن حسين",
+    title: "Founder & Lead Teacher",
+    experience: "Since 2008 · 18+ years",
+    subjects: ["Tajwīd", "Makhārij", "Qur'ān Reading", "Ḥifẓ", "Murājaʿah"],
+    audience: "Brothers & Sisters",
+    bio: "Qualified in Tajwīd and Qur'ānic recitation with 18+ years of dedicated teaching. Known for patience, structure, and genuine care for every student's spiritual progress.",
+    contact: { phone: '+27 67 634 0225', email: 'madrasatahseenuquran@gmail.com' },
+    featured: true,
+    gender: 'male',
+  },
+  { id: 'aneesa', name: "Muallima Aneesa", arabic: "معلمة أنيسة", title: "Senior Tajwīd Teacher", experience: "Tarbiyatul Banāt · 5+ years", subjects: ["Tajwīd", "Qur'ān Reading", "Makhārij", "Qā'idah"], audience: "Sisters & Girls", bio: "Specialises in teaching young girls and women, with a nurturing and structured approach to Tajwīd and Qur'ān reading.", gender: 'female' },
+  { id: 'sophia', name: "Muallima Sophia", arabic: "معلمة صوفيا", title: "Qur'ān Teacher", experience: "5+ years", subjects: ["Qā'idah", "Qur'ān Reading", "Tajwīd"], audience: "Sisters & Girls", bio: "Experienced in teaching beginners and intermediate students. Patient approach with focus on correct pronunciation.", gender: 'female' },
+  { id: 'hasnea', name: "Muallima Hasnea", arabic: "معلمة حسناء", title: "Qur'ān Teacher", experience: "5+ years", subjects: ["Qā'idah", "Tajwīd", "Qur'ān Reading"], audience: "Sisters & Girls", bio: "Focuses on building strong foundational reading skills, helping students move confidently from Qā'idah to full Qur'ān reading.", gender: 'female' },
+  { id: 'halima', name: "Muallima Halima", arabic: "معلمة حليمة", title: "Qur'ān Teacher", experience: "5+ years", subjects: ["Tajwīd", "Makhārij", "Qur'ān Reading"], audience: "Sisters & Girls", bio: "Passionate about correct Makhārij and Sifāt, ensuring students develop a strong technical foundation from the start.", gender: 'female' },
+  { id: 'salma', name: "Muallima Salma", arabic: "معلمة سلمى", title: "Qur'ān Teacher", experience: "5+ years", subjects: ["Qā'idah", "Tajwīd"], audience: "Sisters & Girls", bio: "Experienced in working with young learners. Creates a calm, focused learning environment for each student.", gender: 'female' },
+  { id: 'abdulmalik', name: "Mawlana Sheikh Abdul Malik", arabic: "مولانا الشيخ عبد المالك", title: "Arabic Language Teacher", experience: "5+ years", subjects: ["Arabic", "Arabic Grammar", "Qur'ānic Arabic"], audience: "Brothers & Sisters", bio: "Specialises in Arabic language instruction, including grammar, vocabulary, and Qur'ānic Arabic for all levels.", gender: 'male' },
+  { id: 'abbas', name: "Qāri Abbas", arabic: "قاري عباس", title: "Qirā'āt Teacher", experience: "5+ years", subjects: ["Qirā'āt", "Ḥifẓ", "Tajwīd"], audience: "Brothers", bio: "Experienced in Ḥifẓ revision and the science of Qirā'āt. Helps advanced students elevate their recitation.", gender: 'male' },
+  { id: 'aminuddin', name: "Qāri Amīnuddīn", arabic: "قاري أمين الدين", title: "Qirā'āt Teacher", experience: "5+ years", subjects: ["Qirā'āt", "Tajwīd"], audience: "Brothers", bio: "Dedicated to preserving authentic recitation traditions. Patient and methodical in his teaching approach.", gender: 'male' },
+];
+
+export const SUBJECTS_DATA = [
+  { id: 'quran-reading', title: "Qur'ān Reading", arabic: "قراءة القرآن", desc: "Learn to read the Qur'ān from scratch. Covers Arabic letters, vowels, and connected reading.", price: { group: 300, private: 500 }, level: "Beginner", badge: "bg-emerald-900 text-emerald-300", color: "border-emerald-800 bg-emerald-950/20", teacherIds: ['hashim', 'aneesa', 'sophia', 'hasnea', 'halima', 'salma'], comingSoon: false },
+  { id: 'qaidah', title: "Qā'idah", arabic: "القاعدة", desc: "The foundation of Qur'ānic reading. Master Arabic letters and vowel marks.", price: { group: 300, private: 500 }, level: "Beginner", badge: "bg-teal-900 text-teal-300", color: "border-teal-800 bg-teal-950/20", teacherIds: ['aneesa', 'sophia', 'hasnea', 'salma'], comingSoon: false },
+  { id: 'tajwid', title: "Tajwīd", arabic: "التجويد", desc: "Master the rules of correct Qur'ānic recitation. Covers Makhārij, Sifāt, Noon & Meem rules, and Madd.", price: { group: 350, private: 550 }, level: "Intermediate", badge: "bg-amber-900 text-amber-300", color: "border-amber-800 bg-amber-950/20", teacherIds: ['hashim', 'aneesa', 'sophia', 'hasnea', 'halima', 'salma', 'abbas', 'aminuddin'], comingSoon: false },
+  { id: 'hifz', title: "Ḥifẓ Programme", arabic: "حفظ القرآن", desc: "Structured Qur'ān memorisation with daily Sabaq, revision cycles, and personalised teacher guidance.", price: { group: 400, private: 650 }, level: "Advanced", badge: "bg-violet-900 text-violet-300", color: "border-violet-800 bg-violet-950/20", teacherIds: ['hashim', 'abbas'], comingSoon: false },
+  { id: 'murajaah', title: "Murājaʿah", arabic: "المراجعة", desc: "For Ḥuffāẓ who have completed memorisation. Structured revision to maintain all 30 Juz.", price: { group: 400, private: 650 }, level: "Ḥuffāẓ", badge: "bg-sky-900 text-sky-300", color: "border-sky-800 bg-sky-950/20", teacherIds: ['hashim'], comingSoon: false },
+  { id: 'arabic', title: "Arabic Language", arabic: "اللغة العربية", desc: "Learn Arabic from beginner to advanced. Covers grammar, vocabulary, and Qur'ānic Arabic.", price: { group: 350, private: 550 }, level: "All Levels", badge: "bg-orange-900 text-orange-300", color: "border-orange-800 bg-orange-950/20", teacherIds: ['abdulmalik'], comingSoon: false },
+  { id: 'qiraat', title: "Qirā'āt", arabic: "القراءات", desc: "Advanced study of the multiple modes of authentic Qur'ānic recitation.", price: { group: 450, private: 700 }, level: "Advanced", badge: "bg-rose-900 text-rose-300", color: "border-rose-800 bg-rose-950/20", teacherIds: ['abbas', 'aminuddin'], comingSoon: false },
+  { id: 'fiqh', title: "Fiqh", arabic: "الفقه", desc: "Practical Islamic law for everyday life.", price: { group: 300, private: 500 }, level: "All Levels", badge: "bg-indigo-900 text-indigo-300", color: "border-indigo-800 bg-indigo-950/20", teacherIds: [], comingSoon: true },
+  { id: 'hadith', title: "Ḥadīth Studies", arabic: "الحديث", desc: "Study the sayings and traditions of the Prophet ﷺ with proper context.", price: { group: 300, private: 500 }, level: "Intermediate", badge: "bg-cyan-900 text-cyan-300", color: "border-cyan-800 bg-cyan-950/20", teacherIds: [], comingSoon: true },
+  { id: 'tafsir', title: "Tafsīr", arabic: "التفسير", desc: "Deep understanding of Qur'ānic verses, their meanings, context, and scholarly interpretation.", price: { group: 300, private: 500 }, level: "Intermediate", badge: "bg-purple-900 text-purple-300", color: "border-purple-800 bg-purple-950/20", teacherIds: [], comingSoon: true },
+  { id: 'cupping', title: "Cupping Course", arabic: "الحجامة", desc: "Learn the Sunnah practice of Ḥijāmah (cupping therapy). Theory and practical training.", price: { group: 400, private: 700 }, level: "All Levels", badge: "bg-red-900 text-red-300", color: "border-red-800 bg-red-950/20", teacherIds: [], comingSoon: true },
+];

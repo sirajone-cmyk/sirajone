@@ -27,7 +27,7 @@ import { SessionCard } from '../platform/SessionCard';
 import { SupportProfileCard } from '../platform/SupportProfileCard';
 import { Modal } from '../ui/Modal';
 import { usePlatform } from '../../state/PlatformContext';
-import { LETTERS } from '../../data/tajweedData';
+import { LETTER_LESSONS } from '../../data/letterLessons';
 
 function statusTone(status) {
   if (status === 'approved') return 'text-[#34d399]';
@@ -2647,9 +2647,9 @@ export function SupportSystemsSection() {
                     }
                     className="input"
                   >
-                    {LETTERS.map((letter) => (
-                      <option key={letter.num} value={letter.num}>
-                        Letter {letter.num}: {letter.name}
+                    {LETTER_LESSONS.map((letter) => (
+                      <option key={letter.id} value={letter.audioKey}>
+                        Letter {letter.lessonNumber}: {letter.englishName}
                       </option>
                     ))}
                   </select>
