@@ -1,4 +1,4 @@
-﻿import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, LayoutDashboard, Phone, Menu, X, Library, Users, MessageCircle, DollarSign, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
@@ -22,9 +22,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#0b1a12]/90 backdrop-blur-md border-b border-white/8">
-      <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
+      <div className="max-w-6xl mx-auto px-4 flex items-center justify-between gap-4 h-16">
+        <Link to="/" className="mr-6 flex flex-shrink-0 items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
             <div className="relative w-9 h-9 flex-shrink-0">
               <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
                 <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" fill="none" stroke="#34d399" strokeWidth="1.5"/>
@@ -32,15 +32,15 @@ export default function Navbar() {
                 <circle cx="18" cy="18" r="3" fill="#34d399"/>
               </svg>
             </div>
-            <div className="leading-tight">
-              <div className="text-white font-bold text-sm tracking-tight">SirajOne</div>
-              <div className="text-emerald-400 text-[10px] font-semibold tracking-[0.08em] uppercase sm:text-xs">Faith. Knowledge. Action.</div>
+            <div className="min-w-0 leading-tight">
+              <div className="whitespace-nowrap text-sm font-bold tracking-tight text-white">SirajOne</div>
+              <div className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.07em] text-emerald-400 sm:text-[10px]">Faith. Knowledge. Action.</div>
             </div>
           </div>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden min-w-0 flex-1 items-center justify-end gap-1 md:flex">
           {links.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}

@@ -6,9 +6,10 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { ROLES, USER_STATUS, enrichUserProfile, isOwnerEmail } from './roles';
+import { buildTeacherApplicationPayload } from './teacherSchema';
 
 const AuthContext = createContext();
 
@@ -107,19 +108,49 @@ export const AuthProvider = ({ children }) => {
   };
 
   const applyAsTeacher = async (email, password, fullName, teacherApplication = {}) => {
-    return createUserProfile({
-      email,
-      password,
-      fullName,
-      role: ROLES.TEACHER,
-      status: USER_STATUS.PENDING,
-      extraProfile: {
-        teacher_application: {
-          ...teacherApplication,
-          submitted_at: serverTimestamp(),
-        },
-      },
-    });
+    setAuthError(null);
+    try {
+      const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
+      const submittedAt = serverTimestamp();
+      const applicationPayload = buildTeacherApplicationPayload({
+        ...teacherApplication,
+        fullName,
+        email,
+      });
+
+      const userRef = doc(db, 'users', firebaseUser.uid);
+      const teacherRef = doc(db, 'teachers', firebaseUser.uid);
+      const privateVerificationRef = doc(db, 'teachers', firebaseUser.uid, 'private_data', 'verification');
+      const batch = writeBatch(db);
+
+      batch.set(userRef, {
+        full_name: fullName,
+        email,
+        role: ROLES.TEACHER,
+        status: USER_STATUS.PENDING,
+        created_at: submittedAt,
+      });
+
+      batch.set(teacherRef, {
+        ...applicationPayload.publicProfile,
+        uid: firebaseUser.uid,
+        created_at: submittedAt,
+        updated_at: submittedAt,
+      });
+
+      batch.set(privateVerificationRef, {
+        ...applicationPayload.privateData,
+        uid: firebaseUser.uid,
+        submitted_at: submittedAt,
+        updated_at: submittedAt,
+      });
+
+      await batch.commit();
+      return firebaseUser;
+    } catch (error) {
+      setAuthError(error.message);
+      throw error;
+    }
   };
 
   const logout = async () => {
