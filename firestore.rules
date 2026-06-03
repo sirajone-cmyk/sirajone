@@ -1,4 +1,4 @@
-rules_version = '2';
+ules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -185,7 +185,7 @@ service cloud.firestore {
 
     match /teachers/{userId} {
       allow read: if signedIn();
-      allow create: if validTeacherPublicProfileCreate(userId);
+      allow create: if validTeacherPublicProfileCreate(userId) || isAdminUser();
       allow update: if isAdminUser()
         || (isSelf(userId) && onlyTeacherEditablePublicFieldsChanged());
       allow delete: if isAdminUser();

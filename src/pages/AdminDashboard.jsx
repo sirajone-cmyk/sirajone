@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { Users, CheckCircle, XCircle, Clock, Trash2, DollarSign, ReceiptText } from 'lucide-react';
-import { collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 const statusStyle = {
@@ -18,6 +18,27 @@ const formatCurrency = (value) =>
   }).format(Number(value || 0));
 
 const readAmount = (payment) => Number(payment.amount || payment.amount_gross || payment.price_zar || 0);
+const isTeacherRole = (role) => role === 'Teacher';
+
+const buildSafeTeacherProfile = (user, profileStatus = 'approved') => ({
+  name: user.full_name || user.name || user.email || 'SirajOne Teacher',
+  bio: user.bio || 'Approved SirajOne teacher profile. Full teaching details will be added soon.',
+  qualifications: user.qualifications || user.qualificationLevel || '',
+  personalityDescription: user.personalityDescription || 'Teacher profile approved by SirajOne admin.',
+  assignedSubjects: Array.isArray(user.assignedSubjects) ? user.assignedSubjects : [],
+  profileStatus,
+  updated_at: serverTimestamp(),
+});
+
+async function syncTeacherPublicProfile(user, profileStatus = 'approved') {
+  if (!user?.id || !isTeacherRole(user.role)) return;
+
+  await setDoc(
+    doc(db, 'teachers', user.id),
+    buildSafeTeacherProfile(user, profileStatus),
+    { merge: true }
+  );
+}
 
 const formatFirestoreDate = (value) => {
   if (!value) return '-';
@@ -121,6 +142,7 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('users');
   const [loading, setLoading] = useState(true);
+  const syncedTeacherIds = useRef(new Set());
 
   useEffect(() => {
     const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
@@ -146,17 +168,20 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  const approve = async (id) => {
-    await updateDoc(doc(db, 'users', id), { status: 'approved' });
+  const approve = async (user) => {
+    await updateDoc(doc(db, 'users', user.id), { status: 'approved' });
+    await syncTeacherPublicProfile({ ...user, status: 'approved' }, 'approved');
   };
 
-  const suspend = async (id) => {
-    await updateDoc(doc(db, 'users', id), { status: 'suspended' });
+  const suspend = async (user) => {
+    await updateDoc(doc(db, 'users', user.id), { status: 'suspended' });
+    await syncTeacherPublicProfile({ ...user, status: 'suspended' }, 'suspended');
   };
 
   const remove = async (id) => {
     if (!confirm('Remove this user?')) return;
     await deleteDoc(doc(db, 'users', id));
+    await deleteDoc(doc(db, 'teachers', id)).catch(() => {});
   };
 
   const stats = {
@@ -249,12 +274,12 @@ export default function AdminDashboard() {
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
                             {s.status !== 'approved' && (
-                              <button onClick={() => approve(s.id)} className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800" title="Approve">
+                              <button onClick={() => approve(s)} className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800" title="Approve">
                                 <CheckCircle className="h-4 w-4" />
                               </button>
                             )}
                             {s.status === 'approved' && (
-                              <button onClick={() => suspend(s.id)} className="rounded-lg bg-amber-900/60 p-1.5 text-amber-400 transition-colors hover:bg-amber-800" title="Suspend">
+                              <button onClick={() => suspend(s)} className="rounded-lg bg-amber-900/60 p-1.5 text-amber-400 transition-colors hover:bg-amber-800" title="Suspend">
                                 <XCircle className="h-4 w-4" />
                               </button>
                             )}

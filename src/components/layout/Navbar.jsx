@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Menu,
   X,
@@ -54,8 +54,8 @@ export function Navbar({ className }) {
       )}
     >
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 xl:px-10">
-        <div className="flex h-[68px] items-center justify-between gap-4">
-          <a href="#home" className="flex min-w-fit items-center gap-3" onClick={() => setOpen(false)}>
+        <div className="flex h-[68px] items-center justify-between gap-6">
+          <a href="#home" className="z-10 flex min-w-[215px] flex-shrink-0 items-center gap-3" onClick={() => setOpen(false)}>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(34,197,94,0.48)] bg-[rgba(34,197,94,0.14)] shadow-[0_0_18px_rgba(34,197,94,0.22)]">
               <BookOpen size={18} className="text-[#30d986]" />
             </div>
@@ -65,7 +65,7 @@ export function Navbar({ className }) {
             </div>
           </a>
 
-          <nav className="hidden items-center gap-1.5 md:flex xl:gap-2">
+          <nav className="ml-auto hidden min-w-0 flex-1 items-center justify-end gap-1.5 2xl:flex">
             {visibleLinks.map(({ label, href, icon: Icon }) => (
               <a
                 key={label}
@@ -86,14 +86,14 @@ export function Navbar({ className }) {
 
           <a
             href="#letters"
-            className="hidden min-w-[108px] items-center justify-center rounded-xl bg-[#27c978] px-3 py-2 text-[14px] font-semibold text-[#052012] transition-colors hover:bg-[#33d384] md:inline-flex"
+            className="hidden min-w-[108px] flex-shrink-0 items-center justify-center rounded-xl bg-[#27c978] px-3 py-2 text-[14px] font-semibold text-[#052012] transition-colors hover:bg-[#33d384] 2xl:inline-flex"
           >
             Letter Guide
           </a>
           <button
             type="button"
             onClick={logout}
-            className="hidden min-w-[92px] items-center justify-center rounded-xl border border-[rgba(34,197,94,0.35)] bg-[rgba(6,18,13,0.82)] px-3 py-2 text-[14px] font-semibold text-[#97ffca] transition-colors hover:bg-[rgba(34,197,94,0.16)] md:inline-flex"
+            className="hidden min-w-[92px] flex-shrink-0 items-center justify-center rounded-xl border border-[rgba(34,197,94,0.35)] bg-[rgba(6,18,13,0.82)] px-3 py-2 text-[14px] font-semibold text-[#97ffca] transition-colors hover:bg-[rgba(34,197,94,0.16)] 2xl:inline-flex"
           >
             <LogOut size={15} className="mr-1" />
             Logout
@@ -102,7 +102,7 @@ export function Navbar({ className }) {
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.14)] text-[#95ffc8] md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.14)] text-[#95ffc8] 2xl:hidden"
             aria-label={open ? 'Close menu' : 'Open menu'}
           >
             {open ? <X size={20} /> : <Menu size={20} />}
@@ -110,7 +110,7 @@ export function Navbar({ className }) {
         </div>
       </div>
 
-      <div className={cn('overflow-hidden border-t border-[rgba(34,197,94,0.16)] bg-[rgba(6,14,11,0.98)] transition-all duration-300 md:hidden', open ? 'max-h-[520px]' : 'max-h-0')}>
+      <div className={cn('overflow-hidden border-t border-[rgba(34,197,94,0.16)] bg-[rgba(6,14,11,0.98)] transition-all duration-300 2xl:hidden', open ? 'max-h-[520px]' : 'max-h-0')}>
         <nav className="space-y-1 p-3">
           {currentUser ? (
             <div className="mb-2 rounded-lg border border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.08)] px-3 py-2 text-xs text-[rgba(217,251,232,0.86)]">
