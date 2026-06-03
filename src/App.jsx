@@ -1,14 +1,17 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Toaster } from "react-hot-toast"
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { ROLES, USER_STATUS } from '@/lib/roles';
 import SplashScreen from '@/components/SplashScreen';
+import PendingApproval from '@/components/auth/PendingApproval';
+import SuspendedAccount from '@/components/auth/SuspendedAccount';
 
-// Pages — we will add these one by one
+// Pages - we will add these one by one
 // For now they show a placeholder until copied from Base44
 const Placeholder = ({ name }) => (
-  <div className="flex items-center justify-center h-screen text-white text-2xl">{name} — coming soon</div>
+  <div className="flex items-center justify-center h-screen text-white text-2xl">{name} - coming soon</div>
 );
 
 import Home from './pages/Home';
@@ -28,7 +31,7 @@ import LetterCatalog from './pages/LetterCatalog';
 
 const queryClient = new QueryClient();
 
-// Login page — kept from original Rahla design
+// Login page - kept from original Rahla design
 import { AuthGateway } from './components/auth/AuthGateway';
 
 const AuthenticatedApp = () => {
@@ -46,7 +49,17 @@ const AuthenticatedApp = () => {
     return <AuthGateway />;
   }
 
-  const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
+  if (user?.status === USER_STATUS.PENDING) {
+    return <PendingApproval />;
+  }
+
+  if (user?.status === USER_STATUS.SUSPENDED) {
+    return <SuspendedAccount />;
+  }
+
+  const isApproved = user?.status === USER_STATUS.APPROVED;
+  const isAdmin = isApproved && (user?.role === ROLES.ADMIN || user?.role === ROLES.CO_ADMIN);
+  const canAccessTeacherPortal = isAdmin || (isApproved && user?.role === ROLES.TEACHER);
 
   return (
     <Routes>
@@ -59,7 +72,10 @@ const AuthenticatedApp = () => {
       <Route path="/teachers" element={<Teachers />} />
       <Route path="/messages" element={<Messages />} />
       <Route path="/enroll" element={<Enroll />} />
-      <Route path="/teacher-portal" element={<TeacherPortal />} />
+      <Route
+        path="/teacher-portal"
+        element={canAccessTeacherPortal ? <TeacherPortal /> : <Navigate to="/dashboard" replace />}
+      />
       {isAdmin && <Route path="/admin" element={<AdminDashboard />} />}
       {isAdmin && <Route path="/admin/messages" element={<AdminMessages />} />}
       {isAdmin && <Route path="/admin/roles" element={<RoleManagement />} />}

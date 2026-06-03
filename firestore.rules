@@ -1,0 +1,173 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function userPath(userId) {
+      return /databases/$(database)/documents/users/$(userId);
+    }
+
+    function userProfileExists(userId) {
+      return exists(userPath(userId));
+    }
+
+    function userProfileData(userId) {
+      return get(userPath(userId)).data;
+    }
+
+    function myProfileExists() {
+      return signedIn() && userProfileExists(request.auth.uid);
+    }
+
+    function myProfileData() {
+      return userProfileData(request.auth.uid);
+    }
+
+    function isKnownRole(role) {
+      return role in ['Student', 'Teacher', 'Admin', 'Co-Admin'];
+    }
+
+    function isKnownStatus(status) {
+      return status in ['approved', 'pending', 'suspended'];
+    }
+
+    function isOwnerEmail() {
+      return signedIn()
+        && request.auth.token.email in [
+          'sirajone7@gmail.com',
+          'madrassatahseenulquraan@gmail.com'
+        ];
+    }
+
+    function isApprovedUser() {
+      return myProfileExists()
+        && myProfileData().status == 'approved'
+        && isKnownRole(myProfileData().role);
+    }
+
+    function isAdminUser() {
+      return myProfileExists()
+        && myProfileData().status == 'approved'
+        && myProfileData().role in ['Admin', 'Co-Admin'];
+    }
+
+    function roleAndStatusUnchanged() {
+      return request.resource.data.role == resource.data.role
+        && request.resource.data.status == resource.data.status;
+    }
+
+    function validStudentSignup() {
+      return request.resource.data.role == 'Student'
+        && request.resource.data.status == 'approved';
+    }
+
+    function validTeacherApplication() {
+      return request.resource.data.role == 'Teacher'
+        && request.resource.data.status == 'pending';
+    }
+
+    function validOwnerBootstrap() {
+      return isOwnerEmail()
+        && request.resource.data.role == 'Admin'
+        && request.resource.data.status == 'approved';
+    }
+
+    function validSelfProfileCreate(userId) {
+      return isSelf(userId)
+        && !userProfileExists(userId)
+        && isKnownRole(request.resource.data.role)
+        && isKnownStatus(request.resource.data.status)
+        && (validStudentSignup() || validTeacherApplication() || validOwnerBootstrap());
+    }
+
+    function ownsConversation() {
+      return resource.data.student_uid == request.auth.uid;
+    }
+
+    function createsOwnConversation() {
+      return request.resource.data.student_uid == request.auth.uid;
+    }
+
+    function ownsMessageConversation() {
+      return resource.data.conversation_id == request.auth.uid;
+    }
+
+    function createsOwnMessage() {
+      return request.resource.data.sender_uid == request.auth.uid
+        && request.resource.data.conversation_id == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read: if isSelf(userId) || isAdminUser();
+      allow create: if validSelfProfileCreate(userId) || isAdminUser();
+      allow update: if isSelf(userId) && roleAndStatusUnchanged();
+      allow update: if isAdminUser();
+      allow delete: if isAdminUser();
+    }
+
+    match /library/{documentId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminUser();
+    }
+
+    match /programs/{documentId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminUser();
+    }
+
+    match /teachers/{documentId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminUser();
+    }
+
+    match /enrollments/{documentId} {
+      allow read: if isAdminUser() || isApprovedUser();
+      allow create: if isApprovedUser();
+      allow update, delete: if isAdminUser();
+    }
+
+    match /payments/{documentId} {
+      allow read: if isAdminUser() || isApprovedUser();
+      allow create: if isApprovedUser();
+      allow update, delete: if isAdminUser();
+    }
+
+    match /payouts/{documentId} {
+      allow read, create, update, delete: if isAdminUser();
+    }
+
+    match /conversations/{documentId} {
+      allow read: if isAdminUser() || (isApprovedUser() && ownsConversation());
+      allow create: if isApprovedUser() && createsOwnConversation();
+      allow update: if isAdminUser() || (isApprovedUser() && ownsConversation());
+      allow delete: if isAdminUser();
+    }
+
+    match /messages/{documentId} {
+      allow read: if isAdminUser() || (isApprovedUser() && ownsMessageConversation());
+      allow create: if isAdminUser() || (isApprovedUser() && createsOwnMessage());
+      allow update, delete: if isAdminUser();
+    }
+
+    match /contacts/{documentId} {
+      allow create: if true;
+      allow read, update, delete: if isAdminUser();
+    }
+
+    match /settings/{documentId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminUser();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

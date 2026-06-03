@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { ROLES, USER_STATUS, enrichUserProfile, isOwnerEmail } from './roles';
 
 const AuthContext = createContext();
 
@@ -22,36 +23,38 @@ export const AuthProvider = ({ children }) => {
       if (firebaseUser) {
         // Get extra user data from Firestore
         try {
-          const OWNER_EMAILS = ['sirajone7@gmail.com', 'madrassatahseenulquraan@gmail.com'];
           const userRef = doc(db, 'users', firebaseUser.uid);
           const userDoc = await getDoc(userRef);
 
           if (!userDoc.exists()) {
-            // Auto-create document — owner gets Admin, others get Student/pending
-            const isOwner = OWNER_EMAILS.includes((firebaseUser.email || '').toLowerCase());
+            // Auto-create missing profiles safely. Owner emails keep admin access.
+            const isOwner = isOwnerEmail(firebaseUser.email || '');
             await setDoc(userRef, {
               full_name: isOwner ? 'Ustaath Admin' : '',
               email: firebaseUser.email,
-              role: isOwner ? 'Admin' : 'Student',
-              status: isOwner ? 'approved' : 'pending',
+              role: isOwner ? ROLES.ADMIN : ROLES.STUDENT,
+              status: isOwner ? USER_STATUS.APPROVED : USER_STATUS.PENDING,
               created_at: serverTimestamp(),
             });
           }
 
           const freshDoc = await getDoc(userRef);
-          const userData = freshDoc.data();
-          setUser({
+          const userData = freshDoc.data() || {};
+          setUser(enrichUserProfile({
             uid: firebaseUser.uid,
             email: firebaseUser.email,
             full_name: userData.full_name || '',
-            role: userData.role || 'Student',
-            status: userData.status || 'pending',
             ...userData,
-          });
+          }));
           setIsAuthenticated(true);
         } catch (error) {
           console.error('Error fetching user data:', error);
-          setUser({ uid: firebaseUser.uid, email: firebaseUser.email, role: 'Student' });
+          setUser(enrichUserProfile({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            role: ROLES.STUDENT,
+            status: USER_STATUS.PENDING,
+          }));
           setIsAuthenticated(true);
         }
       } else {
@@ -74,22 +77,49 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, fullName, role = 'Student') => {
+  const createUserProfile = async ({ email, password, fullName, role, status, extraProfile = {} }) => {
     setAuthError(null);
     try {
       const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
-      // Save user profile to Firestore
       await setDoc(doc(db, 'users', firebaseUser.uid), {
         full_name: fullName,
         email,
         role,
-        status: 'pending', // Admin must approve
+        status,
         created_at: serverTimestamp(),
+        ...extraProfile,
       });
+      return firebaseUser;
     } catch (error) {
       setAuthError(error.message);
       throw error;
     }
+  };
+
+  const registerStudent = async (email, password, fullName) => {
+    return createUserProfile({
+      email,
+      password,
+      fullName,
+      role: ROLES.STUDENT,
+      status: USER_STATUS.APPROVED,
+    });
+  };
+
+  const applyAsTeacher = async (email, password, fullName, teacherApplication = {}) => {
+    return createUserProfile({
+      email,
+      password,
+      fullName,
+      role: ROLES.TEACHER,
+      status: USER_STATUS.PENDING,
+      extraProfile: {
+        teacher_application: {
+          ...teacherApplication,
+          submitted_at: serverTimestamp(),
+        },
+      },
+    });
   };
 
   const logout = async () => {
@@ -110,7 +140,9 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings: false,
       authError,
       login,
-      register,
+      register: registerStudent,
+      registerStudent,
+      applyAsTeacher,
       logout,
       resetPassword,
     }}>

@@ -9,13 +9,19 @@ const AUTH_MODES = {
   REGISTER: 'register',
 };
 
+const REGISTER_TYPES = {
+  STUDENT: 'student',
+  TEACHER: 'teacher',
+};
+
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
 }
 
 export function AuthGateway({ onAuthenticated }) {
-  const { login, register } = useAuth();
+  const { login, registerStudent, applyAsTeacher } = useAuth();
   const [mode, setMode] = useState(AUTH_MODES.LOGIN);
+  const [registerType, setRegisterType] = useState(REGISTER_TYPES.STUDENT);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
@@ -30,6 +36,7 @@ export function AuthGateway({ onAuthenticated }) {
     email: '',
     password: '',
     confirmPassword: '',
+    teachingExperience: '',
   });
 
   const hasAdmin = true; // Firebase handles admin via Firestore roles
@@ -64,6 +71,16 @@ export function AuthGateway({ onAuthenticated }) {
     return true;
   }
 
+  function resetRegisterForm() {
+    setRegisterForm({
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      teachingExperience: '',
+    });
+  }
+
   function handleForgotPassword(event) {
     event.preventDefault();
     setError('');
@@ -94,12 +111,22 @@ export function AuthGateway({ onAuthenticated }) {
     setInfo('');
     if (!validateRegister()) return;
 
+    const email = normalizeEmail(registerForm.email);
+    const fullName = registerForm.fullName.trim();
+
     setBusy(true);
     try {
-      await register(registerForm.email, registerForm.password, registerForm.fullName.trim());
-      setMode(AUTH_MODES.LOGIN);
-      setInfo('Registration submitted. Wait for admin approval, then log in.');
-      setRegisterForm({ fullName: '', email: '', password: '', confirmPassword: '' });
+      if (registerType === REGISTER_TYPES.TEACHER) {
+        await applyAsTeacher(email, registerForm.password, fullName, {
+          teaching_experience: registerForm.teachingExperience.trim(),
+          source: 'auth_gateway',
+        });
+        setInfo('Teacher application submitted. Your account is pending review.');
+      } else {
+        await registerStudent(email, registerForm.password, fullName);
+        setInfo('Student account created successfully.');
+      }
+      resetRegisterForm();
     } catch (authError) {
       setError(authError.message || 'Registration failed. Please try again.');
     } finally {
@@ -223,6 +250,33 @@ export function AuthGateway({ onAuthenticated }) {
               </form>
             ) : (
               <form onSubmit={handleRegister} className="space-y-4">
+                <div className="grid grid-cols-2 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.72)] p-1">
+                  <button
+                    type="button"
+                    onClick={() => setRegisterType(REGISTER_TYPES.STUDENT)}
+                    disabled={busy}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                      registerType === REGISTER_TYPES.STUDENT
+                        ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
+                        : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
+                    }`}
+                  >
+                    Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRegisterType(REGISTER_TYPES.TEACHER)}
+                    disabled={busy}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                      registerType === REGISTER_TYPES.TEACHER
+                        ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
+                        : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
+                    }`}
+                  >
+                    Applying to Teach
+                  </button>
+                </div>
+
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
                     Full name
@@ -289,8 +343,38 @@ export function AuthGateway({ onAuthenticated }) {
                   </div>
                 </div>
 
+                {registerType === REGISTER_TYPES.TEACHER ? (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+                      Teaching background
+                    </label>
+                    <textarea
+                      value={registerForm.teachingExperience}
+                      onChange={(event) =>
+                        setRegisterForm((prev) => ({
+                          ...prev,
+                          teachingExperience: event.target.value,
+                        }))
+                      }
+                      placeholder="Briefly mention what you teach or your teaching experience."
+                      disabled={busy}
+                      rows={3}
+                      className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                    <p className="mt-2 text-xs leading-relaxed text-[rgba(217,251,232,0.62)]">
+                      Teacher applications stay pending until an administrator approves the account.
+                    </p>
+                  </div>
+                ) : null}
+
                 <Button type="submit" className="mt-1 w-full justify-center" disabled={busy}>
-                  {busy ? 'Creating account...' : hasAdmin ? 'Register / Sign Up' : 'Create Admin Account'}
+                  {busy
+                    ? 'Creating account...'
+                    : registerType === REGISTER_TYPES.TEACHER
+                      ? 'Submit Teacher Application'
+                      : hasAdmin
+                        ? 'Create Student Account'
+                        : 'Create Admin Account'}
                   <ArrowRight size={16} />
                 </Button>
               </form>
