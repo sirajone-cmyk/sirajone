@@ -4,7 +4,7 @@ import { cn } from '../../utils/cn';
 
 const QUICK_LINKS = [{ label: 'Home', href: '#home' },{ label: 'Programs', href: '#programs' },{ label: 'Teachers', href: '#teachers' },{ label: 'Enroll', href: '#enroll' },{ label: 'Dashboard', href: '#dashboard' },{ label: 'Contact', href: '#contact' }];
 const PROGRAMMES  = [{ label: "Qa'idah & Reading", href: '#programs' },{ label: 'Tajwid Foundations', href: '#programs' },{ label: 'Hifz Programme', href: '#programs' },{ label: 'Advanced Recitation', href: '#programs' }];
-const CONTACT_INFO= [{ label: 'Overport, Durban, KwaZulu-Natal, South Africa' },{ label: '+27 67 634 0225' },{ label: 'madrasatahseenuquran@gmail.com' },{ label: 'tahseenulquraan.org' }];
+const CONTACT_INFO= [{ label: 'Overport, Durban, KwaZulu-Natal, South Africa' },{ label: '+27 67 634 0225' },{ label: 'sirajone7@gmail.com' },{ label: 'sirajone.co.za' }];
 const SOCIALS     = [{ Icon: Camera, href: '#', label: 'Instagram' },{ Icon: Users, href: '#', label: 'Facebook' },{ Icon: PlayCircle, href: '#', label: 'YouTube' },{ Icon: Send, href: '#', label: 'Twitter' }];
 
 const FooterLink    = ({ href, children }) => <a href={href} className="block text-sm text-[rgba(134,239,172,0.55)] hover:text-[#86EFAC] transition-colors duration-200 py-0.5">{children}</a>;

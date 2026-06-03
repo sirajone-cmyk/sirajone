@@ -20,7 +20,7 @@
   --color-text-muted: rgba(134, 239, 172, 0.55);
   --font-heading: 'Playfair Display', Georgia, serif;
   --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  --font-arabic: 'Amiri', 'Noto Naskh Arabic', serif;
+  --font-arabic: 'KFGQPC Uthman Taha Naskh', 'UthmanicHafs', 'Uthmani', 'Amiri', 'Noto Naskh Arabic', serif;
 }
 
 *,
@@ -40,6 +40,13 @@ html,
 body,
 #root {
   min-height: 100%;
+}
+
+
+.font-arabic {
+  font-family: var(--font-arabic);
+  letter-spacing: 0;
+  font-feature-settings: "liga" 1, "calt" 1, "mark" 1, "mkmk" 1;
 }
 
 body {
@@ -229,6 +236,26 @@ a {
 .input:focus {
   border-color: rgba(34, 197, 94, 0.55);
   box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.26);
+}
+
+input,
+textarea,
+select {
+  color: #ecfff4;
+  caret-color: #34d399;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(148, 163, 184, 0.72);
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #ecfff4;
+  caret-color: #34d399;
+  box-shadow: 0 0 0 1000px rgba(9, 15, 12, 0.95) inset;
 }
 
 .letter-toolbar {

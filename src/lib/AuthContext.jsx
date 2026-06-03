@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+﻿import React, { createContext, useState, useContext, useEffect } from 'react';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -22,13 +22,13 @@ export const AuthProvider = ({ children }) => {
       if (firebaseUser) {
         // Get extra user data from Firestore
         try {
-          const OWNER_EMAIL = 'madrassatahseenulquraan@gmail.com';
+          const OWNER_EMAILS = ['sirajone7@gmail.com', 'madrassatahseenulquraan@gmail.com'];
           const userRef = doc(db, 'users', firebaseUser.uid);
           const userDoc = await getDoc(userRef);
 
           if (!userDoc.exists()) {
             // Auto-create document — owner gets Admin, others get Student/pending
-            const isOwner = firebaseUser.email === OWNER_EMAIL;
+            const isOwner = OWNER_EMAILS.includes((firebaseUser.email || '').toLowerCase());
             await setDoc(userRef, {
               full_name: isOwner ? 'Ustaath Admin' : '',
               email: firebaseUser.email,

@@ -1,4 +1,4 @@
-export const CONTACT = {
+﻿export const CONTACT = {
   location: {
     line1: 'Overport, Durban',
     line2: 'KwaZulu-Natal, South Africa',
@@ -9,12 +9,12 @@ export const CONTACT = {
     whatsapp: 'https://wa.me/27676340225',
   },
   email: {
-    display: 'madrasatahseenuquran@gmail.com',
-    mailto: 'mailto:madrasatahseenuquran@gmail.com',
+    display: 'sirajone7@gmail.com',
+    mailto: 'mailto:sirajone7@gmail.com',
   },
   website: {
-    display: 'tahseenulquraan.org',
-    url: 'https://tahseenulquraan.org',
+    display: 'sirajone.co.za',
+    url: 'https://sirajone.co.za',
   },
 };
 

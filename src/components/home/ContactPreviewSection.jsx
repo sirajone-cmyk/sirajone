@@ -1,10 +1,10 @@
-import React from "react";
+﻿import React from "react";
 
 const CONTACT_ITEMS = [
   { label: "Location", value: "Overport, Durban, KwaZulu-Natal, South Africa" },
   { label: "Phone", value: "+27 67 634 0225" },
-  { label: "Email", value: "madrasatahseenuquran@gmail.com" },
-  { label: "Website", value: "https://tahseenulquraan.org" },
+  { label: "Email", value: "sirajone7@gmail.com" },
+  { label: "Website", value: "https://sirajone.co.za" },
 ];
 
 export default function ContactPreviewSection() {

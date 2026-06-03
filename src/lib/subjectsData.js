@@ -1,4 +1,4 @@
-export const TEACHERS_DATA = [
+﻿export const TEACHERS_DATA = [
   {
     id: 'hashim',
     name: "Ustādh Hāshim bin Ḥussain",
@@ -8,7 +8,7 @@ export const TEACHERS_DATA = [
     subjects: ["Tajwīd", "Makhārij", "Qur'ān Reading", "Ḥifẓ", "Murājaʿah"],
     audience: "Brothers & Sisters",
     bio: "Qualified in Tajwīd and Qur'ānic recitation with 18+ years of dedicated teaching. Known for patience, structure, and genuine care for every student's spiritual progress.",
-    contact: { phone: '+27 67 634 0225', email: 'madrasatahseenuquran@gmail.com' },
+    contact: { phone: '+27 67 634 0225', email: 'sirajone7@gmail.com' },
     featured: true,
     gender: 'male',
   },

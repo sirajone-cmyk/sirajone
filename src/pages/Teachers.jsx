@@ -1,8 +1,6 @@
-import Navbar from '../components/Navbar';
+﻿import Navbar from '../components/Navbar';
 import { Mail, Phone, ArrowRight } from 'lucide-react';
 import { TEACHERS_DATA } from '../lib/subjectsData';
-
-const SUBJECTS = ["Tajwīd", "Qirā'āt", "Arabic", "Qur'ān Reading", "Ḥifẓ", "Makhārij", "Cupping Course"];
 
 export default function Teachers() {
   return (
@@ -12,14 +10,6 @@ export default function Teachers() {
         <span className="text-emerald-500 text-xs font-bold uppercase tracking-widest">Our Faculty</span>
         <h1 className="text-4xl font-bold mt-3 mb-3">Our Teachers</h1>
         <p className="text-slate-400 max-w-lg mx-auto">Qualified, experienced, and dedicated to your Qur'ānic education.</p>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 mb-10">
-        <div className="flex flex-wrap justify-center gap-2">
-          {SUBJECTS.map(s => (
-            <span key={s} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-900/60 border border-emerald-800 text-emerald-300">{s}</span>
-          ))}
-        </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 pb-16 space-y-5">
@@ -85,7 +75,7 @@ export default function Teachers() {
             <a href="https://wa.me/27676340225" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl transition-all">
               WhatsApp Us <ArrowRight className="w-4 h-4" />
             </a>
-            <a href="mailto:madrasatahseenuquran@gmail.com?subject=Teacher Booking Request" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/8 hover:bg-white/15 border border-white/10 text-white font-semibold text-sm rounded-xl transition-all">
+            <a href="mailto:sirajone7@gmail.com?subject=Teacher Booking Request" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/8 hover:bg-white/15 border border-white/10 text-white font-semibold text-sm rounded-xl transition-all">
               Email Request
             </a>
           </div>

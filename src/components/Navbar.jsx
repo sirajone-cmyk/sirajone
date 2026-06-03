@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+﻿import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, LayoutDashboard, Phone, Menu, X, Library, Users, MessageCircle, DollarSign, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
@@ -33,8 +33,8 @@ export default function Navbar() {
               </svg>
             </div>
             <div className="leading-tight">
-              <div className="text-white font-bold text-sm tracking-tight">Madrassatu Taḥsīnil</div>
-              <div className="text-emerald-400 text-xs font-medium tracking-wide">Qur'ān</div>
+              <div className="text-white font-bold text-sm tracking-tight">SirajOne</div>
+              <div className="text-emerald-400 text-[10px] font-semibold tracking-[0.08em] uppercase sm:text-xs">Faith. Knowledge. Action.</div>
             </div>
           </div>
         </Link>

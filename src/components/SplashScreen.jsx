@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 
 export default function SplashScreen({ onDone }) {
   const [phase, setPhase] = useState('in'); // 'in' | 'hold' | 'out'
@@ -52,11 +52,8 @@ export default function SplashScreen({ onDone }) {
 
         {/* Name */}
         <h1 className="text-5xl font-bold text-white tracking-tight mb-2">SirajOne</h1>
-        <p className="text-emerald-400 text-sm font-medium tracking-widest uppercase mb-1">Madrassatu Taḥsīnil Qur'ān</p>
-        <p className="text-slate-600 text-xs tracking-wider">Community · Learning · Service</p>
-
-        {/* Arabic */}
-        <p className="text-slate-500 text-2xl mt-4" style={{ fontFamily: 'serif' }}>مدرسة تحسين القرآن</p>
+        <p className="text-emerald-400 text-sm font-medium tracking-widest uppercase mb-1">Faith. Knowledge. Action.</p>
+        <p className="text-slate-500 text-2xl mt-4 font-arabic" dir="rtl" lang="ar">إيمان • علم • عمل</p>
 
         {/* Loading bar */}
         <div className="mt-10 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden">

@@ -3,8 +3,8 @@
 const CONTACT_CARDS = [
   { label: "Location", value: "Overport, Durban, KwaZulu-Natal, South Africa" },
   { label: "Phone / WhatsApp", value: "+27 67 634 0225" },
-  { label: "Email", value: "madrasatahseenuquran@gmail.com" },
-  { label: "Website", value: "tahseenulquraan.org" },
+  { label: "Email", value: "sirajone7@gmail.com" },
+  { label: "Website", value: "sirajone.co.za" },
 ];
 
 const CLASS_TIMES = [
@@ -57,7 +57,7 @@ export default function ContactPage() {
 
       <section className="panel-base p-6">
         <h2 className="text-2xl font-bold text-white">Ustadh Hashim bin Hussain</h2>
-        <p className="mt-2 text-sm font-semibold text-emerald-300">Founder & Lead Teacher - SirajOne Community • Learning • Service</p>
+        <p className="mt-2 text-sm font-semibold text-emerald-300">Founder & Lead Teacher - SirajOne</p>
         <p className="mt-3 text-sm leading-7 text-muted">
           Qualified in Tajwid and Qur'anic recitation, with a structured teaching approach and personal attention for
           every student.

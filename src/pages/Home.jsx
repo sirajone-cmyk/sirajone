@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import {
   BookOpen, Mic, Star, ArrowRight, CheckCircle,
@@ -39,21 +39,20 @@ export default function Home() {
         <div className="absolute inset-0 bg-[#0b1a12]/80" />
         <div className="relative max-w-3xl mx-auto">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-700 bg-emerald-950/60 text-emerald-400 text-sm font-medium mb-8">
-            <MapPin className="w-3.5 h-3.5" /> Durban, South Africa · Online & In-Person
+            <MapPin className="w-3.5 h-3.5" /> Durban, South Africa • In-Person & Online Learning
           </span>
           <h1 className="text-5xl md:text-6xl font-bold mb-5 leading-tight">
-            Master Your Qur'ān<br />
-            <span className="text-emerald-400">with Precision</span>
+            Faith. Knowledge. Action.
           </h1>
           <p className="text-slate-300 text-lg md:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
-            Structured Tajwīd, Correct Makhārij, and Guided Learning — for children and adults.
+            Islamic learning, Qur'an studies, weekly classes, and digital resources for children, adults, families, and communities.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/dashboard" className="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all">
-              Start Learning <ArrowRight className="w-4 h-4" />
+              Explore Programs <ArrowRight className="w-4 h-4" />
             </Link>
             <a href="https://wa.me/27676340225" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold rounded-xl transition-all">
-              Book a Lesson
+              Join a Class
             </a>
           </div>
         </div>
@@ -130,7 +129,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="border-t border-white/8 py-6 px-4 text-center text-slate-600 text-sm">
-        <p>© 2026 Madrassatu Taḥsīnil Qur'ān · Durban, South Africa</p>
+        <p>© 2026 SirajOne · Durban, South Africa</p>
         <p className="mt-1 text-xs">Built with care for the sake of Allāh</p>
       </footer>
     </div>

@@ -61,7 +61,7 @@ export function Navbar({ className }) {
             </div>
             <div className="leading-[1.04]">
               <p className="text-[15px] font-semibold text-[#ecfff4]">SirajOne</p>
-              <p className="text-[12px] font-medium text-[#30d986] sm:text-[13px]">Community • Learning • Service</p>
+              <p className="text-[12px] font-medium text-[#30d986] sm:text-[13px]">Faith. Knowledge. Action.</p>
             </div>
           </a>
 

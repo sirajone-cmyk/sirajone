@@ -1,4 +1,4 @@
-# SirajOne
+﻿# SirajOne
 
 SirajOne is a React + Vite app for Islamic community services, including:
 

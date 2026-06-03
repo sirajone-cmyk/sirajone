@@ -629,7 +629,7 @@ export function FeatureBlocksSection() {
                     <Phone size={14} /> +27 67 634 0225
                   </span>
                   <span className="inline-flex items-center gap-2">
-                    <Mail size={14} /> madrasatahseenuquran@gmail.com
+                    <Mail size={14} /> sirajone7@gmail.com
                   </span>
                 </div>
               ) : null}
@@ -657,7 +657,7 @@ export function FeatureBlocksSection() {
             <Button
               variant="secondary"
               size="md"
-              href="mailto:madrasatahseenuquran@gmail.com"
+              href="mailto:sirajone7@gmail.com"
               className="min-w-[200px] justify-center"
             >
               Email Request

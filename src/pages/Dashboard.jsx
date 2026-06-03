@@ -1,151 +1,309 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { BookOpen, RefreshCw, Star, CheckCircle, Clock, MessageSquare, TrendingUp } from 'lucide-react';
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  CalendarClock,
+  CheckCircle2,
+  Clock3,
+  GraduationCap,
+  Library,
+  MessageCircle,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+} from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
-const MOCK_PLAN = {
-  sabaq: { title: 'Lesson 19: Ikhfā Rules', desc: "Today's new lesson: learn the 15 letters of Ikhfā and how to apply them with Noon Sākinah and Tanween.", done: false },
-  awalMurajaah: { title: 'Awal Murājaʿah: Lessons 10–15', desc: 'Revise the rules of Idghām with and without Ghunnah. Focus on smooth transitions.', done: false },
-  akhirMurajaah: { title: 'Ākhir Murājaʿah: Lessons 1–9', desc: 'Full revision of Makhārij groups and Sifāt pairs (Jahr/Hams, Shiddah/Rikhwah).', done: false },
-};
-
-const MOCK_FEEDBACK = [
-  { date: '2 Apr 2026', note: 'Excellent progress on Idghām. Pay attention to Meem Mushaddadah — slight shortening noticed.' },
-  { date: '30 Mar 2026', note: 'Sabaq completed well. Awal Murājaʿah needs more work. Revise lessons 7–9 before next class.' },
-  { date: '28 Mar 2026', note: 'Strong session today. Tajwīd rules are being applied correctly. Keep up the consistency.' },
+const FOCUS_ITEMS = [
+  {
+    id: 'letter-guide',
+    title: 'Practise one letter from the Letter Guide',
+    description: 'Open the makhraj and sifaat notes, listen carefully, then repeat slowly.',
+    route: '/letters',
+  },
+  {
+    id: 'revision',
+    title: "Revise yesterday's Tajwid point",
+    description: 'Spend a few minutes strengthening what you already learned before adding more.',
+    route: '/library',
+  },
+  {
+    id: 'teacher-note',
+    title: 'Send one note or question',
+    description: 'Use Messages if you need help, correction, or support from your teacher.',
+    route: '/messages',
+  },
 ];
 
-const TAJWID_TOPICS = [
-  { name: 'Noon Sākinah & Tanween', status: 'completed' },
-  { name: 'Meem Sākinah', status: 'completed' },
-  { name: 'Madd Types', status: 'in-progress' },
-  { name: 'Qalqalah', status: 'pending' },
-  { name: 'Lām Rules', status: 'pending' },
-  { name: 'Rā Rules', status: 'pending' },
+const LEARNING_PATH = [
+  {
+    label: 'Letter Guide',
+    description: 'Makhraj, sifaat, and pronunciation support.',
+    to: '/letters',
+    icon: BookOpen,
+  },
+  {
+    label: 'Programs',
+    description: 'View learning paths and current study options.',
+    to: '/programs',
+    icon: GraduationCap,
+  },
+  {
+    label: 'Library',
+    description: 'Resources, notes, and study material.',
+    to: '/library',
+    icon: Library,
+  },
+  {
+    label: 'Teachers',
+    description: 'Find guidance and teacher information.',
+    to: '/teachers',
+    icon: Users,
+  },
+  {
+    label: 'Enroll',
+    description: 'Apply for a program or request placement.',
+    to: '/enroll',
+    icon: ShieldCheck,
+  },
+  {
+    label: 'Messages',
+    description: 'Contact support or continue a conversation.',
+    to: '/messages',
+    icon: MessageCircle,
+  },
+];
+
+const MILESTONES = [
+  { label: 'Account', value: 'Ready', detail: 'Profile connected', icon: ShieldCheck },
+  { label: 'Today', value: '3 tasks', detail: 'Small steps, steady growth', icon: CheckCircle2 },
+  { label: 'Path', value: 'Tajwid', detail: 'Foundation building', icon: BookOpen },
+  { label: 'Rhythm', value: 'Daily', detail: 'Consistency over intensity', icon: Star },
 ];
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [plan, setPlan] = useState(MOCK_PLAN);
+  const storageKey = `sirajone-dashboard-focus-${user?.uid || 'guest'}`;
+  const [completed, setCompleted] = useState({});
 
-  const studentName = user?.full_name?.split(' ')[0] || 'Student';
-  const progress = 45;
+  useEffect(() => {
+    const saved = window.localStorage.getItem(storageKey);
+    setCompleted(saved ? JSON.parse(saved) : {});
+  }, [storageKey]);
 
-  const toggleDone = (key) => {
-    setPlan(prev => ({ ...prev, [key]: { ...prev[key], done: !prev[key].done } }));
+  useEffect(() => {
+    window.localStorage.setItem(storageKey, JSON.stringify(completed));
+  }, [completed, storageKey]);
+
+  const studentName = useMemo(() => {
+    const displayName = user?.full_name?.trim();
+    if (displayName) return displayName.split(' ')[0];
+    if (user?.email) return user.email.split('@')[0];
+    return 'Student';
+  }, [user]);
+
+  const completedCount = FOCUS_ITEMS.filter((item) => completed[item.id]).length;
+  const focusProgress = Math.round((completedCount / FOCUS_ITEMS.length) * 100);
+  const isPending = user?.status === 'pending';
+  const roleLabel = user?.role || 'Student';
+
+  const toggleComplete = (id) => {
+    setCompleted((current) => ({
+      ...current,
+      [id]: !current[id],
+    }));
   };
-
-  const statusColor = (s) => ({
-    completed: 'bg-emerald-900 text-emerald-400 border-emerald-800',
-    'in-progress': 'bg-amber-900 text-amber-400 border-amber-800',
-    pending: 'bg-white/5 text-slate-500 border-white/10',
-  }[s]);
 
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white">
       <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1">السَّلاَمُ عَلَيْكُم، {studentName}</h1>
-          <p className="text-slate-400">Here is your learning plan for today. Consistency is the key to success.</p>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Program', val: 'Tajwīd Foundations', sub: 'Intermediate', icon: BookOpen },
-            { label: 'Progress', val: `${progress}%`, sub: '18 of 40 lessons', icon: TrendingUp },
-            { label: 'Day Streak', val: '7 days', sub: 'Keep it going!', icon: Star },
-            { label: 'Next Class', val: 'Tomorrow', sub: '10:00 AM', icon: Clock },
-          ].map(s => (
-            <div key={s.label} className="bg-white/5 border border-white/10 rounded-2xl p-4">
-              <s.icon className="w-5 h-5 text-emerald-400 mb-2" />
-              <div className="font-bold text-white text-lg leading-tight">{s.val}</div>
-              <div className="text-slate-500 text-xs mt-0.5">{s.sub}</div>
-              <div className="text-slate-600 text-xs mt-1">{s.label}</div>
+      <main className="max-w-6xl mx-auto px-4 py-8 sm:py-10">
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/[0.045] to-emerald-950/50 p-6 sm:p-8 mb-6 shadow-2xl shadow-black/20">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/50 to-transparent" />
+          <div className="relative grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                <Sparkles className="h-3.5 w-3.5" />
+                Student Dashboard
+              </div>
+              <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+                Assalaamu alaykum, {studentName}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm sm:text-base leading-7 text-slate-300">
+                Your SirajOne learning space is ready. Start with one focused lesson, revise with care, and keep your connection with your teacher simple and consistent.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  to="/letters"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-500"
+                >
+                  Continue Learning
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/messages"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+                >
+                  Message Support
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/15 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Account</p>
+                  <p className="mt-1 text-lg font-bold text-white">{roleLabel}</p>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${isPending ? 'bg-amber-400/10 text-amber-200 border border-amber-300/20' : 'bg-emerald-400/10 text-emerald-200 border border-emerald-300/20'}`}>
+                  {isPending ? 'Pending' : 'Approved'}
+                </span>
+              </div>
+              <div className="mt-5">
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="text-slate-400">Today&apos;s focus</span>
+                  <span className="font-bold text-emerald-300">{focusProgress}%</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${focusProgress}%` }} />
+                </div>
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  {completedCount} of {FOCUS_ITEMS.length} focus items completed today.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
+          {MILESTONES.map(({ label, value, detail, icon: Icon }) => (
+            <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+              <Icon className="mb-3 h-5 w-5 text-emerald-300" />
+              <p className="text-lg font-black text-white">{value}</p>
+              <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+              <p className="mt-2 text-xs leading-5 text-slate-400">{detail}</p>
             </div>
           ))}
-        </div>
+        </section>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-semibold text-white">Overall Progress</span>
-            <span className="text-sm text-emerald-400 font-bold">{progress}%</span>
-          </div>
-          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
-          </div>
-          <p className="text-xs text-slate-500 mt-2">22 lessons remaining to complete Tajwīd Foundations</p>
-        </div>
+        <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 sm:p-6">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Today&apos;s Focus</p>
+                <h2 className="mt-2 text-2xl font-black text-white">Build one strong step today</h2>
+              </div>
+              <div className="rounded-2xl bg-emerald-400/10 p-3 text-emerald-200">
+                <Clock3 className="h-5 w-5" />
+              </div>
+            </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-emerald-400" /> Today's Lesson Plan
-            </h2>
             <div className="space-y-3">
-              {Object.entries(plan).map(([key, item]) => (
-                <button key={key} onClick={() => toggleDone(key)}
-                  className={`w-full text-left rounded-2xl border p-4 transition-all ${item.done ? 'bg-emerald-900/40 border-emerald-700' : 'bg-white/5 border-white/10 hover:bg-white/8'}`}>
-                  <div className="flex items-start gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all ${item.done ? 'border-emerald-400 bg-emerald-500' : 'border-slate-600'}`}>
-                      {item.done && <CheckCircle className="w-3.5 h-3.5 text-white" />}
-                    </div>
-                    <div>
-                      <div className={`font-semibold text-sm mb-1 ${item.done ? 'line-through text-slate-500' : 'text-white'}`}>{item.title}</div>
-                      <div className="text-xs text-slate-400 leading-relaxed">{item.desc}</div>
+              {FOCUS_ITEMS.map((item) => {
+                const isDone = Boolean(completed[item.id]);
+                return (
+                  <div
+                    key={item.id}
+                    className={`rounded-2xl border p-4 transition ${isDone ? 'border-emerald-400/40 bg-emerald-400/10' : 'border-white/10 bg-black/10'}`}
+                  >
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => toggleComplete(item.id)}
+                        className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border transition ${isDone ? 'border-emerald-300 bg-emerald-400 text-emerald-950' : 'border-slate-600 text-transparent hover:border-emerald-300'}`}
+                        aria-label={isDone ? `Mark ${item.title} incomplete` : `Mark ${item.title} complete`}
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <h3 className={`font-bold leading-snug ${isDone ? 'text-emerald-100' : 'text-white'}`}>{item.title}</h3>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">{item.description}</p>
+                        <Link to={item.route} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300 hover:text-emerald-200">
+                          Open
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <RefreshCw className="w-5 h-5 text-emerald-400" /> Tajwīd Topics
-            </h2>
-            <div className="space-y-2">
-              {TAJWID_TOPICS.map(t => (
-                <div key={t.name} className={`flex items-center justify-between rounded-xl border px-4 py-3 ${statusColor(t.status)}`}>
-                  <span className="text-sm font-medium">{t.name}</span>
-                  <span className="text-xs capitalize font-semibold">{t.status.replace('-', ' ')}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-8">
-          <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-emerald-400" /> Teacher Feedback
-          </h2>
-          <div className="space-y-3">
-            {MOCK_FEEDBACK.map((f, i) => (
-              <div key={i} className="bg-white/5 border border-white/8 rounded-2xl p-4">
-                <div className="text-xs text-emerald-500 font-semibold mb-1">{f.date} · Ustādh Hāshim</div>
-                <p className="text-slate-300 text-sm leading-relaxed">{f.note}</p>
+          <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 sm:p-6">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Learning Path</p>
+                <h2 className="mt-2 text-2xl font-black text-white">Choose where to continue</h2>
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="rounded-2xl bg-emerald-400/10 p-3 text-emerald-200">
+                <Award className="h-5 w-5" />
+              </div>
+            </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-          <h2 className="font-bold text-lg mb-4">Learning Tools</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              { label: 'Letter Guide', desc: 'Makhārij & Sifāt', to: '/letters' },
-              { label: 'Programs', desc: 'View all programs', to: '/programs' },
-              { label: 'Library', desc: 'Books & resources', to: '/library' },
-              { label: 'Messages', desc: 'Chat with teacher', to: '/messages' },
-            ].map(t => (
-              <a key={t.label} href={t.to} className="bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl p-4 transition-all block">
-                <div className="font-semibold text-sm text-white mb-0.5">{t.label}</div>
-                <div className="text-xs text-slate-500">{t.desc}</div>
-              </a>
-            ))}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {LEARNING_PATH.map(({ label, description, to, icon: Icon }) => (
+                <Link
+                  key={label}
+                  to={to}
+                  className="group rounded-2xl border border-white/10 bg-black/10 p-4 transition hover:border-emerald-300/40 hover:bg-emerald-400/10"
+                >
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <Icon className="h-5 w-5 text-emerald-300" />
+                    <ArrowRight className="h-4 w-4 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-emerald-200" />
+                  </div>
+                  <h3 className="font-bold text-white">{label}</h3>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
+
+        <section className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 sm:p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Teacher Connection</p>
+            <h2 className="mt-2 text-2xl font-black text-white">
+              {isPending ? 'Approval is pending' : 'Your learning account is active'}
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-400">
+              {isPending
+                ? 'Your account has been created. Once the madrasah approves your profile, your teacher connection and class details can be added.'
+                : 'Use Messages when you need support, correction, class updates, or help with your current learning plan.'}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link to="/messages" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-950 transition hover:bg-emerald-50">
+                Open Messages
+                <MessageCircle className="h-4 w-4" />
+              </Link>
+              <Link to="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10">
+                Contact Admin
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-emerald-300/15 bg-emerald-400/10 p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              <div className="rounded-2xl bg-emerald-300/15 p-3 text-emerald-100">
+                <CalendarClock className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Gentle Reminder</p>
+                <h2 className="mt-2 text-2xl font-black text-white">A little every day becomes a path.</h2>
+                <p className="mt-3 text-sm leading-7 text-emerald-50/80">
+                  Keep the dashboard simple: practise, revise, ask for help, and return tomorrow. SirajOne is being shaped around steady learning, not pressure.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

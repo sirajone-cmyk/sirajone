@@ -7,8 +7,8 @@ const colors = { gold: 'text-[#D4A843]', green: 'text-[#4ADE80]', muted: 'text-[
 export function ArabicText({ children, size = 'md', color = 'primary', className, style, ...props }) {
   return (
     <span
-      className={cn('inline-block leading-relaxed tracking-wide', sizes[size], colors[color], className)}
-      style={{ fontFamily: "'Amiri', 'Noto Naskh Arabic', serif", direction: 'rtl', ...style }}
+      className={cn('inline-block leading-relaxed tracking-normal', sizes[size], colors[color], className)}
+      style={{ fontFamily: 'var(--font-arabic)', direction: 'rtl', ...style }}
       dir="rtl" lang="ar" {...props}
     >
       {children}

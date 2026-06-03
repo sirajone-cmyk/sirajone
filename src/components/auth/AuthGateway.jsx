@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { ArrowRight, BookOpen, KeyRound, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { Button } from '../ui/Button';
@@ -123,7 +123,7 @@ export function AuthGateway({ onAuthenticated }) {
                 </div>
                 <div className="leading-tight">
                   <h1 className="text-[32px] font-bold text-[#f4fff9] sm:text-[38px]">SirajOne</h1>
-                  <p className="text-sm font-medium text-[#30d986]">Community • Learning • Service</p>
+                  <p className="text-sm font-medium text-[#30d986]">Faith. Knowledge. Action.</p>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { SUBJECTS_DATA, TEACHERS_DATA } from '../lib/subjectsData';
 import { CheckCircle, Users, User, ArrowRight, X, Clock } from 'lucide-react';
@@ -132,7 +132,7 @@ function EnrollModal({ subject, onClose }) {
               <div className="bg-emerald-950/40 border border-emerald-800 rounded-2xl p-5">
                 <h3 className="font-bold text-white mb-3">Payment Instructions</h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-slate-400">Account Name</span><span className="text-white font-semibold">Madrassatu Taḥsīnil Qur'ān</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">Account Name</span><span className="text-white font-semibold">SirajOne</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Amount</span><span className="text-emerald-400 font-bold text-lg">R {price}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Reference</span><span className="text-white font-semibold">{form.name.split(' ')[0]}-{subject.id}</span></div>
                 </div>

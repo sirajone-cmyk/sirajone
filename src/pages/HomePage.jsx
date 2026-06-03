@@ -58,8 +58,8 @@ const STEPS = [
 const CONTACT = [
   { label: "Location", value: "Overport, Durban, KwaZulu-Natal, South Africa" },
   { label: "Phone", value: "+27 67 634 0225" },
-  { label: "Email", value: "madrasatahseenuquran@gmail.com" },
-  { label: "Website", value: "tahseenulquraan.org" },
+  { label: "Email", value: "sirajone7@gmail.com" },
+  { label: "Website", value: "sirajone.co.za" },
 ];
 
 export default function HomePage({ setPage }) {
@@ -78,17 +78,13 @@ export default function HomePage({ setPage }) {
 
         <div className="relative mx-auto flex min-h-[72vh] max-w-3xl flex-col items-center justify-center px-5 py-24 text-center">
           <p className="mb-5 rounded-full border border-emerald-300/35 bg-emerald-500/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
-            Durban, South Africa · Online & In-Person
+            Durban, South Africa • In-Person & Online Learning
           </p>
           <h1 className="text-5xl font-extrabold leading-[1.04] text-white sm:text-6xl">
-            Master Your Qur'an
-            <span className="mt-1 block bg-gradient-to-r from-emerald-300 to-teal-200 bg-clip-text text-transparent">
-              with Precision
-            </span>
+            Faith. Knowledge. Action.
           </h1>
           <p className="mt-5 max-w-2xl text-[17px] leading-8 text-slate-200">
-            Structured Tajwid, correct Makharij, and guided learning for children and adults who want clear,
-            confident recitation.
+            Islamic learning, Qur'an studies, weekly classes, and digital resources for children, adults, families, and communities.
           </p>
           <div className="mt-9 flex flex-wrap justify-center gap-3.5">
             <button
@@ -96,14 +92,14 @@ export default function HomePage({ setPage }) {
               onClick={() => setPage("letters")}
               className="rounded-xl bg-gradient-to-b from-emerald-300 to-emerald-400 px-7 py-3 text-sm font-extrabold text-slate-900 shadow-[0_16px_34px_-18px_rgba(16,185,129,0.95)] transition hover:from-emerald-200 hover:to-emerald-300"
             >
-              Start Learning
+              Explore Programs
             </button>
             <button
               type="button"
               onClick={() => setPage("contact")}
               className="rounded-xl border border-slate-300/35 bg-slate-900/40 px-7 py-3 text-sm font-semibold text-white transition hover:bg-slate-800/65"
             >
-              Book a Lesson
+              Join a Class
             </button>
           </div>
         </div>
@@ -126,7 +122,7 @@ export default function HomePage({ setPage }) {
             Qualified in Tajwid and Qur'anic recitation with years of dedicated teaching experience in Durban,
             South Africa.
           </p>
-          <p className="mt-4 text-sm text-slate-300">+27 67 634 0225 - madrasatahseenuquran@gmail.com</p>
+          <p className="mt-4 text-sm text-slate-300">+27 67 634 0225 - sirajone7@gmail.com</p>
         </article>
       </section>
 

@@ -19,13 +19,13 @@ const CONTACT_CARDS = [
   {
     Icon: Mail,
     label: 'Email',
-    line1: 'madrasatahseenuquran@gmail.com',
+    line1: 'sirajone7@gmail.com',
     line2: '',
   },
   {
     Icon: Globe,
     label: 'Website',
-    line1: 'tahseenulquraan.org',
+    line1: 'sirajone.co.za',
     line2: '',
   },
 ];
@@ -81,7 +81,7 @@ export function ContactSection() {
       <article className="mt-5 max-w-5xl mx-auto rounded-3xl border border-[rgba(34,197,94,0.22)] bg-[rgba(17,26,21,0.82)] p-6">
         <div className="h-14 w-14 rounded-full border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] mb-4" />
         <h3 className="text-2xl md:text-3xl font-bold text-white">Ustadh Hashim bin Hussain</h3>
-        <p className="text-[#43df9a] font-medium mt-1">Founder and Lead Teacher · SirajOne Community • Learning • Service</p>
+        <p className="text-[#43df9a] font-medium mt-1">Founder and Lead Teacher · SirajOne Faith. Knowledge. Action.</p>
         <p className="mt-3 text-[rgba(219,242,230,0.84)] leading-8">
           Qualified in Tajwid and Qur'anic recitation with years of dedicated teaching experience in Durban, South Africa. Known for his structured approach, patience, and genuine concern for every student's spiritual and academic development.
         </p>
