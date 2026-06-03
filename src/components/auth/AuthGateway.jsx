@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, BookOpen, Eye, EyeOff, KeyRound, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { SUBJECTS } from '../../lib/subjects';
@@ -19,23 +19,29 @@ function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
 }
 
+function FieldLabel({ children }) {
+  return (
+    <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
+      {children}
+    </label>
+  );
+}
+
 function PasswordInput({ label, visible, onToggleVisible, ...props }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-        {label}
-      </label>
+      <FieldLabel>{label}</FieldLabel>
       <div className="relative">
         <Input
           {...props}
           type={visible ? 'text' : 'password'}
-          className="pr-11"
+          className="pr-12"
         />
         <button
           type="button"
           onClick={onToggleVisible}
           disabled={props.disabled}
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-[rgba(217,251,232,0.62)] transition hover:bg-white/8 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-md p-1 text-[rgba(217,251,232,0.62)] transition hover:bg-white/8 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           aria-label={visible ? 'Hide password' : 'Show password'}
         >
           {visible ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -77,7 +83,7 @@ export function AuthGateway({ onAuthenticated }) {
     targetSubjects: [],
   });
 
-  const hasAdmin = true; // Firebase handles admin via Firestore roles
+  const hasAdmin = true;
 
   function updateRegisterField(field, value) {
     setRegisterForm((prev) => ({ ...prev, [field]: value }));
@@ -189,6 +195,7 @@ export function AuthGateway({ onAuthenticated }) {
     setBusy(true);
     try {
       await login(loginForm.email, loginForm.password);
+      if (typeof onAuthenticated === 'function') onAuthenticated();
     } catch (authError) {
       setError('Invalid email or password. Please try again.');
     } finally {
@@ -227,6 +234,7 @@ export function AuthGateway({ onAuthenticated }) {
         setInfo('Student account created successfully.');
       }
       resetRegisterForm();
+      if (typeof onAuthenticated === 'function') onAuthenticated();
     } catch (authError) {
       setError(authError.message || 'Registration failed. Please try again.');
     } finally {
@@ -241,10 +249,11 @@ export function AuthGateway({ onAuthenticated }) {
           <section className="relative border-b border-[rgba(34,197,94,0.15)] p-6 sm:p-8 md:border-b-0 md:border-r md:p-10">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.17),transparent_58%)]" />
             <div className="relative">
-              <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#7ef6bc]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#7ef6bc]">
                 Authentication Gateway
               </div>
-              <div className="mb-5 flex items-center gap-3">
+
+              <div className="mt-6 flex items-center gap-3 sm:mt-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[rgba(34,197,94,0.48)] bg-[rgba(34,197,94,0.14)] shadow-[0_0_18px_rgba(34,197,94,0.22)]">
                   <BookOpen size={22} className="text-[#30d986]" />
                 </div>
@@ -254,13 +263,15 @@ export function AuthGateway({ onAuthenticated }) {
                 </div>
               </div>
 
-              <h2 className="max-w-[540px] text-[30px] font-semibold leading-[1.1] text-[#f4fff9] sm:text-[38px]">
-                Secure entry for students, teachers, and families.
-              </h2>
-              <p className="mt-5 max-w-[560px] text-base leading-relaxed text-[rgba(228,253,240,0.82)] sm:text-lg">
-                Access learning, counselling, transport, and community services through one protected platform.
-                Sign in to continue, or register a new account for admin approval.
-              </p>
+              <div className="mt-8 space-y-4 sm:mt-12">
+                <h2 className="max-w-[540px] text-[30px] font-semibold leading-[1.1] text-[#f4fff9] sm:text-[38px]">
+                  Secure entry for students, teachers, and families.
+                </h2>
+                <p className="max-w-[560px] text-base leading-relaxed text-[rgba(228,253,240,0.82)] sm:text-lg">
+                  Access learning, counselling, transport, and community services through one protected platform.
+                  Sign in to continue, or register a new account for admin approval.
+                </p>
+              </div>
             </div>
           </section>
 
@@ -303,9 +314,7 @@ export function AuthGateway({ onAuthenticated }) {
             {mode === AUTH_MODES.LOGIN ? (
               <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                    Email
-                  </label>
+                  <FieldLabel>Email</FieldLabel>
                   <Input
                     type="email"
                     name="username"
@@ -318,6 +327,7 @@ export function AuthGateway({ onAuthenticated }) {
                     disabled={busy}
                   />
                 </div>
+
                 <PasswordInput
                   label="Password"
                   name="current-password"
@@ -332,7 +342,7 @@ export function AuthGateway({ onAuthenticated }) {
                   onToggleVisible={() => setShowLoginPassword((value) => !value)}
                 />
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pt-1">
                   <a
                     href="#forgot-password"
                     onClick={handleForgotPassword}
@@ -343,249 +353,231 @@ export function AuthGateway({ onAuthenticated }) {
                   </a>
                 </div>
 
-                <Button type="submit" className="mt-1 w-full justify-center" disabled={busy}>
+                <Button type="submit" className="mt-6 w-full justify-center" disabled={busy}>
                   {busy ? 'Logging in...' : 'Log In'}
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleRegister} className="space-y-4" autoComplete="on">
-                <div className="grid grid-cols-2 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.72)] p-1">
-                  <button
-                    type="button"
-                    onClick={() => setRegisterType(REGISTER_TYPES.STUDENT)}
-                    disabled={busy}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                      registerType === REGISTER_TYPES.STUDENT
-                        ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
-                        : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
-                    }`}
-                  >
-                    Student
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRegisterType(REGISTER_TYPES.TEACHER)}
-                    disabled={busy}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                      registerType === REGISTER_TYPES.TEACHER
-                        ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
-                        : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
-                    }`}
-                  >
-                    Applying to Teach
-                  </button>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                    Full name
-                  </label>
-                  <Input
-                    type="text"
-                    name="name"
-                    value={registerForm.fullName}
-                    onChange={(event) => updateRegisterField('fullName', event.target.value)}
-                    placeholder="Full name"
-                    autoComplete="name"
-                    disabled={busy}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                    Email
-                  </label>
-                  <Input
-                    type="email"
-                    name="username"
-                    value={registerForm.email}
-                    onChange={(event) => updateRegisterField('email', event.target.value)}
-                    placeholder="you@example.com"
-                    autoComplete="username"
-                    disabled={busy}
-                  />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <PasswordInput
-                    label="Password"
-                    name="new-password"
-                    value={registerForm.password}
-                    onChange={(event) => updateRegisterField('password', event.target.value)}
-                    placeholder="Create password"
-                    autoComplete="new-password"
-                    disabled={busy}
-                    visible={showRegisterPassword}
-                    onToggleVisible={() => setShowRegisterPassword((value) => !value)}
-                  />
-                  <PasswordInput
-                    label="Confirm password"
-                    name="confirm-new-password"
-                    value={registerForm.confirmPassword}
-                    onChange={(event) => updateRegisterField('confirmPassword', event.target.value)}
-                    placeholder="Confirm password"
-                    autoComplete="new-password"
-                    disabled={busy}
-                    visible={showConfirmPassword}
-                    onToggleVisible={() => setShowConfirmPassword((value) => !value)}
-                  />
-                </div>
-
-                {registerType === REGISTER_TYPES.TEACHER ? (
-                  <div className="space-y-4 rounded-2xl border border-[rgba(34,197,94,0.18)] bg-[rgba(6,16,12,0.42)] p-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                          Institution Qualified
-                        </label>
-                        <Input
-                          type="text"
-                          value={registerForm.institutionQualified}
-                          onChange={(event) => updateRegisterField('institutionQualified', event.target.value)}
-                          placeholder="Institution name"
-                          autoComplete="organization"
-                          disabled={busy}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                          Qualification Level
-                        </label>
-                        <Input
-                          type="text"
-                          value={registerForm.qualificationLevel}
-                          onChange={(event) => updateRegisterField('qualificationLevel', event.target.value)}
-                          placeholder="Qualification level"
-                          autoComplete="off"
-                          disabled={busy}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                          Reference Contact
-                        </label>
-                        <Input
-                          type="text"
-                          value={registerForm.referenceContact}
-                          onChange={(event) => updateRegisterField('referenceContact', event.target.value)}
-                          placeholder="Name, phone, or email"
-                          autoComplete="off"
-                          disabled={busy}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                          Years of Experience
-                        </label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={registerForm.yearsOfExperience}
-                          onChange={(event) => updateRegisterField('yearsOfExperience', event.target.value)}
-                          placeholder="0"
-                          autoComplete="off"
-                          disabled={busy}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                          Current Workplace
-                        </label>
-                        <Input
-                          type="text"
-                          value={registerForm.currentWorkplace}
-                          onChange={(event) => updateRegisterField('currentWorkplace', event.target.value)}
-                          placeholder="Current workplace"
-                          autoComplete="organization"
-                          disabled={busy}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                          Certifications Upload Reference
-                        </label>
-                        <Input
-                          type="text"
-                          value={registerForm.certificationsUploadReference}
-                          onChange={(event) => updateRegisterField('certificationsUploadReference', event.target.value)}
-                          placeholder="Link or file reference"
-                          autoComplete="off"
-                          disabled={busy}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                        Bio
-                      </label>
-                      <textarea
-                        value={registerForm.bio}
-                        onChange={(event) => updateRegisterField('bio', event.target.value)}
-                        placeholder="Write a short public bio for students and families."
-                        disabled={busy}
-                        rows={3}
-                        className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                        Personality Description
-                      </label>
-                      <textarea
-                        value={registerForm.personalityDescription}
-                        onChange={(event) => updateRegisterField('personalityDescription', event.target.value)}
-                        placeholder="Briefly describe your teaching style and student approach."
-                        disabled={busy}
-                        rows={2}
-                        className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-                        Target Subject(s)
-                      </label>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {SUBJECTS.map((subject) => {
-                          const checked = registerForm.targetSubjects.includes(subject.id);
-                          return (
-                            <label
-                              key={subject.id}
-                              className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition ${
-                                checked
-                                  ? 'border-emerald-500/60 bg-emerald-500/12 text-[#7ef6bc]'
-                                  : 'border-[rgba(34,197,94,0.18)] bg-[rgba(3,10,7,0.4)] text-[rgba(217,251,232,0.74)] hover:border-emerald-500/35'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={() => toggleTargetSubject(subject.id)}
-                                disabled={busy}
-                                className="h-4 w-4 rounded border-emerald-700 bg-transparent text-emerald-500 focus:ring-emerald-500"
-                              />
-                              {subject.label}
-                            </label>
-                          );
-                        })}
-                      </div>
-                      <p className="mt-2 text-xs leading-relaxed text-[rgba(217,251,232,0.62)]">
-                        Teacher applications stay pending until an administrator approves the account.
-                      </p>
-                    </div>
+              <form onSubmit={handleRegister} autoComplete="on">
+                <div className="max-h-[80vh] space-y-4 overflow-y-auto px-1 pb-6 sm:max-h-full">
+                  <div className="grid grid-cols-2 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.72)] p-1">
+                    <button
+                      type="button"
+                      onClick={() => setRegisterType(REGISTER_TYPES.STUDENT)}
+                      disabled={busy}
+                      className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                        registerType === REGISTER_TYPES.STUDENT
+                          ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
+                          : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
+                      }`}
+                    >
+                      Student
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRegisterType(REGISTER_TYPES.TEACHER)}
+                      disabled={busy}
+                      className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                        registerType === REGISTER_TYPES.TEACHER
+                          ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
+                          : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
+                      }`}
+                    >
+                      Applying to Teach
+                    </button>
                   </div>
-                ) : null}
 
-                <Button type="submit" className="mt-1 w-full justify-center" disabled={busy}>
-                  {busy
-                    ? 'Creating account...'
-                    : registerType === REGISTER_TYPES.TEACHER
-                      ? 'Submit Teacher Application'
-                      : hasAdmin
-                        ? 'Create Student Account'
-                        : 'Create Admin Account'}
-                  <ArrowRight size={16} />
-                </Button>
+                  <div>
+                    <FieldLabel>Full name</FieldLabel>
+                    <Input
+                      type="text"
+                      name="name"
+                      value={registerForm.fullName}
+                      onChange={(event) => updateRegisterField('fullName', event.target.value)}
+                      placeholder="Full name"
+                      autoComplete="name"
+                      disabled={busy}
+                    />
+                  </div>
+
+                  <div>
+                    <FieldLabel>Email</FieldLabel>
+                    <Input
+                      type="email"
+                      name="username"
+                      value={registerForm.email}
+                      onChange={(event) => updateRegisterField('email', event.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="username"
+                      disabled={busy}
+                    />
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <PasswordInput
+                      label="Password"
+                      name="new-password"
+                      value={registerForm.password}
+                      onChange={(event) => updateRegisterField('password', event.target.value)}
+                      placeholder="Create password"
+                      autoComplete="new-password"
+                      disabled={busy}
+                      visible={showRegisterPassword}
+                      onToggleVisible={() => setShowRegisterPassword((value) => !value)}
+                    />
+                    <PasswordInput
+                      label="Confirm password"
+                      name="confirm-new-password"
+                      value={registerForm.confirmPassword}
+                      onChange={(event) => updateRegisterField('confirmPassword', event.target.value)}
+                      placeholder="Confirm password"
+                      autoComplete="new-password"
+                      disabled={busy}
+                      visible={showConfirmPassword}
+                      onToggleVisible={() => setShowConfirmPassword((value) => !value)}
+                    />
+                  </div>
+
+                  {registerType === REGISTER_TYPES.TEACHER ? (
+                    <div className="max-h-[80vh] space-y-4 overflow-y-auto rounded-2xl border border-[rgba(34,197,94,0.18)] bg-[rgba(6,16,12,0.42)] px-1 pb-6 pt-4 sm:max-h-full sm:px-4">
+                      <div className="grid gap-4 px-3 sm:grid-cols-2 sm:px-0">
+                        <div>
+                          <FieldLabel>Institution Qualified</FieldLabel>
+                          <Input
+                            type="text"
+                            value={registerForm.institutionQualified}
+                            onChange={(event) => updateRegisterField('institutionQualified', event.target.value)}
+                            placeholder="Institution name"
+                            autoComplete="organization"
+                            disabled={busy}
+                          />
+                        </div>
+                        <div>
+                          <FieldLabel>Qualification Level</FieldLabel>
+                          <Input
+                            type="text"
+                            value={registerForm.qualificationLevel}
+                            onChange={(event) => updateRegisterField('qualificationLevel', event.target.value)}
+                            placeholder="Qualification level"
+                            autoComplete="off"
+                            disabled={busy}
+                          />
+                        </div>
+                        <div>
+                          <FieldLabel>Reference Contact</FieldLabel>
+                          <Input
+                            type="text"
+                            value={registerForm.referenceContact}
+                            onChange={(event) => updateRegisterField('referenceContact', event.target.value)}
+                            placeholder="Name, phone, or email"
+                            autoComplete="off"
+                            disabled={busy}
+                          />
+                        </div>
+                        <div>
+                          <FieldLabel>Years of Experience</FieldLabel>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={registerForm.yearsOfExperience}
+                            onChange={(event) => updateRegisterField('yearsOfExperience', event.target.value)}
+                            placeholder="0"
+                            autoComplete="off"
+                            disabled={busy}
+                          />
+                        </div>
+                        <div>
+                          <FieldLabel>Current Workplace</FieldLabel>
+                          <Input
+                            type="text"
+                            value={registerForm.currentWorkplace}
+                            onChange={(event) => updateRegisterField('currentWorkplace', event.target.value)}
+                            placeholder="Current workplace"
+                            autoComplete="organization"
+                            disabled={busy}
+                          />
+                        </div>
+                        <div>
+                          <FieldLabel>Certifications Upload Reference</FieldLabel>
+                          <Input
+                            type="text"
+                            value={registerForm.certificationsUploadReference}
+                            onChange={(event) => updateRegisterField('certificationsUploadReference', event.target.value)}
+                            placeholder="Link or file reference"
+                            autoComplete="off"
+                            disabled={busy}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="px-3 sm:px-0">
+                        <FieldLabel>Bio</FieldLabel>
+                        <textarea
+                          value={registerForm.bio}
+                          onChange={(event) => updateRegisterField('bio', event.target.value)}
+                          placeholder="Write a short public bio for students and families."
+                          disabled={busy}
+                          rows={3}
+                          className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
+                        />
+                      </div>
+
+                      <div className="px-3 sm:px-0">
+                        <FieldLabel>Personality Description</FieldLabel>
+                        <textarea
+                          value={registerForm.personalityDescription}
+                          onChange={(event) => updateRegisterField('personalityDescription', event.target.value)}
+                          placeholder="Briefly describe your teaching style and student approach."
+                          disabled={busy}
+                          rows={2}
+                          className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
+                        />
+                      </div>
+
+                      <div className="px-3 sm:px-0">
+                        <FieldLabel>Target Subject(s)</FieldLabel>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {SUBJECTS.map((subject) => {
+                            const checked = registerForm.targetSubjects.includes(subject.id);
+                            return (
+                              <label
+                                key={subject.id}
+                                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition ${
+                                  checked
+                                    ? 'border-emerald-500/60 bg-emerald-500/12 text-[#7ef6bc]'
+                                    : 'border-[rgba(34,197,94,0.18)] bg-[rgba(3,10,7,0.4)] text-[rgba(217,251,232,0.74)] hover:border-emerald-500/35'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleTargetSubject(subject.id)}
+                                  disabled={busy}
+                                  className="h-4 w-4 rounded border-emerald-700 bg-transparent text-emerald-500 focus:ring-emerald-500"
+                                />
+                                {subject.label}
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <p className="mt-2 text-xs leading-relaxed text-[rgba(217,251,232,0.62)]">
+                          Teacher applications stay pending until an administrator approves the account.
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <Button type="submit" className="mt-8 w-full justify-center" disabled={busy}>
+                    {busy
+                      ? 'Creating account...'
+                      : registerType === REGISTER_TYPES.TEACHER
+                        ? 'Submit Teacher Application'
+                        : hasAdmin
+                          ? 'Create Student Account'
+                          : 'Create Admin Account'}
+                    <ArrowRight size={16} />
+                  </Button>
+                </div>
               </form>
             )}
 
