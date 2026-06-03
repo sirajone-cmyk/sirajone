@@ -97,6 +97,31 @@ service cloud.firestore {
         && request.resource.data.profileStatus == 'pending';
     }
 
+    function onlySeatIncrementChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seats_taken', 'updated_at'])
+        && request.resource.data.seats_taken == resource.data.seats_taken + 1;
+    }
+
+    function validPendingPaymentEnrollment() {
+      return isApprovedUser()
+        && request.resource.data.student_id == request.auth.uid
+        && request.resource.data.status == 'pending_payment'
+        && request.resource.data.payment_status == 'pending_payment'
+        && request.resource.data.program_id is string;
+    }
+
+    function ownsEnrollmentData(data) {
+      return signedIn() && data.student_id == request.auth.uid;
+    }
+
+    function ownsPaymentData(data) {
+      return signedIn()
+        && (
+          data.student_id == request.auth.uid
+          || data.custom_str1 == request.auth.uid
+        );
+    }
+
     function hasParticipantIds(data) {
       return data.keys().hasAll(['participantIds'])
         && data.participantIds is list;
@@ -153,7 +178,9 @@ service cloud.firestore {
 
     match /programs/{documentId} {
       allow read: if true;
-      allow create, update, delete: if isAdminUser();
+      allow create, delete: if isAdminUser();
+      allow update: if isAdminUser()
+        || (isApprovedUser() && onlySeatIncrementChanged());
     }
 
     match /teachers/{userId} {
@@ -175,15 +202,14 @@ service cloud.firestore {
     }
 
     match /enrollments/{documentId} {
-      allow read: if isAdminUser() || isApprovedUser();
-      allow create: if isApprovedUser();
+      allow read: if isAdminUser() || ownsEnrollmentData(resource.data);
+      allow create: if validPendingPaymentEnrollment();
       allow update, delete: if isAdminUser();
     }
 
     match /payments/{documentId} {
-      allow read: if isAdminUser() || isApprovedUser();
-      allow create: if isApprovedUser();
-      allow update, delete: if isAdminUser();
+      allow read: if isAdminUser() || ownsPaymentData(resource.data);
+      allow create, update, delete: if false;
     }
 
     match /payouts/{documentId} {
@@ -210,6 +236,7 @@ service cloud.firestore {
     match /messages/{documentId} {
       allow read, create, update, delete: if false;
     }
+
     match /contacts/{documentId} {
       allow create: if true;
       allow read, update, delete: if isAdminUser();
