@@ -97,21 +97,45 @@ service cloud.firestore {
         && request.resource.data.profileStatus == 'pending';
     }
 
-    function ownsConversation() {
-      return resource.data.student_uid == request.auth.uid;
+    function hasParticipantIds(data) {
+      return data.keys().hasAll(['participantIds'])
+        && data.participantIds is list;
     }
 
-    function createsOwnConversation() {
-      return request.resource.data.student_uid == request.auth.uid;
+    function isConversationParticipant(data) {
+      return signedIn()
+        && hasParticipantIds(data)
+        && request.auth.uid in data.participantIds;
     }
 
-    function ownsMessageConversation() {
-      return resource.data.conversation_id == request.auth.uid;
+    function isBroadcastForMyRole(data) {
+      return isApprovedUser()
+        && data.keys().hasAll(['type', 'audience'])
+        && data.type == 'broadcast'
+        && (
+          (data.audience == 'Teachers' && myProfileData().role == 'Teacher')
+          || (data.audience == 'Students' && myProfileData().role == 'Student')
+        );
     }
 
-    function createsOwnMessage() {
-      return request.resource.data.sender_uid == request.auth.uid
-        && request.resource.data.conversation_id == request.auth.uid;
+    function canReadConversationData(data) {
+      return isAdminUser()
+        || (isApprovedUser() && (isConversationParticipant(data) || isBroadcastForMyRole(data)));
+    }
+
+    function canCreateConversationData(data) {
+      return isAdminUser()
+        || (
+          isApprovedUser()
+          && data.keys().hasAll(['type', 'participantIds'])
+          && data.type in ['support', 'direct', 'teacher']
+          && isConversationParticipant(data)
+        );
+    }
+
+    function canUpdateConversationData(data) {
+      return isAdminUser()
+        || (isApprovedUser() && isConversationParticipant(data));
     }
 
     match /users/{userId} {
@@ -166,19 +190,26 @@ service cloud.firestore {
       allow read, create, update, delete: if isAdminUser();
     }
 
-    match /conversations/{documentId} {
-      allow read: if isAdminUser() || (isApprovedUser() && ownsConversation());
-      allow create: if isApprovedUser() && createsOwnConversation();
-      allow update: if isAdminUser() || (isApprovedUser() && ownsConversation());
+    match /conversations/{conversationId} {
+      allow read: if canReadConversationData(resource.data);
+      allow create: if canCreateConversationData(request.resource.data);
+      allow update: if canUpdateConversationData(resource.data);
       allow delete: if isAdminUser();
+
+      match /messages/{messageId} {
+        allow read: if canReadConversationData(get(/databases/$(database)/documents/conversations/$(conversationId)).data);
+        allow create: if canReadConversationData(get(/databases/$(database)/documents/conversations/$(conversationId)).data)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.body is string;
+        allow update: if false;
+        allow delete: if isAdminUser()
+          || (signedIn() && resource.data.senderId == request.auth.uid);
+      }
     }
 
     match /messages/{documentId} {
-      allow read: if isAdminUser() || (isApprovedUser() && ownsMessageConversation());
-      allow create: if isAdminUser() || (isApprovedUser() && createsOwnMessage());
-      allow update, delete: if isAdminUser();
+      allow read, create, update, delete: if false;
     }
-
     match /contacts/{documentId} {
       allow create: if true;
       allow read, update, delete: if isAdminUser();
