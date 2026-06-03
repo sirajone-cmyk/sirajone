@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Toaster } from "react-hot-toast"
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -28,6 +28,7 @@ import Enroll from './pages/Enroll';
 import AdminFinance from './pages/AdminFinance';
 import TeacherPortal from './pages/TeacherPortal';
 import LetterCatalog from './pages/LetterCatalog';
+import ClassroomPortal from './pages/ClassroomPortal';
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
       <Route path="/teachers" element={<Teachers />} />
       <Route path="/messages" element={<Messages />} />
       <Route path="/enroll" element={<Enroll />} />
+      <Route path="/classroom/:subjectId" element={<ClassroomPortal />} />
       <Route
         path="/teacher-portal"
         element={canAccessTeacherPortal ? <TeacherPortal /> : <Navigate to="/dashboard" replace />}

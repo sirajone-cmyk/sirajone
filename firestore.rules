@@ -236,6 +236,19 @@ service cloud.firestore {
     match /messages/{documentId} {
       allow read, create, update, delete: if false;
     }
+    match /classrooms/{subjectId}/announcements/{documentId} {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved'
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Co-Admin', 'Teacher'];
+    }
+
+    match /classrooms/{subjectId}/media/{documentId} {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved'
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Co-Admin', 'Teacher'];
+    }
 
     match /contacts/{documentId} {
       allow create: if true;
