@@ -600,7 +600,67 @@ export const partTwoWorkbookLessons = [
   },
 
   // =========================================================================
-  // LESSONS 6–23 — generated with real rules; arabicText = '' (awaiting HTML)
+  // LESSON 6 — UNIT 6: Revision (Tanwīn & Tashdīd)
+  // Arabic: ✅ Real content sourced from page12.html
+  // Audio: all 28 cells have individual audio files
   // =========================================================================
-  ...Array.from({ length: 18 }, (_, index) => createUnitLesson(index + 6)),
+  {
+    id: 'unit-6-lesson-6',
+    unitNumber: 6,
+    lessonNumber: 6,
+    title: 'UNIT 6 / LESSON 6',
+    subtitle: LESSON_SUBTITLES[6],
+    rule: {
+      title: RULE_TITLES[6],
+      explanation: RULE_EXPLANATIONS[6],
+    },
+    gridItems: [
+      // Row 1
+      { id: 'a1', arabicText: 'فَسَبِّـحْ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/a1.mp3' },
+      { id: 'a2', arabicText: 'لِرَبِّكَ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/a2.mp3' },
+      { id: 'a3', arabicText: 'يُكَذِّبُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/a3.mp3' },
+      { id: 'a4', arabicText: 'يَدُعُّ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/a4.mp3' },
+
+      // Row 2
+      { id: 'b1', arabicText: 'يَحُضُّ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/b1.mp3' },
+      { id: 'b2', arabicText: 'لِكُلِّ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/b2.mp3' },
+      { id: 'b3', arabicText: 'تَطَّلِعُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/b3.mp3' },
+      { id: 'b4', arabicText: 'مُمَدَّدَ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/b4.mp3' },
+
+      // Row 3
+      { id: 'c1', arabicText: 'اِنَّهُمْ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/c1.mp3' },
+      { id: 'c2', arabicText: 'وَبَشِّرْ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/c2.mp3' },
+      { id: 'c3', arabicText: 'مُطَهَّرٌ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/c3.mp3' },
+      { id: 'c4', arabicText: 'اَوَّلَ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/c4.mp3' },
+
+      // Row 4
+      { id: 'd1', arabicText: 'فَضَّلْتُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/d1.mp3' },
+      { id: 'd2', arabicText: 'نَجَّيْنَا',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/d2.mp3' },
+      { id: 'd3', arabicText: 'يُبَيِّنُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/d3.mp3' },
+      { id: 'd4', arabicText: 'تَسُرُّ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/d4.mp3' },
+
+      // Row 5
+      { id: 'e1', arabicText: 'تَشَقَّقُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/e1.mp3' },
+      { id: 'e2', arabicText: 'يُخَفَّفُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/e2.mp3' },
+      { id: 'e3', arabicText: 'يُعَمَّرُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/e3.mp3' },
+      { id: 'e4', arabicText: 'يُنَزِّ لَ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/e4.mp3' },
+
+      // Row 6
+      { id: 'f1', arabicText: 'يَخْتَصُّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/f1.mp3' },
+      { id: 'f2', arabicText: 'رُكَّـعٍ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/f2.mp3' },
+      { id: 'f3', arabicText: 'يَطَّوَّفَ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/f3.mp3' },
+      { id: 'f4', arabicText: 'وَبَثَّ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/f4.mp3' },
+
+      // Row 7
+      { id: 'g1', arabicText: 'نَتَّبِـعُ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/g1.mp3' },
+      { id: 'g2', arabicText: 'تَاَخَّرَ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/g2.mp3' },
+      { id: 'g3', arabicText: 'مَسَّتْهُـمُ', isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/g3.mp3' },
+      { id: 'g4', arabicText: 'تَطَوَّعَ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page12/g4.mp3' },
+    ],
+  },
+
+  // =========================================================================
+  // LESSONS 7–23 — generated with real rules; arabicText = '' (awaiting HTML)
+  // =========================================================================
+  ...Array.from({ length: 17 }, (_, index) => createUnitLesson(index + 7)),
 ];

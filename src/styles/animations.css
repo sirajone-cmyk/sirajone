@@ -4,6 +4,16 @@
 @keyframes scaleIn { from { opacity: 0; transform: scale(0.93); } to { opacity: 1; transform: scale(1); } }
 @keyframes floatY  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes heroPageTurn {
+  0%, 100% {
+    transform: rotateX(64deg) rotateZ(var(--page-rotate)) rotateY(-12deg) translate3d(0, 0, 0);
+    opacity: 0.16;
+  }
+  50% {
+    transform: rotateX(64deg) rotateZ(var(--page-rotate)) rotateY(18deg) translate3d(8px, -12px, 20px);
+    opacity: 0.28;
+  }
+}
 
 .animate-fade-in  { animation: fadeIn  600ms ease both; }
 .animate-fade-up  { animation: fadeUp  700ms ease both; }
@@ -16,3 +26,67 @@
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
+
+.hero-book-depth {
+  pointer-events: none;
+  opacity: 0.72;
+  perspective: 1100px;
+}
+
+.hero-book-perspective {
+  position: absolute;
+  left: 50%;
+  bottom: -18%;
+  width: min(78vw, 980px);
+  height: min(48vw, 520px);
+  transform: translateX(-50%) rotateX(10deg);
+  transform-style: preserve-3d;
+}
+
+.hero-turning-page {
+  --page-rotate: 0deg;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 28%;
+  height: 82%;
+  transform-origin: 0% 100%;
+  border-radius: 2.2rem 1.3rem 0.9rem 0.9rem;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.28), rgba(222, 202, 155, 0.06) 42%, rgba(8, 27, 17, 0.34)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 26px);
+  border: 1px solid rgba(236, 213, 158, 0.16);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
+  animation: heroPageTurn 8.5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.hero-turning-page-one {
+  --page-rotate: -20deg;
+  margin-left: -8%;
+  animation-delay: -1.5s;
+}
+
+.hero-turning-page-two {
+  --page-rotate: -7deg;
+  margin-left: -2%;
+  animation-delay: -3.5s;
+}
+
+.hero-turning-page-three {
+  --page-rotate: 8deg;
+  margin-left: 4%;
+  animation-delay: -5.5s;
+}
+
+.hero-turning-page-four {
+  --page-rotate: 21deg;
+  margin-left: 10%;
+  animation-delay: -7s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-turning-page {
+    animation: none;
+  }
+}

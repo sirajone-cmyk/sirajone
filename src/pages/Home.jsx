@@ -50,16 +50,16 @@ const learningPath = [
 const benefits = [
   { icon: CheckCircle, text: 'Correct pronunciation from day one' },
   { icon: Shield, text: 'Grounded in classical Tajwid scholarship' },
-  { icon: Users, text: 'Personal attention — small class sizes' },
+  { icon: Users, text: 'Personal attention â€” small class sizes' },
   { icon: Heart, text: 'Nurturing, encouraging environment' },
   { icon: TrendingUp, text: 'Structured progression with measurable milestones' },
-  { icon: BookOpen, text: 'Suitable for all ages — children and adults' },
+  { icon: BookOpen, text: 'Suitable for all ages â€” children and adults' },
 ];
 
 const testimonials = [
-  { name: 'Sister Aisha', role: 'Parent · Durban', text: "My son's recitation improved dramatically in just 3 months. Al?amdulillah." },
+  { name: 'Sister Aisha', role: 'Parent Â· Durban', text: "My son's recitation improved dramatically in just 3 months. Al?amdulillah." },
   { name: 'Brother Yusuf', role: 'Student', text: "I never understood Tajwid properly until I joined. Highly recommended." },
-  { name: 'Sister Fatima', role: 'Parent · Pietermaritzburg', text: "Online classes are professional and my daughter looks forward to every session." },
+  { name: 'Sister Fatima', role: 'Parent Â· Pietermaritzburg', text: "Online classes are professional and my daughter looks forward to every session." },
 ];
 
 export default function Home() {
@@ -70,10 +70,18 @@ export default function Home() {
       {/* HERO */}
       <section className="relative text-center pt-28 pb-24 px-4 overflow-hidden min-h-[85vh] flex flex-col justify-center">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1585036156171-384164a8c675?w=1400&q=80')" }} />
+        <div className="hero-book-depth absolute inset-0" aria-hidden="true">
+          <div className="hero-book-perspective">
+            <span className="hero-turning-page hero-turning-page-one" />
+            <span className="hero-turning-page hero-turning-page-two" />
+            <span className="hero-turning-page hero-turning-page-three" />
+            <span className="hero-turning-page hero-turning-page-four" />
+          </div>
+        </div>
         <div className="absolute inset-0 bg-[#0b1a12]/80" />
         <div className="relative max-w-3xl mx-auto">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-700 bg-emerald-950/60 text-emerald-400 text-sm font-medium mb-8">
-            <MapPin className="w-3.5 h-3.5" /> Durban, South Africa • In-Person & Online Learning
+            <MapPin className="w-3.5 h-3.5" /> Durban, South Africa â€¢ In-Person & Online Learning
           </span>
           <h1 className="text-5xl md:text-6xl font-bold mb-5 leading-tight">
             Faith. Knowledge. Action.
@@ -217,7 +225,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="border-t border-white/8 py-6 px-4 text-center text-slate-600 text-sm">
-        <p>© 2026 SirajOne · Durban, South Africa</p>
+        <p>Â© 2026 SirajOne Â· Durban, South Africa</p>
         <p className="mt-1 text-xs">Built with care for the sake of Allah</p>
       </footer>
     </div>
