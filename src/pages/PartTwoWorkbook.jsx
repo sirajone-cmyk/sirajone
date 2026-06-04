@@ -92,7 +92,7 @@ export default function PartTwoWorkbook() {
                 Reading Workbook
               </h1>
               <p className="mt-3 text-sm leading-6 text-slate-300">
-                Lesson, rule, and examples stay together so students practise each concept in one clear flow.
+                Unit rules and lesson drills stay together so students can see how The Guided Reciter connects to Towards Reading the Qur'an.
               </p>
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-[#07170f]/70 p-4">
@@ -121,11 +121,11 @@ export default function PartTwoWorkbook() {
                       <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
                         index === activeLessonIndex ? 'bg-emerald-500 text-white' : 'bg-white/10 text-slate-300'
                       }`}>
-                        {lesson.lessonNumber}
+                        {lesson.unitNumber}
                       </span>
                       <div>
-                        <p className="font-semibold text-white">Lesson {lesson.lessonNumber}</p>
-                        <p className="mt-1 line-clamp-2 text-xs text-slate-400">{lesson.title.replace(/^Lesson \d+:\s*/, '')}</p>
+                        <p className="font-semibold text-white">Unit {lesson.unitNumber} / Lesson {lesson.lessonNumber}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-slate-400">{lesson.subtitle}</p>
                       </div>
                     </div>
                   </button>
@@ -138,11 +138,17 @@ export default function PartTwoWorkbook() {
                 <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.35em] text-emerald-300">
-                      Lesson {activeLesson.lessonNumber} of {partTwoWorkbookLessons.length}
+                      Unit {activeLesson.unitNumber} / Lesson {activeLesson.lessonNumber} of {partTwoWorkbookLessons.length}
                     </p>
-                    <h2 className="mt-3 font-serif text-3xl font-bold leading-tight md:text-5xl">
-                      {activeLesson.title}
-                    </h2>
+                    <div className="mt-3 space-y-3">
+                      <h2 className="font-serif text-3xl font-bold leading-tight md:text-5xl">
+                        UNIT {activeLesson.unitNumber} <span className="text-xl font-semibold text-emerald-200 md:text-2xl">(The Guided Reciter)</span>
+                      </h2>
+                      <p className="text-lg font-bold uppercase tracking-[0.18em] text-slate-300 md:text-xl">
+                        LESSON {activeLesson.lessonNumber} <span className="normal-case tracking-normal text-slate-400">(Towards Reading the Qur'an)</span>
+                      </p>
+                      <p className="text-2xl font-black text-emerald-100 md:text-3xl">{activeLesson.subtitle}</p>
+                    </div>
                   </div>
 
                   <div className="flex gap-3">
@@ -152,7 +158,7 @@ export default function PartTwoWorkbook() {
                       disabled={activeLessonIndex === 0}
                       className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-bold text-slate-200 transition hover:border-emerald-300/50 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      <ChevronLeft className="h-4 w-4" /> Previous Lesson
+                      <ChevronLeft className="h-4 w-4" /> Previous Unit
                     </button>
                     <button
                       type="button"
@@ -160,7 +166,7 @@ export default function PartTwoWorkbook() {
                       disabled={activeLessonIndex === partTwoWorkbookLessons.length - 1}
                       className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      Next Lesson <ChevronRight className="h-4 w-4" />
+                      Next Unit <ChevronRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -172,7 +178,7 @@ export default function PartTwoWorkbook() {
                     <BookOpen className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-400">Reading Rule</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-400">The Guided Reciter Rule</p>
                     <h3 className="font-serif text-2xl font-bold text-white">{activeLesson.rule.title}</h3>
                   </div>
                 </div>
@@ -182,7 +188,7 @@ export default function PartTwoWorkbook() {
               <div className="rounded-3xl border border-white/10 bg-[#102319] p-6 md:p-8">
                 <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.35em] text-emerald-300">Part Two Examples</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.35em] text-emerald-300">Towards Reading the Qur'an Examples</p>
                     <h3 className="mt-2 font-serif text-3xl font-bold text-white">Practice Word Drills</h3>
                   </div>
                   <p className="text-sm text-slate-400">Flow: Listen, Record, Replay, Compare.</p>
