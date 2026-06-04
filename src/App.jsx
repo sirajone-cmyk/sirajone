@@ -29,6 +29,7 @@ import AdminFinance from './pages/AdminFinance';
 import TeacherPortal from './pages/TeacherPortal';
 import LetterCatalog from './pages/LetterCatalog';
 import PracticalWorkbook from './pages/PracticalWorkbook';
+import PartTwoWorkbook from './pages/PartTwoWorkbook';
 import ClassroomPortal from './pages/ClassroomPortal';
 
 const queryClient = new QueryClient();
@@ -68,7 +69,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/letters" element={<LetterCatalog />} />
-      <Route path="/practice-workbook" element={<PracticalWorkbook />} />
+      <Route path="/practice-workbook" element={<PracticalWorkbook />} />`r`n      <Route path="/part-two-workbook" element={<PartTwoWorkbook />} />
       <Route path="/programs" element={<Programs />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/library" element={<Library />} />
@@ -107,3 +108,5 @@ function App() {
 }
 
 export default App;
+
+

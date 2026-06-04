@@ -1,31 +1,65 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import {
   BookOpen, Mic, Star, ArrowRight, CheckCircle,
-  Award, MapPin, Mail, Globe, Phone,
-  TrendingUp, Users, Shield, Heart
+  Award, MapPin,
+  TrendingUp, Users, Shield, Heart, Layers
 } from 'lucide-react';
 
 const programs = [
-  { icon: BookOpen, title: "Qā'idah & Qur'ān Reading", parts: 'Part 1 & Part 2', desc: "Master Arabic letters, vowels, and basic connected reading.", level: 'Beginner', color: 'border-emerald-700/60 bg-emerald-950/40', badge: 'bg-emerald-900 text-emerald-300' },
-  { icon: Mic, title: 'Tajwīd Foundations', parts: 'Rules & Application', desc: "Learn Makhārij, Sifāt, Ghunnah, Madd and all core Tajwīd rules.", level: 'Intermediate', color: 'border-amber-700/60 bg-amber-950/40', badge: 'bg-amber-900 text-amber-300' },
-  { icon: Star, title: 'Ḥifẓ Programme', parts: 'Memorisation + Murājaʿah', desc: 'Structured Ḥifẓ with daily Sabaq, Awal and Ākhir Murājaʿah cycles.', level: 'Advanced', color: 'border-violet-700/60 bg-violet-950/40', badge: 'bg-violet-900 text-violet-300' },
-  { icon: TrendingUp, title: 'Murājaʿah System', parts: 'Revision & Retention', desc: 'A structured cycle to maintain, strengthen, and perfect memorisation.', level: 'Ḥuffāẓ', color: 'border-sky-700/60 bg-sky-950/40', badge: 'bg-sky-900 text-sky-300' },
+  { icon: BookOpen, title: "Qa'idah & Qur'an Reading", parts: 'Part 1 & Part 2', desc: "Master Arabic letters, vowels, and basic connected reading.", level: 'Beginner', color: 'border-emerald-700/60 bg-emerald-950/40', badge: 'bg-emerald-900 text-emerald-300' },
+  { icon: Mic, title: 'Tajwid Foundations', parts: 'Rules & Application', desc: "Learn Makharij, Sifat, Ghunnah, Madd and all core Tajwid rules.", level: 'Intermediate', color: 'border-amber-700/60 bg-amber-950/40', badge: 'bg-amber-900 text-amber-300' },
+  { icon: Star, title: '?if? Programme', parts: 'Memorisation + Muraja?ah', desc: 'Structured ?if? with daily Sabaq, Awal and Akhir Muraja?ah cycles.', level: 'Advanced', color: 'border-violet-700/60 bg-violet-950/40', badge: 'bg-violet-900 text-violet-300' },
+  { icon: TrendingUp, title: 'Muraja?ah System', parts: 'Revision & Retention', desc: 'A structured cycle to maintain, strengthen, and perfect memorisation.', level: '?uffa?', color: 'border-sky-700/60 bg-sky-950/40', badge: 'bg-sky-900 text-sky-300' },
+];
+
+const learningPath = [
+  {
+    icon: BookOpen,
+    title: 'Letter Guide',
+    desc: 'Begin with the Arabic letters, sounds, makharij foundations, and guided listening practice.',
+    status: 'Start Here',
+    to: '/letters',
+    active: true,
+  },
+  {
+    icon: Mic,
+    title: 'Practical Workbook',
+    desc: 'Move from letters into structured drills with listen, record, replay, and correction practice.',
+    status: 'Next Step',
+    to: '/practice-workbook',
+    active: true,
+  },
+  {
+    icon: Layers,
+    title: 'Part Two',
+    desc: 'A bridge into rule-based Tajwid learning with examples and applied reading practice.',
+    status: 'Continue',
+    to: '/part-two-workbook',
+    active: true,
+  },
+  {
+    icon: Award,
+    title: 'Tajwid Kitaab (Coming Soon)',
+    desc: 'The full Tajwid kitaab pathway will work together with Part Two for deeper study.',
+    status: 'Coming Soon',
+    active: false,
+  },
 ];
 
 const benefits = [
   { icon: CheckCircle, text: 'Correct pronunciation from day one' },
-  { icon: Shield, text: 'Grounded in classical Tajwīd scholarship' },
-  { icon: Users, text: 'Personal attention — small class sizes' },
+  { icon: Shield, text: 'Grounded in classical Tajwid scholarship' },
+  { icon: Users, text: 'Personal attention � small class sizes' },
   { icon: Heart, text: 'Nurturing, encouraging environment' },
   { icon: TrendingUp, text: 'Structured progression with measurable milestones' },
-  { icon: BookOpen, text: 'Suitable for all ages — children and adults' },
+  { icon: BookOpen, text: 'Suitable for all ages � children and adults' },
 ];
 
 const testimonials = [
-  { name: 'Sister Aisha', role: 'Parent · Durban', text: "My son's recitation improved dramatically in just 3 months. Alḥamdulillāh." },
-  { name: 'Brother Yusuf', role: 'Student', text: "I never understood Tajwīd properly until I joined. Highly recommended." },
-  { name: 'Sister Fatima', role: 'Parent · Pietermaritzburg', text: "Online classes are professional and my daughter looks forward to every session." },
+  { name: 'Sister Aisha', role: 'Parent � Durban', text: "My son's recitation improved dramatically in just 3 months. Al?amdulillah." },
+  { name: 'Brother Yusuf', role: 'Student', text: "I never understood Tajwid properly until I joined. Highly recommended." },
+  { name: 'Sister Fatima', role: 'Parent � Pietermaritzburg', text: "Online classes are professional and my daughter looks forward to every session." },
 ];
 
 export default function Home() {
@@ -39,7 +73,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[#0b1a12]/80" />
         <div className="relative max-w-3xl mx-auto">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-700 bg-emerald-950/60 text-emerald-400 text-sm font-medium mb-8">
-            <MapPin className="w-3.5 h-3.5" /> Durban, South Africa • In-Person & Online Learning
+            <MapPin className="w-3.5 h-3.5" /> Durban, South Africa � In-Person & Online Learning
           </span>
           <h1 className="text-5xl md:text-6xl font-bold mb-5 leading-tight">
             Faith. Knowledge. Action.
@@ -58,6 +92,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* LEARNING PATH */}
+      <section className="bg-[#0b1a12] py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-emerald-500 text-xs font-bold uppercase tracking-widest">Beginning Learning</span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-3">Learning Path</h2>
+            <p className="text-slate-400 mt-4 max-w-2xl mx-auto leading-relaxed">
+              A clear step-by-step route from letters, to practical recitation, then into the next stage of Tajwid study.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-4">
+            {learningPath.map((step, index) => {
+              const CardTag = step.active ? Link : 'div';
+              const cardProps = step.active ? { to: step.to } : {};
+
+              return (
+                <CardTag
+                  key={step.title}
+                  {...cardProps}
+                  className={`group relative overflow-hidden rounded-3xl border p-6 transition-all ${
+                    step.active
+                      ? 'border-emerald-700/60 bg-emerald-950/35 hover:border-emerald-400/80 hover:bg-emerald-950/55'
+                      : 'border-white/10 bg-white/5 opacity-85'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/8 border border-white/10">
+                      <step.icon className="h-5 w-5 text-emerald-400" />
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${
+                      step.active ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/10 text-amber-300'
+                    }`}>
+                      {step.status}
+                    </span>
+                  </div>
+
+                  <div className="mb-3 text-sm font-bold uppercase tracking-[0.28em] text-slate-500">
+                    Step {index + 1}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-sm leading-relaxed text-slate-400">{step.desc}</p>
+
+                  {step.active && (
+                    <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 group-hover:text-emerald-200">
+                      Open section <ArrowRight className="h-4 w-4" />
+                    </div>
+                  )}
+                </CardTag>
+              );
+            })}
+          </div>
+        </div>
+      </section>
       {/* PROGRAMS */}
       <section className="bg-white/3 border-y border-white/8 py-20 px-4">
         <div className="max-w-5xl mx-auto">
@@ -129,9 +217,11 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="border-t border-white/8 py-6 px-4 text-center text-slate-600 text-sm">
-        <p>© 2026 SirajOne · Durban, South Africa</p>
-        <p className="mt-1 text-xs">Built with care for the sake of Allāh</p>
+        <p>� 2026 SirajOne � Durban, South Africa</p>
+        <p className="mt-1 text-xs">Built with care for the sake of Allah</p>
       </footer>
     </div>
   );
 }
+
+

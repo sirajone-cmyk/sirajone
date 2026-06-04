@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import {
@@ -101,11 +101,10 @@ const BEGINNER_PATH = [
   },
   {
     label: 'Part Two',
-    description: 'The next practical bridge before the full Tajwid kitaab.',
-    to: '/practice-workbook',
+    description: 'Lesson, rule, and Part Two examples in one guided reading flow.',
+    to: '/part-two-workbook',
     icon: Award,
-    status: 'Coming soon',
-    disabled: true,
+    status: 'Continue Practice',
   },
   {
     label: 'Tajwid Kitaab',
@@ -428,3 +427,5 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
