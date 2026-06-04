@@ -28,6 +28,7 @@ import Enroll from './pages/Enroll';
 import AdminFinance from './pages/AdminFinance';
 import TeacherPortal from './pages/TeacherPortal';
 import LetterCatalog from './pages/LetterCatalog';
+import PracticalWorkbook from './pages/PracticalWorkbook';
 import ClassroomPortal from './pages/ClassroomPortal';
 
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/letters" element={<LetterCatalog />} />
+      <Route path="/practice-workbook" element={<PracticalWorkbook />} />
       <Route path="/programs" element={<Programs />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/library" element={<Library />} />

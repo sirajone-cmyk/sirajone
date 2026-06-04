@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Library,
   MessageCircle,
+  Mic,
   ShieldCheck,
   Sparkles,
   Star,
@@ -26,10 +27,10 @@ const FOCUS_ITEMS = [
     route: '/letters',
   },
   {
-    id: 'revision',
-    title: "Revise yesterday's Tajwid point",
-    description: 'Spend a few minutes strengthening what you already learned before adding more.',
-    route: '/library',
+    id: 'practical-workbook',
+    title: 'Practise one line from the Practical Workbook',
+    description: 'Listen first, record your recitation, replay it, and correct one point.',
+    route: '/practice-workbook',
   },
   {
     id: 'teacher-note',
@@ -45,6 +46,12 @@ const LEARNING_PATH = [
     description: 'Makhraj, sifaat, and pronunciation support.',
     to: '/letters',
     icon: BookOpen,
+  },
+  {
+    label: 'Practical Workbook',
+    description: 'The next step after letters: listen, read, record, replay.',
+    to: '/practice-workbook',
+    icon: Mic,
   },
   {
     label: 'Programs',
@@ -140,10 +147,10 @@ export default function Dashboard() {
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  to="/letters"
+                  to="/practice-workbook"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-500"
                 >
-                  Continue Learning
+                  Continue Practice
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
