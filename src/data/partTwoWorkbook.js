@@ -546,6 +546,56 @@ export const partTwoWorkbookLessons = [
       { id: 'g2', arabicText: 'بِرْ رِ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/g1.mp3' },
       { id: 'g3', arabicText: 'بِرِّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/g1.mp3' },
       { id: 'g4', arabicText: 'بِرْ رِ',  isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/g1.mp3' },
+
+      // ── Page 11 continuation (IDs prefixed p11 to avoid duplicates within lesson) ──
+      // Highlighted cells = Nūn/Mīm with Tashdīd carrying Ghunnah (red span in HTML)
+      // Row 1
+      { id: 'p11a1', arabicText: 'تَبَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/a1.mp3' },
+      { id: 'p11a2', arabicText: 'صَلِّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/a2.mp3' },
+      { id: 'p11a3', arabicText: 'كَذِّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/a3.mp3' },
+      { id: 'p11a4', arabicText: 'دُعُّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/a4.mp3' },
+
+      // Row 2 — b3 highlighted (اَنَّ: Nūn with Tashdīd = Ghunnah)
+      { id: 'p11b1', arabicText: 'حُضُّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/b1.mp3' },
+      { id: 'p11b2', arabicText: 'عَدَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/b2.mp3' },
+      { id: 'p11b3', arabicText: 'اَنَّ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/b3.mp3' },
+      { id: 'p11b4', arabicText: 'مُتَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/b4.mp3' },
+
+      // Row 3
+      { id: 'p11c1', arabicText: 'نَزَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/c1.mp3' },
+      { id: 'p11c2', arabicText: 'بَشِّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/c2.mp3' },
+      { id: 'p11c3', arabicText: 'طَهَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/c3.mp3' },
+      { id: 'p11c4', arabicText: 'حَقُّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/c4.mp3' },
+
+      // Row 4
+      { id: 'p11d1', arabicText: 'اَوَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/d1.mp3' },
+      { id: 'p11d2', arabicText: 'سُـجَّ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/d2.mp3' },
+      { id: 'p11d3', arabicText: 'حِطَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/d3.mp3' },
+      { id: 'p11d4', arabicText: 'بَـىِّ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/d4.mp3' },
+
+      // Row 5
+      { id: 'p11e1', arabicText: 'مَسَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/e1.mp3' },
+      { id: 'p11e2', arabicText: 'قَفَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/e2.mp3' },
+      { id: 'p11e3', arabicText: 'تَصُّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/e3.mp3' },
+      { id: 'p11e4', arabicText: 'رُكَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/e4.mp3' },
+
+      // Row 6 — f1 highlighted (اُمَّ: Mīm with Tashdīd = Ghunnah)
+      { id: 'p11f1', arabicText: 'اُمَّ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/f1.mp3' },
+      { id: 'p11f2', arabicText: 'بَثَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/f2.mp3' },
+      { id: 'p11f3', arabicText: 'سَـخَّ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/f3.mp3' },
+      { id: 'p11f4', arabicText: 'كَرَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/f4.mp3' },
+
+      // Row 7 — g2 highlighted (جِنَّ: Nūn with Tashdīd = Ghunnah)
+      { id: 'p11g1', arabicText: 'شَرِّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/g1.mp3' },
+      { id: 'p11g2', arabicText: 'جِنَّ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/g2.mp3' },
+      { id: 'p11g3', arabicText: 'سَبَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/g3.mp3' },
+      { id: 'p11g4', arabicText: 'صَىِّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/g4.mp3' },
+
+      // Row 8
+      { id: 'p11h1', arabicText: 'غُلَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/h1.mp3' },
+      { id: 'p11h2', arabicText: 'شُـحَّ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/h2.mp3' },
+      { id: 'p11h3', arabicText: 'حُـجَّ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/h3.mp3' },
+      { id: 'p11h4', arabicText: 'ظَـلَّ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page11/h4.mp3' },
     ],
   },
 
