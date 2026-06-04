@@ -436,6 +436,55 @@ export const partTwoWorkbookLessons = [
       { id: 'g2', arabicText: 'سَعْيًا',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page08/g2.mp3' },
       { id: 'g3', arabicText: 'سُنَنٌ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page08/g3.mp3' },
       { id: 'g4', arabicText: 'مَلِكًا',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page08/g4.mp3' },
+
+      // ── Page 09 continuation (IDs prefixed p9 to avoid duplicates within lesson) ──
+      // Row 1
+      { id: 'p9a1', arabicText: 'اُخْتٌ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/a1.mp3' },
+      { id: 'p9a2', arabicText: 'بَغَضَبٍ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/a2.mp3' },
+      { id: 'p9a3', arabicText: 'عَهْدًا',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/a3.mp3' },
+      { id: 'p9a4', arabicText: 'بَخَيْرٍ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/a4.mp3' },
+
+      // Row 2
+      { id: 'p9b1', arabicText: 'لَيْلَةً',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/b1.mp3' },
+      { id: 'p9b2', arabicText: 'كُرْهٌ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/b2.mp3' },
+      { id: 'p9b3', arabicText: 'بَيْـعٍ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/b3.mp3' },
+      { id: 'p9b4', arabicText: 'يَوْمٌ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/b4.mp3' },
+
+      // Row 3
+      { id: 'p9c1', arabicText: 'خَيْرًا',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/c1.mp3' },
+      { id: 'p9c2', arabicText: 'فَضْلٍ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/c2.mp3' },
+      { id: 'p9c3', arabicText: 'فِدْيَةٌ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/c3.mp3' },
+      { id: 'p9c4', arabicText: 'بِبَعْضٍ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/c4.mp3' },
+
+      // Row 4
+      { id: 'p9d1', arabicText: 'لِقَوْمٍ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/d1.mp3' },
+      { id: 'p9d2', arabicText: 'جُزْءًا',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/d2.mp3' },
+      { id: 'p9d3', arabicText: 'بَشَرٌ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/d3.mp3' },
+      { id: 'p9d4', arabicText: 'اَذًى',      isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/d4.mp3' },
+
+      // Row 5
+      { id: 'p9e1', arabicText: 'بَسَخَطٍ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/e1.mp3' },
+      { id: 'p9e2', arabicText: 'كَذِبًا',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/e2.mp3' },
+      { id: 'p9e3', arabicText: 'هُدًى',      isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/e3.mp3' },
+      { id: 'p9e4', arabicText: 'ضُحًى',      isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/e4.mp3' },
+
+      // Row 6
+      { id: 'p9f1', arabicText: 'زَيْـغٌ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/f1.mp3' },
+      { id: 'p9f2', arabicText: 'اُمَمٍ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/f2.mp3' },
+      { id: 'p9f3', arabicText: 'تَوْبَةً',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/f3.mp3' },
+      { id: 'p9f4', arabicText: 'رَطْبٍ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/f4.mp3' },
+
+      // Row 7
+      { id: 'p9g1', arabicText: 'مُـخْرِ جٌ', isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/g1.mp3' },
+      { id: 'p9g2', arabicText: 'شُعَيْبًا',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/g2.mp3' },
+      { id: 'p9g3', arabicText: 'نَبَاٍ',     isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/g3.mp3' },
+      { id: 'p9g4', arabicText: 'خَوْفًا',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/g4.mp3' },
+
+      // Row 8
+      { id: 'p9h1', arabicText: 'مَثَلًا',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/h1.mp3' },
+      { id: 'p9h2', arabicText: 'لِبَلَدٍ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/h2.mp3' },
+      { id: 'p9h3', arabicText: 'فَرْ حٌ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/h3.mp3' },
+      { id: 'p9h4', arabicText: 'حَرَ جٍ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page09/h4.mp3' },
     ],
   },
 
