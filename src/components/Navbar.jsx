@@ -1,25 +1,58 @@
 ﻿import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, LayoutDashboard, Phone, Menu, X, Library, Users, MessageCircle, DollarSign, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Home,
+  BookOpen,
+  LayoutDashboard,
+  Phone,
+  Menu,
+  X,
+  Library,
+  Users,
+  MessageCircle,
+  DollarSign,
+  LogOut,
+  PenTool,
+  Compass,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 
-const links = [
+const primaryLinks = [
   { to: '/', label: 'Home', icon: Home },
   { to: '/programs', label: 'Programs', icon: BookOpen },
-  { to: '/enroll', label: 'Enroll', icon: BookOpen },
-  { to: '/library', label: 'Library', icon: Library },
-  { to: '/teachers', label: 'Teachers', icon: Users },
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/contact', label: 'Contact', icon: Phone },
+  { to: '/enroll', label: 'Enroll', icon: BookOpen, featured: true },
 ];
 
-const baseLinkClass = 'flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors 2xl:px-3 2xl:text-sm';
-const getLinkClass = (active) =>
-  `${baseLinkClass} ${
+const hubLinks = [
+  { to: '/library', label: 'Library', icon: Library },
+  { to: '/teachers', label: 'Teachers', icon: Users },
+  { to: '/contact', label: 'Contact', icon: Phone },
+  { to: '/letters', label: 'Letter Guide', icon: BookOpen },
+  { to: '/practice-workbook', label: 'Practice Book', icon: PenTool },
+];
+
+const baseLinkClass = 'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors';
+const getLinkClass = (active, featured = false) => {
+  if (featured) {
+    return `${baseLinkClass} ${
+      active
+        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/30'
+        : 'bg-emerald-700 text-white hover:bg-emerald-600'
+    }`;
+  }
+
+  return `${baseLinkClass} ${
     active
-      ? 'bg-emerald-900/60 text-emerald-400'
+      ? 'bg-emerald-900/60 text-emerald-300'
       : 'text-slate-400 hover:bg-white/8 hover:text-white'
   }`;
+};
+
+function NotificationDot() {
+  return (
+    <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0b1a12] bg-emerald-400" />
+  );
+}
 
 export default function Navbar() {
   const { pathname } = useLocation();
@@ -27,13 +60,24 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
+  const dashboardLink = useMemo(
+    () =>
+      isAdmin
+        ? { to: '/admin', label: 'Admin Panel', icon: LayoutDashboard }
+        : { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    [isAdmin]
+  );
+
+  const messagePath = isAdmin ? '/admin/messages' : '/messages';
+  const desktopLinks = [...primaryLinks, dashboardLink];
+  const mobileLinks = [...primaryLinks, dashboardLink, ...hubLinks];
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0b1a12]/90 backdrop-blur-md">
       <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6">
         <Link
           to="/"
-          className="z-10 mr-4 flex min-w-[190px] flex-shrink-0 items-center space-x-3 lg:min-w-[215px]"
+          className="z-10 flex min-w-[205px] flex-shrink-0 items-center space-x-3"
           onClick={() => setOpen(false)}
         >
           <div className="relative h-9 w-9 flex-shrink-0">
@@ -44,57 +88,60 @@ export default function Navbar() {
             </svg>
           </div>
           <div className="min-w-0 leading-tight">
-            <div className="whitespace-nowrap text-sm font-bold tracking-tight text-white sm:text-base">SirajOne</div>
-            <div className="whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.08em] text-emerald-400 sm:text-[10px]">
+            <div className="whitespace-nowrap text-base font-bold tracking-tight text-white">SirajOne</div>
+            <div className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.08em] text-emerald-400">
               Faith. Knowledge. Action.
             </div>
           </div>
         </Link>
 
-        {/* Desktop nav */}
-        <div className="ml-auto hidden flex-shrink-0 items-center space-x-1 xl:flex 2xl:space-x-3">
-          {links.map(({ to, label, icon: Icon }) => (
-            <Link key={to} to={to} className={getLinkClass(pathname === to)}>
-              <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+        <div className="ml-auto hidden flex-shrink-0 items-center gap-1 lg:flex xl:gap-2">
+          {desktopLinks.map(({ to, label, icon: Icon, featured }) => (
+            <Link key={to} to={to} className={getLinkClass(pathname === to, featured)}>
+              <Icon className="h-4 w-4 flex-shrink-0" />
               <span className="whitespace-nowrap">{label}</span>
             </Link>
           ))}
 
-          <Link to={isAdmin ? '/admin/messages' : '/messages'} className={getLinkClass(pathname.includes('messages'))}>
-            <MessageCircle className="h-3.5 w-3.5 flex-shrink-0" />
-            <span className="whitespace-nowrap">Messages</span>
+          <Link
+            to={messagePath}
+            className={`${getLinkClass(pathname.includes('messages'))} relative`}
+            aria-label="Messages and notifications"
+            title="Messages"
+          >
+            <MessageCircle className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden whitespace-nowrap xl:inline">Messages</span>
+            <NotificationDot />
+          </Link>
+
+          <Link
+            to="/dashboard"
+            className="hidden items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-700 hover:text-white xl:flex"
+          >
+            <Compass className="h-4 w-4" />
+            Hub
           </Link>
 
           {isAdmin && (
-            <>
-              <Link to="/admin" className={getLinkClass(pathname === '/admin')}>
-                <LayoutDashboard className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="whitespace-nowrap">Admin</span>
-              </Link>
-              <Link to="/admin/finance" className={getLinkClass(pathname === '/admin/finance')}>
-                <DollarSign className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="whitespace-nowrap">Finance</span>
-              </Link>
-            </>
+            <Link to="/admin/finance" className={getLinkClass(pathname === '/admin/finance')}>
+              <DollarSign className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden whitespace-nowrap xl:inline">Finance</span>
+            </Link>
           )}
 
-          <Link to="/letters" className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-semibold whitespace-nowrap text-white transition-all hover:bg-emerald-600 2xl:px-4 2xl:text-sm">
-            Letter Guide
-          </Link>
           <button
             type="button"
             onClick={logout}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium whitespace-nowrap text-slate-400 transition-colors hover:bg-white/8 hover:text-red-400 2xl:px-3 2xl:text-sm"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap text-slate-400 transition-colors hover:bg-white/8 hover:text-red-400"
           >
-            <LogOut className="h-3.5 w-3.5 flex-shrink-0" />
-            Logout
+            <LogOut className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden xl:inline">Logout</span>
           </button>
         </div>
 
-        {/* Mobile/tablet hamburger */}
         <button
           type="button"
-          className="ml-auto flex-shrink-0 rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/8 hover:text-white xl:hidden"
+          className="ml-auto flex-shrink-0 rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/8 hover:text-white lg:hidden"
           onClick={() => setOpen(!open)}
           aria-label="Toggle navigation menu"
         >
@@ -102,50 +149,53 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile/tablet menu */}
       {open && (
-        <div className="flex flex-col gap-1 border-t border-white/8 bg-[#0b1a12] px-4 py-3 xl:hidden">
-          {links.map(({ to, label, icon: Icon }) => (
+        <div className="border-t border-white/8 bg-[#0b1a12] px-4 py-3 lg:hidden">
+          <div className="grid gap-1 sm:grid-cols-2">
+            {mobileLinks.map(({ to, label, icon: Icon, featured }) => (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+                  featured
+                    ? 'bg-emerald-700 text-white hover:bg-emerald-600'
+                    : pathname === to
+                      ? 'bg-emerald-900/60 text-emerald-400'
+                      : 'text-slate-400 hover:bg-white/8 hover:text-white'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </Link>
+            ))}
             <Link
-              key={to}
-              to={to}
+              to={messagePath}
               onClick={() => setOpen(false)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-                pathname === to ? 'bg-emerald-900/60 text-emerald-400' : 'text-slate-400 hover:bg-white/8 hover:text-white'
-              }`}
+              className="relative flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-400 hover:bg-white/8 hover:text-white"
             >
-              <Icon className="h-4 w-4" />
-              {label}
+              <MessageCircle className="h-4 w-4" />
+              Messages
+              <span className="ml-1 h-2 w-2 rounded-full bg-emerald-400" />
             </Link>
-          ))}
-          <Link to="/letters" onClick={() => setOpen(false)} className="mt-1 rounded-lg bg-emerald-700 px-4 py-2.5 text-center text-sm font-semibold text-white">
-            Letter Guide
-          </Link>
-          <Link
-            to={isAdmin ? '/admin/messages' : '/messages'}
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-white/8 hover:text-white"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Messages
-          </Link>
-          {isAdmin && (
-            <Link
-              to="/admin/finance"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-white/8 hover:text-white"
-            >
-              <DollarSign className="h-4 w-4" />
-              Finance
-            </Link>
-          )}
+            {isAdmin && (
+              <Link
+                to="/admin/finance"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-400 hover:bg-white/8 hover:text-white"
+              >
+                <DollarSign className="h-4 w-4" />
+                Finance
+              </Link>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => {
               logout();
               setOpen(false);
             }}
-            className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-white/8"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-2.5 text-sm font-semibold text-red-300 hover:bg-red-400/15"
           >
             <LogOut className="h-4 w-4" />
             Logout

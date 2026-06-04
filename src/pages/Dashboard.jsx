@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import {
@@ -8,10 +8,14 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock3,
+  Compass,
   GraduationCap,
+  Home,
   Library,
+  LayoutDashboard,
   MessageCircle,
   Mic,
+  Phone,
   ShieldCheck,
   Sparkles,
   Star,
@@ -40,48 +44,97 @@ const FOCUS_ITEMS = [
   },
 ];
 
-const LEARNING_PATH = [
+const FEATURED_SHORTCUTS = [
   {
-    label: 'Letter Guide',
-    description: 'Makhraj, sifaat, and pronunciation support.',
-    to: '/letters',
-    icon: BookOpen,
+    label: 'Home',
+    description: 'Return to the SirajOne welcome page.',
+    to: '/',
+    icon: Home,
   },
   {
-    label: 'Practical Workbook',
-    description: 'The next step after letters: listen, read, record, replay.',
-    to: '/practice-workbook',
-    icon: Mic,
-  },
-  {
-    label: 'Programs',
-    description: 'View learning paths and current study options.',
+    label: 'Explore Programs',
+    description: 'Browse learning options and class pathways.',
     to: '/programs',
     icon: GraduationCap,
   },
   {
+    label: 'Enroll',
+    description: 'Start placement or join a class.',
+    to: '/enroll',
+    icon: ShieldCheck,
+    featured: true,
+  },
+  {
+    label: 'Letter Guide',
+    description: 'Begin with Arabic letters and makharij.',
+    to: '/letters',
+    icon: BookOpen,
+  },
+  {
+    label: 'Contact',
+    description: 'Reach SirajOne for help or class guidance.',
+    to: '/contact',
+    icon: Phone,
+  },
+  {
     label: 'Library',
-    description: 'Resources, notes, and study material.',
+    description: 'Open books, notes, and study resources.',
     to: '/library',
     icon: Library,
   },
+];
+
+const BEGINNER_PATH = [
   {
-    label: 'Teachers',
-    description: 'Find guidance and teacher information.',
-    to: '/teachers',
-    icon: Users,
+    label: 'Letter Guide',
+    description: 'Letters, sounds, makhraj, sifaat, listen and practise.',
+    to: '/letters',
+    icon: BookOpen,
+    status: 'Start here',
   },
   {
-    label: 'Enroll',
-    description: 'Apply for a program or request placement.',
-    to: '/enroll',
-    icon: ShieldCheck,
+    label: 'Practical Workbook',
+    description: 'After letters: listen, read, record, replay, and correct.',
+    to: '/practice-workbook',
+    icon: Mic,
+    status: 'Next step',
+  },
+  {
+    label: 'Part Two',
+    description: 'The next practical bridge before the full Tajwid kitaab.',
+    to: '/practice-workbook',
+    icon: Award,
+    status: 'Coming soon',
+    disabled: true,
+  },
+  {
+    label: 'Tajwid Kitaab',
+    description: 'Rules, lessons, and connected examples will be added later.',
+    to: '/library',
+    icon: Star,
+    status: 'Coming soon',
+    disabled: true,
+  },
+];
+
+const SECONDARY_PATH = [
+  {
+    label: 'Teachers',
+    description: 'Find approved teachers and guidance.',
+    to: '/teachers',
+    icon: Users,
   },
   {
     label: 'Messages',
     description: 'Contact support or continue a conversation.',
     to: '/messages',
     icon: MessageCircle,
+  },
+  {
+    label: 'Programs',
+    description: 'View learning paths and study options.',
+    to: '/programs',
+    icon: GraduationCap,
   },
 ];
 
@@ -91,6 +144,50 @@ const MILESTONES = [
   { label: 'Path', value: 'Tajwid', detail: 'Foundation building', icon: BookOpen },
   { label: 'Rhythm', value: 'Daily', detail: 'Consistency over intensity', icon: Star },
 ];
+
+function ShortcutCard({ item }) {
+  const Icon = item.icon;
+  const className = item.featured
+    ? 'group rounded-3xl border border-emerald-300/30 bg-emerald-600 p-5 text-white shadow-2xl shadow-emerald-950/30 transition hover:bg-emerald-500 sm:col-span-2 lg:col-span-1 lg:row-span-2'
+    : 'group rounded-3xl border border-white/10 bg-white/[0.045] p-5 transition hover:border-emerald-300/40 hover:bg-emerald-400/10';
+
+  return (
+    <Link to={item.to} className={className}>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className={`rounded-2xl p-3 ${item.featured ? 'bg-white/15 text-white' : 'bg-emerald-400/10 text-emerald-200'}`}>
+          <Icon className="h-6 w-6" />
+        </div>
+        <ArrowRight className={`h-5 w-5 transition group-hover:translate-x-1 ${item.featured ? 'text-white' : 'text-slate-600 group-hover:text-emerald-200'}`} />
+      </div>
+      <h3 className={`${item.featured ? 'text-2xl' : 'text-lg'} font-black text-white`}>{item.label}</h3>
+      <p className={`mt-2 text-sm leading-6 ${item.featured ? 'text-emerald-50/90' : 'text-slate-400'}`}>{item.description}</p>
+    </Link>
+  );
+}
+
+function PathCard({ item, index }) {
+  const Icon = item.icon;
+  const content = (
+    <div className={`h-full rounded-3xl border p-5 transition ${item.disabled ? 'border-white/10 bg-white/[0.025] opacity-80' : 'border-white/10 bg-black/10 hover:border-emerald-300/40 hover:bg-emerald-400/10'}`}>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-400/10 text-sm font-black text-emerald-200">
+            {index + 1}
+          </span>
+          <Icon className="h-5 w-5 text-emerald-300" />
+        </div>
+        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${item.disabled ? 'border-amber-300/20 bg-amber-400/10 text-amber-200' : 'border-emerald-300/20 bg-emerald-400/10 text-emerald-200'}`}>
+          {item.status}
+        </span>
+      </div>
+      <h3 className="font-black text-white">{item.label}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-400">{item.description}</p>
+    </div>
+  );
+
+  if (item.disabled) return content;
+  return <Link to={item.to}>{content}</Link>;
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -117,6 +214,7 @@ export default function Dashboard() {
   const focusProgress = Math.round((completedCount / FOCUS_ITEMS.length) * 100);
   const isPending = user?.status === 'pending';
   const roleLabel = user?.role || 'Student';
+  const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
 
   const toggleComplete = (id) => {
     setCompleted((current) => ({
@@ -129,36 +227,46 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#0b1a12] text-white">
       <Navbar />
 
-      <main className="max-w-6xl mx-auto px-4 py-8 sm:py-10">
-        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/[0.045] to-emerald-950/50 p-6 sm:p-8 mb-6 shadow-2xl shadow-black/20">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
+        <section className="relative mb-6 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/[0.045] to-emerald-950/50 p-6 shadow-2xl shadow-black/20 sm:p-8">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/50 to-transparent" />
           <div className="relative grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
                 <Sparkles className="h-3.5 w-3.5" />
-                Student Dashboard
+                SirajOne Hub
               </div>
-              <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+              <h1 className="mt-5 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Assalaamu alaykum, {studentName}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm sm:text-base leading-7 text-slate-300">
-                Your SirajOne learning space is ready. Start with one focused lesson, revise with care, and keep your connection with your teacher simple and consistent.
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                Your main navigation space. Choose a learning path, enroll in a program, open resources, or message SirajOne without crowding the top bar.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  to="/practice-workbook"
+                  to="/enroll"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-500"
                 >
-                  Continue Practice
+                  Enroll Now
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/messages"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+                  className="relative inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
                 >
-                  Message Support
+                  Messages
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-5 py-3 text-sm font-bold text-emerald-100 transition hover:bg-emerald-700 hover:text-white"
+                  >
+                    Admin Panel
+                    <LayoutDashboard className="h-4 w-4" />
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -168,7 +276,7 @@ export default function Dashboard() {
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Account</p>
                   <p className="mt-1 text-lg font-bold text-white">{roleLabel}</p>
                 </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${isPending ? 'bg-amber-400/10 text-amber-200 border border-amber-300/20' : 'bg-emerald-400/10 text-emerald-200 border border-emerald-300/20'}`}>
+                <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${isPending ? 'border border-amber-300/20 bg-amber-400/10 text-amber-200' : 'border border-emerald-300/20 bg-emerald-400/10 text-emerald-200'}`}>
                   {isPending ? 'Pending' : 'Approved'}
                 </span>
               </div>
@@ -188,7 +296,25 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
+        <section className="mb-6 rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Featured Navigation</p>
+              <h2 className="mt-2 text-2xl font-black text-white">Choose your next step</h2>
+            </div>
+            <div className="rounded-2xl bg-emerald-400/10 p-3 text-emerald-200">
+              <Compass className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {FEATURED_SHORTCUTS.map((item) => (
+              <ShortcutCard key={item.label} item={item} />
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {MILESTONES.map(({ label, value, detail, icon: Icon }) => (
             <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
               <Icon className="mb-3 h-5 w-5 text-emerald-300" />
@@ -246,8 +372,8 @@ export default function Dashboard() {
           <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 sm:p-6">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Learning Path</p>
-                <h2 className="mt-2 text-2xl font-black text-white">Choose where to continue</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Beginning Learning Path</p>
+                <h2 className="mt-2 text-2xl font-black text-white">Letters to practicals</h2>
               </div>
               <div className="rounded-2xl bg-emerald-400/10 p-3 text-emerald-200">
                 <Award className="h-5 w-5" />
@@ -255,19 +381,8 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              {LEARNING_PATH.map(({ label, description, to, icon: Icon }) => (
-                <Link
-                  key={label}
-                  to={to}
-                  className="group rounded-2xl border border-white/10 bg-black/10 p-4 transition hover:border-emerald-300/40 hover:bg-emerald-400/10"
-                >
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <Icon className="h-5 w-5 text-emerald-300" />
-                    <ArrowRight className="h-4 w-4 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-emerald-200" />
-                  </div>
-                  <h3 className="font-bold text-white">{label}</h3>
-                  <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
-                </Link>
+              {BEGINNER_PATH.map((item, index) => (
+                <PathCard key={item.label} item={item} index={index} />
               ))}
             </div>
           </div>
@@ -275,23 +390,16 @@ export default function Dashboard() {
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Teacher Connection</p>
-            <h2 className="mt-2 text-2xl font-black text-white">
-              {isPending ? 'Approval is pending' : 'Your learning account is active'}
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-slate-400">
-              {isPending
-                ? 'Your account has been created. Once the madrasah approves your profile, your teacher connection and class details can be added.'
-                : 'Use Messages when you need support, correction, class updates, or help with your current learning plan.'}
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link to="/messages" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-950 transition hover:bg-emerald-50">
-                Open Messages
-                <MessageCircle className="h-4 w-4" />
-              </Link>
-              <Link to="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10">
-                Contact Admin
-              </Link>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">More SirajOne Tools</p>
+            <h2 className="mt-2 text-2xl font-black text-white">Support around the learning path</h2>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {SECONDARY_PATH.map(({ label, description, to, icon: Icon }) => (
+                <Link key={label} to={to} className="rounded-2xl border border-white/10 bg-black/10 p-4 transition hover:border-emerald-300/40 hover:bg-emerald-400/10">
+                  <Icon className="mb-3 h-5 w-5 text-emerald-300" />
+                  <h3 className="font-bold text-white">{label}</h3>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -306,6 +414,12 @@ export default function Dashboard() {
                 <p className="mt-3 text-sm leading-7 text-emerald-50/80">
                   Keep the dashboard simple: practise, revise, ask for help, and return tomorrow. SirajOne is being shaped around steady learning, not pressure.
                 </p>
+                {isAdmin && (
+                  <Link to="/admin" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-950 transition hover:bg-emerald-50">
+                    Open Admin Panel
+                    <LayoutDashboard className="h-4 w-4" />
+                  </Link>
+                )}
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+﻿import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Recorder } from '../components/platform/Recorder';
@@ -44,7 +44,7 @@ function ProgressRail({ units, activeUnitId, completedUnits, onSelect }) {
   return (
     <aside className="rounded-3xl border border-white/10 bg-white/[0.045] p-4 lg:sticky lg:top-24 lg:self-start">
       <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Beginning Learning</p>
-      <div className="space-y-2">
+      <div className="max-h-[74vh] space-y-2 overflow-y-auto pr-1">
         {units.map((unit, index) => {
           const active = unit.id === activeUnitId;
           const done = completedUnits[unit.id];
@@ -83,7 +83,7 @@ function TeacherCorrectionPanel() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-200">Teacher Correction</p>
           <h3 className="mt-2 text-xl font-black text-white">Correction audio space</h3>
           <p className="mt-2 text-sm leading-7 text-amber-50/80">
-            After a teacher reviews the student's recitation, their correction audio or note can appear here. For now, students can listen, record, replay, compare, and repeat safely on this page.
+            After a teacher reviews the student's recitation, their correction audio or note can appear here. Students can listen, record, replay, compare, and repeat safely on this page.
           </p>
           <button
             type="button"
@@ -99,19 +99,30 @@ function TeacherCorrectionPanel() {
   );
 }
 
+function MakhrajNote({ children }) {
+  return (
+    <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/10 p-4 text-sm leading-7 text-emerald-50/85">
+      <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Note</p>
+      {children}
+    </div>
+  );
+}
+
 export default function PracticalWorkbook() {
   const [activeUnitId, setActiveUnitId] = useState(PRACTICAL_WORKBOOK_UNITS[0]?.id);
   const [completedUnits, setCompletedUnits] = useState({});
+  const [selectedPractice, setSelectedPractice] = useState(null);
   const { speak, speakingId } = useArabicSpeech();
 
   const activeUnit = useMemo(() => {
     return PRACTICAL_WORKBOOK_UNITS.find((unit) => unit.id === activeUnitId) || PRACTICAL_WORKBOOK_UNITS[0];
   }, [activeUnitId]);
 
+  const activeIndex = PRACTICAL_WORKBOOK_UNITS.findIndex((unit) => unit.id === activeUnit.id) + 1;
   const progress = Math.round((Object.values(completedUnits).filter(Boolean).length / PRACTICAL_WORKBOOK_UNITS.length) * 100);
 
   const playFullUnit = () => {
-    const text = activeUnit.drills.map((drill) => drill.arabic).join('. ');
+    const text = activeUnit.letters.flatMap((letter) => letter.examples?.length ? letter.examples : [letter.arabic]).join('. ');
     speak(text, `${activeUnit.id}-full`);
   };
 
@@ -122,8 +133,13 @@ export default function PracticalWorkbook() {
   const resetUnit = () => {
     window.speechSynthesis?.cancel();
     setCompletedUnits((current) => ({ ...current, [activeUnit.id]: false }));
+    setSelectedPractice(null);
   };
 
+  const startPractice = (letter) => {
+    setSelectedPractice(letter);
+    document.getElementById('student-recording')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white">
       <Navbar />
@@ -142,7 +158,7 @@ export default function PracticalWorkbook() {
                 {PRACTICAL_WORKBOOK_META.title}
               </h1>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                A practical bridge after the alphabet: students listen to the correct reading, practise short drills, record their own recitation, replay it, and prepare for teacher correction.
+                A practical bridge after the alphabet: students learn each makhraj, listen to examples, practise the correct placement, record their own recitation, replay it, and prepare for teacher correction.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
@@ -151,7 +167,7 @@ export default function PracticalWorkbook() {
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-500"
                 >
                   <Headphones className="h-4 w-4" />
-                  Listen to Current Unit
+                  Listen to Current Makhraj
                 </button>
                 <button
                   type="button"
@@ -159,7 +175,7 @@ export default function PracticalWorkbook() {
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  {completedUnits[activeUnit.id] ? 'Marked Complete' : 'Mark Unit Complete'}
+                  {completedUnits[activeUnit.id] ? 'Marked Complete' : 'Mark Makhraj Complete'}
                 </button>
               </div>
             </div>
@@ -173,25 +189,28 @@ export default function PracticalWorkbook() {
                 <div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Complete each unit after listening, recording, replaying, and correcting one point.
+                Complete each makhraj after listening, recording, replaying, and correcting one point.
               </p>
             </div>
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
           <ProgressRail
             units={PRACTICAL_WORKBOOK_UNITS}
             activeUnitId={activeUnit.id}
             completedUnits={completedUnits}
-            onSelect={setActiveUnitId}
+            onSelect={(id) => {
+              setActiveUnitId(id);
+              setSelectedPractice(null);
+            }}
           />
 
           <div className="space-y-6">
             <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 sm:p-6">
               <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Practice Unit</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Makhraj {activeIndex}</p>
                   <h2 className="mt-2 text-3xl font-black text-white">{activeUnit.title}</h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">{activeUnit.subtitle}</p>
                 </div>
@@ -200,7 +219,20 @@ export default function PracticalWorkbook() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-[1fr_0.82fr]">
+              <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+                <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Makhraj Placement</p>
+                <p className="text-sm leading-7 text-slate-300">{activeUnit.placement}</p>
+              </div>
+
+              {activeUnit.notes.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  {activeUnit.notes.map((note) => (
+                    <MakhrajNote key={note}>{note}</MakhrajNote>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-4 grid gap-4 md:grid-cols-[1fr_0.82fr]">
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                   <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Student Steps</p>
                   <ol className="space-y-2 text-sm leading-6 text-slate-300">
@@ -225,58 +257,100 @@ export default function PracticalWorkbook() {
                 </div>
               </div>
             </section>
-
-            <section className="grid gap-4 md:grid-cols-2">
-              {activeUnit.drills.map((drill, index) => {
-                const drillId = `${activeUnit.id}-${index}`;
-                const isSpeaking = speakingId === drillId;
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {activeUnit.letters.map((letter, index) => {
+                const letterId = `${activeUnit.id}-letter-${index}`;
+                const exampleText = letter.examples?.join(' ') || letter.arabic;
+                const isSpeaking = speakingId === letterId;
                 return (
-                  <article key={drillId} className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 transition hover:border-emerald-300/30 hover:bg-emerald-400/10">
-                    <div className="mb-4 flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Drill {index + 1}</p>
-                        <p className="mt-1 text-sm font-semibold text-emerald-200">{drill.transliteration}</p>
+                  <article key={letterId} className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.045] transition hover:border-emerald-300/30 hover:bg-emerald-400/10">
+                    <div className="p-5">
+                      <div className="mb-4 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Letter {index + 1}</p>
+                          <p className="mt-1 text-sm font-semibold text-emerald-200">{letter.transliteration}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => speak(exampleText, letterId)}
+                          className={`rounded-xl p-2 transition ${isSpeaking ? 'bg-emerald-700 text-white' : 'bg-white/8 text-slate-300 hover:bg-emerald-700 hover:text-white'}`}
+                          title="Listen to this example"
+                        >
+                          <Volume2 className="h-5 w-5" />
+                        </button>
                       </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-[#07120d] p-5 text-center">
+                        <div className="font-arabic text-6xl font-bold leading-[1.35] text-white" dir="rtl" lang="ar">
+                          {letter.arabic}
+                        </div>
+                        <p className="mt-2 text-sm font-black text-white">{letter.name}</p>
+                      </div>
+
+                      {letter.examples?.length > 0 && (
+                        <div className="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4 text-center">
+                          <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Examples</p>
+                          <div className="font-arabic text-3xl font-bold leading-[1.8] text-white" dir="rtl" lang="ar">
+                            {letter.examples.join('   ')}
+                          </div>
+                        </div>
+                      )}
+
+                      <p className="mt-4 text-sm leading-6 text-slate-400">{letter.instruction}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 border-t border-white/10">
                       <button
                         type="button"
-                        onClick={() => speak(drill.arabic, drillId)}
-                        className={`rounded-xl p-2 transition ${isSpeaking ? 'bg-emerald-700 text-white' : 'bg-white/8 text-slate-300 hover:bg-emerald-700 hover:text-white'}`}
-                        title="Listen to this drill"
+                        onClick={() => speak(exampleText, `${letterId}-footer`)}
+                        className="inline-flex items-center justify-center gap-2 border-r border-white/10 px-3 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/8 hover:text-white"
                       >
-                        <Volume2 className="h-5 w-5" />
+                        <Volume2 className="h-4 w-4" />
+                        Listen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startPractice(letter)}
+                        className="inline-flex items-center justify-center gap-2 px-3 py-3 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/10 hover:text-emerald-100"
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        Practise
                       </button>
                     </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-[#07120d] p-5 text-center">
-                      <div className="font-arabic text-4xl font-bold leading-[1.8] text-white sm:text-5xl" dir="rtl" lang="ar">
-                        {drill.arabic}
-                      </div>
-                    </div>
-
-                    <p className="mt-4 text-sm leading-6 text-slate-400">{drill.note}</p>
                   </article>
                 );
               })}
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
+            <section id="student-recording" className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
               <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 sm:p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Student Voice Check</p>
-                    <h3 className="mt-2 text-2xl font-black text-white">Record this unit</h3>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Student Recording</p>
+                    <h3 className="mt-2 text-2xl font-black text-white">
+                      {selectedPractice ? `Practise: ${selectedPractice.name}` : 'Record this makhraj'}
+                    </h3>
                   </div>
                   <button
                     type="button"
                     onClick={resetUnit}
                     className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
-                    title="Reset this unit completion"
+                    title="Reset this makhraj completion"
                   >
                     <RotateCcw className="h-4 w-4" />
                   </button>
                 </div>
+                {selectedPractice && (
+                  <div className="mb-4 rounded-2xl border border-emerald-300/15 bg-emerald-400/10 p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Selected Practice</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-4">
+                      <span className="font-arabic text-4xl font-bold text-white" dir="rtl" lang="ar">{selectedPractice.arabic}</span>
+                      <span className="text-sm leading-6 text-emerald-50/80">{selectedPractice.instruction}</span>
+                    </div>
+                  </div>
+                )}
                 <p className="mb-4 text-sm leading-7 text-slate-400">
-                  Read the selected unit aloud after listening. Replay your own voice, compare it with the model, then repeat until it becomes clearer.
+                  Flow: Listen, record, play, compare, repeat. Replay your own voice and correct one point before recording again.
                 </p>
                 <Recorder />
               </div>
