@@ -489,7 +489,68 @@ export const partTwoWorkbookLessons = [
   },
 
   // =========================================================================
-  // LESSONS 5–23 — generated with real rules; arabicText = '' (awaiting HTML)
+  // LESSON 5 — UNIT 5: Tashdīd
+  // Arabic: ✅ Real content sourced from page10.html
+  // Audio: only one file per row (a1–g1). All 4 cells in each row share it.
+  //        col4 of every row is highlighted (red sukun span in HTML).
   // =========================================================================
-  ...Array.from({ length: 19 }, (_, index) => createUnitLesson(index + 5)),
+  {
+    id: 'unit-5-lesson-5',
+    unitNumber: 5,
+    lessonNumber: 5,
+    title: 'UNIT 5 / LESSON 5',
+    subtitle: LESSON_SUBTITLES[5],
+    rule: {
+      title: RULE_TITLES[5],
+      explanation: RULE_EXPLANATIONS[5],
+    },
+    gridItems: [
+      // Row 1 — all 4 cells share a1.mp3
+      { id: 'a1', arabicText: 'رَبِّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/a1.mp3' },
+      { id: 'a2', arabicText: 'رَ بْبِ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/a1.mp3' },
+      { id: 'a3', arabicText: 'رَبِّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/a1.mp3' },
+      { id: 'a4', arabicText: 'رَ بْبِ',  isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/a1.mp3' },
+
+      // Row 2 — all 4 cells share b1.mp3
+      { id: 'b1', arabicText: 'اِنَّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/b1.mp3' },
+      { id: 'b2', arabicText: 'اِنْنَ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/b1.mp3' },
+      { id: 'b3', arabicText: 'اِنَّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/b1.mp3' },
+      { id: 'b4', arabicText: 'اِنْنَ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/b1.mp3' },
+
+      // Row 3 — all 4 cells share c1.mp3
+      { id: 'c1', arabicText: 'ﺛُـﻢَّ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/c1.mp3' },
+      { id: 'c2', arabicText: 'ثُمْمَ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/c1.mp3' },
+      { id: 'c3', arabicText: 'ثُمَّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/c1.mp3' },
+      { id: 'c4', arabicText: 'ثُمْمَ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/c1.mp3' },
+
+      // Row 4 — all 4 cells share d1.mp3
+      { id: 'd1', arabicText: 'كُلُّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/d1.mp3' },
+      { id: 'd2', arabicText: 'كُلْلُ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/d1.mp3' },
+      { id: 'd3', arabicText: 'كُلُّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/d1.mp3' },
+      { id: 'd4', arabicText: 'كُلْلُ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/d1.mp3' },
+
+      // Row 5 — all 4 cells share e1.mp3
+      { id: 'e1', arabicText: 'قَدِّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/e1.mp3' },
+      { id: 'e2', arabicText: 'قَدْدِ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/e1.mp3' },
+      { id: 'e3', arabicText: 'قَدِّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/e1.mp3' },
+      { id: 'e4', arabicText: 'قَدْدِ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/e1.mp3' },
+
+      // Row 6 — all 4 cells share f1.mp3
+      { id: 'f1', arabicText: 'خَفَّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/f1.mp3' },
+      { id: 'f2', arabicText: 'خَفْفَ',   isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/f1.mp3' },
+      { id: 'f3', arabicText: 'خَفَّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/f1.mp3' },
+      { id: 'f4', arabicText: 'خَفْفَ',   isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/f1.mp3' },
+
+      // Row 7 — all 4 cells share g1.mp3
+      { id: 'g1', arabicText: 'بِرِّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/g1.mp3' },
+      { id: 'g2', arabicText: 'بِرْ رِ',  isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/g1.mp3' },
+      { id: 'g3', arabicText: 'بِرِّ',    isHighlighted: false, audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/g1.mp3' },
+      { id: 'g4', arabicText: 'بِرْ رِ',  isHighlighted: true,  audioUrl: 'https://p2.trq.itvarsity.org/audio/page10/g1.mp3' },
+    ],
+  },
+
+  // =========================================================================
+  // LESSONS 6–23 — generated with real rules; arabicText = '' (awaiting HTML)
+  // =========================================================================
+  ...Array.from({ length: 18 }, (_, index) => createUnitLesson(index + 6)),
 ];
