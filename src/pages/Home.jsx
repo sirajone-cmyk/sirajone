@@ -68,9 +68,9 @@ export default function Home() {
       <Navbar />
 
       {/* HERO */}
-      <section className="relative text-center pt-28 pb-24 px-4 overflow-hidden min-h-[85vh] flex flex-col justify-center">
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1585036156171-384164a8c675?w=1400&q=80')" }} />
-        <div className="hero-book-depth absolute inset-0" aria-hidden="true">
+      <section className="relative isolate text-center pt-28 pb-24 px-4 overflow-hidden min-h-[85vh] flex flex-col justify-center">
+        <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1585036156171-384164a8c675?w=1400&q=80')" }} />
+        <div className="hero-book-depth absolute inset-0 z-[2]" aria-hidden="true">
           <div className="hero-book-perspective">
             <span className="hero-turning-page hero-turning-page-one" />
             <span className="hero-turning-page hero-turning-page-two" />
@@ -78,8 +78,8 @@ export default function Home() {
             <span className="hero-turning-page hero-turning-page-four" />
           </div>
         </div>
-        <div className="absolute inset-0 bg-[#0b1a12]/80" />
-        <div className="relative max-w-3xl mx-auto">
+        <div className="absolute inset-0 z-[1] bg-[#0b1a12]/78" />
+        <div className="relative z-10 max-w-3xl mx-auto">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-700 bg-emerald-950/60 text-emerald-400 text-sm font-medium mb-8">
             <MapPin className="w-3.5 h-3.5" /> Durban, South Africa • In-Person & Online Learning
           </span>
