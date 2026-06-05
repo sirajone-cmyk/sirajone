@@ -1,8 +1,11 @@
-﻿export const ROLES = Object.freeze({
+export const ROLES = Object.freeze({
   STUDENT: 'Student',
   TEACHER: 'Teacher',
   ADMIN: 'Admin',
   CO_ADMIN: 'Co-Admin',
+  COUNSELLOR: 'Counsellor',
+  // Legacy spelling kept for backwards compat with seeded data
+  COUNSELOR: 'Counselor',
 });
 
 export const USER_STATUS = Object.freeze({
@@ -25,6 +28,30 @@ export const APPROVED_TEACHER_ROLES = Object.freeze([
   ROLES.TEACHER,
 ]);
 
+export const COUNSELLOR_CATEGORIES = Object.freeze([
+  'Child Counselling',
+  'Teen Counselling',
+  'Adult Counselling',
+  'Marriage Counselling',
+  'Family Counselling',
+  'Parenting Support',
+  'Spiritual Counselling',
+  'Islamic Guidance',
+  'Youth Mentorship',
+  'Student Support',
+  'Academic Stress Support',
+  'Grief Support',
+  'Lifestyle & Wellbeing Support',
+]);
+
+export const SERVICE_DELIVERY_OPTIONS = Object.freeze([
+  'Online',
+  'In-Person',
+  'Phone',
+  'WhatsApp',
+  'Group Sessions',
+]);
+
 export function normalizeEmail(email = '') {
   return email.trim().toLowerCase();
 }
@@ -35,6 +62,10 @@ export function isOwnerEmail(email = '') {
 
 export function isAdminRole(role) {
   return ADMIN_ROLES.includes(role);
+}
+
+export function isCounsellorRole(role) {
+  return role === ROLES.COUNSELLOR || role === ROLES.COUNSELOR;
 }
 
 export function enrichUserProfile(profile = {}) {
@@ -51,5 +82,7 @@ export function enrichUserProfile(profile = {}) {
     isAdmin: isAdminRole(role) && status === USER_STATUS.APPROVED,
     isTeacher: role === ROLES.TEACHER && status === USER_STATUS.APPROVED,
     isTeacherPending: role === ROLES.TEACHER && status === USER_STATUS.PENDING,
+    isCounsellor: isCounsellorRole(role) && status === USER_STATUS.APPROVED,
+    isCounsellorPending: isCounsellorRole(role) && status === USER_STATUS.PENDING,
   };
 }

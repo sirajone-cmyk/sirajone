@@ -1,4 +1,4 @@
-rules_version = '2';
+﻿rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -31,7 +31,7 @@ service cloud.firestore {
     }
 
     function isKnownRole(role) {
-      return role in ['Student', 'Teacher', 'Admin', 'Co-Admin'];
+      return role in ['Student', 'Teacher', 'Admin', 'Co-Admin', 'Counsellor', 'Counselor'];
     }
 
     function isKnownStatus(status) {
@@ -73,6 +73,11 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
     }
 
+    function validCounsellorApplication() {
+      return request.resource.data.role in ['Counsellor', 'Counselor']
+        && request.resource.data.status == 'pending';
+    }
+
     function validOwnerBootstrap() {
       return isOwnerEmail()
         && request.resource.data.role == 'Admin'
@@ -84,7 +89,7 @@ service cloud.firestore {
         && !userProfileExists(userId)
         && isKnownRole(request.resource.data.role)
         && isKnownStatus(request.resource.data.status)
-        && (validStudentSignup() || validTeacherApplication() || validOwnerBootstrap());
+        && (validStudentSignup() || validTeacherApplication() || validCounsellorApplication() || validOwnerBootstrap());
     }
 
     function onlyTeacherEditablePublicFieldsChanged() {
@@ -95,6 +100,32 @@ service cloud.firestore {
     function validTeacherPublicProfileCreate(userId) {
       return isSelf(userId)
         && request.resource.data.profileStatus == 'pending';
+    }
+
+    function onlyCounsellorEditablePublicFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['bio', 'displayName', 'profilePhoto', 'languagesSpoken', 'serviceDeliveryModes', 'availability', 'updated_at']);
+    }
+
+    function validCounsellorPublicProfileCreate(userId) {
+      return isSelf(userId)
+        && request.resource.data.profileStatus == 'pending';
+    }
+
+    function ownsCounsellingRequestData(data) {
+      return signedIn()
+        && (
+          data.studentId == request.auth.uid
+          || data.counsellorId == request.auth.uid
+        );
+    }
+
+    function validCounsellingRequestCreate() {
+      return isApprovedUser()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.counsellorId is string
+        && request.resource.data.categories is list;
     }
 
     function onlySeatIncrementChanged() {
@@ -201,6 +232,34 @@ service cloud.firestore {
       }
     }
 
+    match /counsellors/{userId} {
+      allow read: if signedIn();
+      allow create: if validCounsellorPublicProfileCreate(userId) || isAdminUser();
+      allow update: if isAdminUser()
+        || (isSelf(userId) && onlyCounsellorEditablePublicFieldsChanged());
+      allow delete: if isAdminUser();
+
+      match /private_data/verification {
+        allow read: if isAdminUser() || isSelf(userId);
+        allow create: if isSelf(userId);
+        allow update, delete: if isAdminUser();
+      }
+
+      match /private_data/{documentId} {
+        allow read, write: if false;
+      }
+    }
+
+    match /counsellingRequests/{documentId} {
+      allow read: if isAdminUser() || ownsCounsellingRequestData(resource.data);
+      allow create: if validCounsellingRequestCreate();
+      allow update: if isAdminUser()
+        || (ownsCounsellingRequestData(resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'updatedAt', 'lastMessageAt', 'studentNote', 'counsellorReply']));
+      allow delete: if isAdminUser();
+    }
+
     match /enrollments/{documentId} {
       allow read: if isAdminUser() || ownsEnrollmentData(resource.data);
       allow create: if validPendingPaymentEnrollment();
@@ -236,6 +295,7 @@ service cloud.firestore {
     match /messages/{documentId} {
       allow read, create, update, delete: if false;
     }
+
     match /classrooms/{subjectId}/announcements/{documentId} {
       allow read: if signedIn();
       allow write: if signedIn()

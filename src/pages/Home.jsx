@@ -9,8 +9,8 @@ import {
 const programs = [
   { icon: BookOpen, title: "Qa'idah & Qur'an Reading", parts: 'Part 1 & Part 2', desc: "Master Arabic letters, vowels, and basic connected reading.", level: 'Beginner', color: 'border-emerald-700/60 bg-emerald-950/40', badge: 'bg-emerald-900 text-emerald-300' },
   { icon: Mic, title: 'Tajwid Foundations', parts: 'Rules & Application', desc: "Learn Makharij, Sifat, Ghunnah, Madd and all core Tajwid rules.", level: 'Intermediate', color: 'border-amber-700/60 bg-amber-950/40', badge: 'bg-amber-900 text-amber-300' },
-  { icon: Star, title: '?if? Programme', parts: 'Memorisation + Muraja?ah', desc: 'Structured ?if? with daily Sabaq, Awal and Akhir Muraja?ah cycles.', level: 'Advanced', color: 'border-violet-700/60 bg-violet-950/40', badge: 'bg-violet-900 text-violet-300' },
-  { icon: TrendingUp, title: 'Muraja?ah System', parts: 'Revision & Retention', desc: 'A structured cycle to maintain, strengthen, and perfect memorisation.', level: '?uffa?', color: 'border-sky-700/60 bg-sky-950/40', badge: 'bg-sky-900 text-sky-300' },
+  { icon: Star, title: 'Ḥifẓ Programme', parts: 'Memorisation + Murājaʿah', desc: 'Structured Ḥifẓ with daily Sabaq, Awal and Akhir Murājaʿah cycles.', level: 'Advanced', color: 'border-violet-700/60 bg-violet-950/40', badge: 'bg-violet-900 text-violet-300' },
+  { icon: TrendingUp, title: 'Murājaʿah System', parts: 'Revision & Retention', desc: 'A structured cycle to maintain, strengthen, and perfect memorisation.', level: 'Ḥuffāẓ', color: 'border-sky-700/60 bg-sky-950/40', badge: 'bg-sky-900 text-sky-300' },
 ];
 
 const learningPath = [
@@ -57,7 +57,7 @@ const benefits = [
 ];
 
 const testimonials = [
-  { name: 'Sister Aisha', role: 'Parent · Durban', text: "My son's recitation improved dramatically in just 3 months. Al?amdulillah." },
+  { name: 'Sister Aisha', role: 'Parent · Durban', text: "My son's recitation improved dramatically in just 3 months. Alḥamdulillah." },
   { name: 'Brother Yusuf', role: 'Student', text: "I never understood Tajwid properly until I joined. Highly recommended." },
   { name: 'Sister Fatima', role: 'Parent · Pietermaritzburg', text: "Online classes are professional and my daughter looks forward to every session." },
 ];
@@ -384,5 +384,3 @@ export default function Home() {
     </div>
   );
 }
-
-

@@ -10,6 +10,7 @@ import { doc, getDoc, serverTimestamp, setDoc, writeBatch } from 'firebase/fires
 import { auth, db } from './firebase';
 import { ROLES, USER_STATUS, enrichUserProfile, isOwnerEmail } from './roles';
 import { buildTeacherApplicationPayload } from './teacherSchema';
+import { buildCounsellorApplicationPayload, normalizeCounsellorName } from './counsellorSchema';
 
 const AuthContext = createContext();
 
@@ -153,6 +154,54 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const applyAsCounsellor = async (email, password, fullName, counsellorApplication = {}) => {
+    setAuthError(null);
+    try {
+      const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
+      const submittedAt = serverTimestamp();
+      const normalizedFullName = normalizeCounsellorName(fullName, { allowTitle: false });
+      const applicationPayload = buildCounsellorApplicationPayload({
+        ...counsellorApplication,
+        fullName: normalizedFullName,
+        email,
+      });
+
+      const userRef = doc(db, 'users', firebaseUser.uid);
+      const counsellorRef = doc(db, 'counsellors', firebaseUser.uid);
+      const privateVerificationRef = doc(db, 'counsellors', firebaseUser.uid, 'private_data', 'verification');
+      const batch = writeBatch(db);
+
+      batch.set(userRef, {
+        full_name: normalizedFullName,
+        display_name: applicationPayload.publicProfile.displayName,
+        email,
+        role: ROLES.COUNSELLOR,
+        status: USER_STATUS.PENDING,
+        created_at: submittedAt,
+      });
+
+      batch.set(counsellorRef, {
+        ...applicationPayload.publicProfile,
+        uid: firebaseUser.uid,
+        created_at: submittedAt,
+        updated_at: submittedAt,
+      });
+
+      batch.set(privateVerificationRef, {
+        ...applicationPayload.privateData,
+        uid: firebaseUser.uid,
+        submitted_at: submittedAt,
+        updated_at: submittedAt,
+      });
+
+      await batch.commit();
+      return firebaseUser;
+    } catch (error) {
+      setAuthError(error.message);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
     setUser(null);
@@ -174,6 +223,7 @@ export const AuthProvider = ({ children }) => {
       register: registerStudent,
       registerStudent,
       applyAsTeacher,
+      applyAsCounsellor,
       logout,
       resetPassword,
     }}>
@@ -189,3 +239,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

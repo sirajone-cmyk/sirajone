@@ -13,9 +13,11 @@ import {
   LogOut,
   PenTool,
   Compass,
+  HeartHandshake,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import { isCounsellorRole } from '@/lib/roles';
 
 const primaryLinks = [
   { to: '/', label: 'Home', icon: Home },
@@ -26,6 +28,7 @@ const primaryLinks = [
 const hubLinks = [
   { to: '/library', label: 'Library', icon: Library },
   { to: '/teachers', label: 'Teachers', icon: Users },
+  { to: '/counsellors', label: 'Counsellors', icon: HeartHandshake },
   { to: '/contact', label: 'Contact', icon: Phone },
   { to: '/letters', label: 'Letter Guide', icon: BookOpen },
   { to: '/practice-workbook', label: 'Practice Book', icon: PenTool },
@@ -60,12 +63,15 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
+  const isCounsellor = isCounsellorRole(user?.role);
   const dashboardLink = useMemo(
     () =>
       isAdmin
         ? { to: '/admin', label: 'Admin Panel', icon: LayoutDashboard }
-        : { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    [isAdmin]
+        : isCounsellor
+          ? { to: '/counsellor', label: 'Counsellor', icon: HeartHandshake }
+          : { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    [isAdmin, isCounsellor]
   );
 
   const messagePath = isAdmin ? '/admin/messages' : '/messages';
@@ -205,3 +211,4 @@ export default function Navbar() {
     </header>
   );
 }
+

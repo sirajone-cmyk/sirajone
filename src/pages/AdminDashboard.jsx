@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import {
   Users,
@@ -11,6 +11,7 @@ import {
   Eye,
   Loader2,
   X,
+  HeartHandshake,
 } from 'lucide-react';
 import {
   collection,
@@ -40,6 +41,7 @@ const formatCurrency = (value) =>
 
 const readAmount = (payment) => Number(payment.amount || payment.amount_gross || payment.price_zar || 0);
 const isTeacherRole = (role) => role === 'Teacher';
+const isCounsellorRole = (role) => role === 'Counsellor' || role === 'Counselor';
 
 const hasDisplayValue = (value) => {
   if (value === null || value === undefined) return false;
@@ -91,6 +93,33 @@ async function syncTeacherPublicProfile(user, profileStatus = 'approved', existi
   await setDoc(
     doc(db, 'teachers', user.id),
     buildSafeTeacherProfile(user, profileStatus, existingProfile),
+    { merge: true }
+  );
+}
+
+const buildSafeCounsellorProfile = (user, profileStatus = 'approved', existingProfile = null) => ({
+  fullName: existingProfile?.fullName || user.full_name || user.name || user.email || 'SirajOne Counsellor',
+  displayName: existingProfile?.displayName || user.displayName || user.full_name || user.name || user.email || 'SirajOne Counsellor',
+  email: existingProfile?.email || user.email || '',
+  mobileNumber: existingProfile?.mobileNumber || user.mobileNumber || '',
+  country: existingProfile?.country || user.country || '',
+  city: existingProfile?.city || user.city || '',
+  languagesSpoken: Array.isArray(existingProfile?.languagesSpoken) ? existingProfile.languagesSpoken : [],
+  profilePhoto: existingProfile?.profilePhoto || '',
+  categories: Array.isArray(existingProfile?.categories) ? existingProfile.categories : [],
+  serviceDeliveryModes: existingProfile?.serviceDeliveryModes || {},
+  availability: existingProfile?.availability || {},
+  bio: existingProfile?.bio || 'Approved SirajOne counsellor profile. Profile details will be completed soon.',
+  profileStatus,
+  updated_at: serverTimestamp(),
+});
+
+async function syncCounsellorPublicProfile(user, profileStatus = 'approved', existingProfile = null) {
+  if (!user?.id || !isCounsellorRole(user.role)) return;
+
+  await setDoc(
+    doc(db, 'counsellors', user.id),
+    buildSafeCounsellorProfile(user, profileStatus, existingProfile),
     { merge: true }
   );
 }
@@ -359,10 +388,208 @@ function FinancialTracker({ payments, enrollments }) {
   );
 }
 
+function AdminEmptyState({ title, body, actionLabel }) {
+  return (
+    <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center">
+      <HeartHandshake className="mx-auto mb-3 h-8 w-8 text-emerald-400" />
+      <h3 className="text-lg font-bold text-white">{title}</h3>
+      <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-400">{body}</p>
+      {actionLabel && (
+        <button
+          type="button"
+          className="mt-5 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-950/30"
+        >
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, onApprove, onSuspend }) {
+  const counsellorUsers = users.filter((user) => isCounsellorRole(user.role));
+  const pendingApplications = counsellorUsers.filter((user) => user.status === 'pending');
+  const approvedProfiles = counsellorProfiles.filter((profile) => profile.profileStatus === 'approved');
+  const pendingRequests = counsellingRequests.filter((request) => request.status === 'pending');
+
+  const cards = [
+    { label: 'Counsellor Accounts', value: counsellorUsers.length, icon: HeartHandshake, tone: 'text-emerald-300' },
+    { label: 'Pending Applications', value: pendingApplications.length, icon: Clock, tone: 'text-amber-300' },
+    { label: 'Approved Public Profiles', value: approvedProfiles.length, icon: CheckCircle, tone: 'text-sky-300' },
+    { label: 'Open Support Requests', value: pendingRequests.length, icon: ReceiptText, tone: 'text-violet-300' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-4">
+        {cards.map((card) => (
+          <div key={card.label} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <card.icon className={`mb-3 h-6 w-6 ${card.tone}`} />
+            <div className="mb-1 text-3xl font-bold text-white">{card.value}</div>
+            <div className="text-sm text-slate-400">{card.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+        <div className="border-b border-white/10 px-5 py-4">
+          <h2 className="text-lg font-bold text-white">Pending Counsellor Registrations</h2>
+          <p className="text-sm text-slate-500">Approve or suspend counsellor applications after verification.</p>
+        </div>
+        {pendingApplications.length === 0 ? (
+          <div className="p-5">
+            <AdminEmptyState
+              title="No pending counsellor applications"
+              body="New counsellor applications will appear here with clean approval actions. No placeholder counsellors are shown."
+            />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left">
+                  <th className="px-5 py-4 font-semibold text-slate-400">Applicant</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Role</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Status</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/8">
+                {pendingApplications.map((user) => (
+                  <tr key={user.id} className="transition-colors hover:bg-white/3">
+                    <td className="px-5 py-4">
+                      <div className="font-semibold text-white">{user.full_name || user.name || user.email || 'Counsellor Applicant'}</div>
+                      <div className="text-xs text-slate-500">{user.email}</div>
+                    </td>
+                    <td className="px-5 py-4 text-slate-300">{user.role}</td>
+                    <td className="px-5 py-4">
+                      <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle[user.status] || statusStyle.pending}`}>
+                        {user.status || 'pending'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onApprove(user)}
+                          className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800"
+                          title="Approve counsellor"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onSuspend(user)}
+                          className="rounded-lg bg-amber-900/60 p-1.5 text-amber-400 transition-colors hover:bg-amber-800"
+                          title="Suspend counsellor"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+        <div className="border-b border-white/10 px-5 py-4">
+          <h2 className="text-lg font-bold text-white">Approved Counsellor Profiles</h2>
+          <p className="text-sm text-slate-500">Public counsellor profiles visible to students.</p>
+        </div>
+        {approvedProfiles.length === 0 ? (
+          <div className="p-5">
+            <AdminEmptyState
+              title="No approved counsellor profiles"
+              body="Approved counsellors will appear here once an application is verified. We are intentionally not using fake profile records."
+            />
+          </div>
+        ) : (
+          <div className="grid gap-4 p-5 md:grid-cols-2">
+            {approvedProfiles.map((profile) => (
+              <article key={profile.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold text-white">{profile.displayName || profile.fullName || 'SirajOne Counsellor'}</h3>
+                    <p className="text-sm text-slate-500">{[profile.city, profile.country].filter(Boolean).join(', ') || 'Location not provided'}</p>
+                  </div>
+                  <span className="rounded-full border border-emerald-800 bg-emerald-950/60 px-2.5 py-1 text-xs font-bold text-emerald-300">
+                    Approved
+                  </span>
+                </div>
+                <p className="mb-4 line-clamp-3 text-sm leading-6 text-slate-300">{profile.bio || 'Bio not provided.'}</p>
+                <div className="flex flex-wrap gap-2">
+                  {(profile.categories || []).slice(0, 5).map((category) => (
+                    <span key={category} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300">
+                      {category}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+        <div className="border-b border-white/10 px-5 py-4">
+          <h2 className="text-lg font-bold text-white">Counselling Requests</h2>
+          <p className="text-sm text-slate-500">Student support cases and counselling activity pipeline.</p>
+        </div>
+        {counsellingRequests.length === 0 ? (
+          <div className="p-5">
+            <AdminEmptyState
+              title="No counselling requests yet"
+              body="Student support requests will appear here after learners request counselling support from a public counsellor profile."
+            />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left">
+                  <th className="px-5 py-4 font-semibold text-slate-400">Student</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Counsellor</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Categories</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Status</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Submitted</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/8">
+                {counsellingRequests.map((request) => (
+                  <tr key={request.id} className="transition-colors hover:bg-white/3">
+                    <td className="px-5 py-4">
+                      <div className="font-semibold text-white">{request.studentName || 'Student'}</div>
+                      <div className="text-xs text-slate-500">{request.studentEmail || request.studentId}</div>
+                    </td>
+                    <td className="px-5 py-4 text-slate-300">{request.counsellorName || request.counsellorId || '-'}</td>
+                    <td className="px-5 py-4 text-slate-300">{formatPlainValue(request.categories)}</td>
+                    <td className="px-5 py-4">
+                      <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle[request.status] || statusStyle.pending}`}>
+                        {request.status || 'pending'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-slate-400">{formatFirestoreDate(request.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [students, setStudents] = useState([]);
   const [payments, setPayments] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
+  const [counsellorProfiles, setCounsellorProfiles] = useState([]);
+  const [counsellingRequests, setCounsellingRequests] = useState([]);
   const [filter, setFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('users');
   const [loading, setLoading] = useState(true);
@@ -388,10 +615,20 @@ export default function AdminDashboard() {
       setEnrollments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, console.error);
 
+    const unsubCounsellors = onSnapshot(collection(db, 'counsellors'), (snap) => {
+      setCounsellorProfiles(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, console.error);
+
+    const unsubCounsellingRequests = onSnapshot(collection(db, 'counsellingRequests'), (snap) => {
+      setCounsellingRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, console.error);
+
     return () => {
       unsubUsers();
       unsubPayments();
       unsubEnrollments();
+      unsubCounsellors();
+      unsubCounsellingRequests();
     };
   }, []);
 
@@ -409,7 +646,14 @@ export default function AdminDashboard() {
 
   const approve = async (user, existingProfile = null) => {
     await updateDoc(doc(db, 'users', user.id), { status: 'approved' });
-    await syncTeacherPublicProfile({ ...user, status: 'approved' }, 'approved', existingProfile);
+    if (isTeacherRole(user.role)) {
+      await syncTeacherPublicProfile({ ...user, status: 'approved' }, 'approved', existingProfile);
+    }
+    if (isCounsellorRole(user.role)) {
+      const publicSnap = existingProfile ? null : await getDoc(doc(db, 'counsellors', user.id)).catch(() => null);
+      const publicProfile = existingProfile || (publicSnap?.exists?.() ? publicSnap.data() : null);
+      await syncCounsellorPublicProfile({ ...user, status: 'approved' }, 'approved', publicProfile);
+    }
   };
 
   const approveFromPreview = async (user, existingProfile) => {
@@ -419,13 +663,21 @@ export default function AdminDashboard() {
 
   const suspend = async (user) => {
     await updateDoc(doc(db, 'users', user.id), { status: 'suspended' });
-    await syncTeacherPublicProfile({ ...user, status: 'suspended' }, 'suspended');
+    if (isTeacherRole(user.role)) {
+      await syncTeacherPublicProfile({ ...user, status: 'suspended' }, 'suspended');
+    }
+    if (isCounsellorRole(user.role)) {
+      const publicSnap = await getDoc(doc(db, 'counsellors', user.id)).catch(() => null);
+      const publicProfile = publicSnap?.exists?.() ? publicSnap.data() : null;
+      await syncCounsellorPublicProfile({ ...user, status: 'suspended' }, 'suspended', publicProfile);
+    }
   };
 
   const remove = async (id) => {
     if (!confirm('Remove this user?')) return;
     await deleteDoc(doc(db, 'users', id));
     await deleteDoc(doc(db, 'teachers', id)).catch(() => {});
+    await deleteDoc(doc(db, 'counsellors', id)).catch(() => {});
   };
 
   const viewTeacherProfile = async (user) => {
@@ -482,6 +734,7 @@ export default function AdminDashboard() {
         <div className="mb-8 flex flex-wrap gap-2">
           {[
             { id: 'users', label: 'Users' },
+            { id: 'counsellors', label: 'Counsellors' },
             { id: 'financial', label: 'Financial Tracker' },
           ].map(tab => (
             <button
@@ -496,6 +749,14 @@ export default function AdminDashboard() {
 
         {activeTab === 'financial' ? (
           <FinancialTracker payments={payments} enrollments={enrollments} />
+        ) : activeTab === 'counsellors' ? (
+          <CounsellorAdminPanel
+            users={students}
+            counsellorProfiles={counsellorProfiles}
+            counsellingRequests={counsellingRequests}
+            onApprove={approve}
+            onSuspend={suspend}
+          />
         ) : (
           <>
             <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -598,3 +859,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+

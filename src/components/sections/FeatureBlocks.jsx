@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -88,7 +88,7 @@ const TEACHERS = [
   {
     name: 'Ustadh Hashim bin Hussain',
     role: 'Founder and Lead Teacher',
-    meta: 'Teaching since 2008 Â· Brothers and Sisters',
+    meta: 'Teaching since 2008 · Brothers and Sisters',
     bio: "Qualified in Tajweed, Qur'an recitation, Fiqh, Arabic, Qaidah, and Qur'an studies.",
     tags: ['Tajwid', "Qur'an Reading", 'Fiqh', 'Arabic', 'Qaidah'],
     featured: true,
@@ -1283,7 +1283,7 @@ export function FeatureBlocksSection() {
               {FEEDBACK.map((item) => (
                 <div key={item.date} className="rounded-2xl border border-[rgba(226,232,240,0.35)] p-3">
                   <p className="text-sm text-[#3ce094] font-semibold">
-                    {item.date} Â· Ustadh Hashim
+                    {item.date} · Ustadh Hashim
                   </p>
                   <p className="mt-1 text-[rgba(219,242,230,0.86)]">{item.note}</p>
                 </div>
@@ -1295,4 +1295,3 @@ export function FeatureBlocksSection() {
     </>
   );
 }
-

@@ -66,6 +66,21 @@ const ASSIGNMENT_STATUS = {
   ACTIVE: 'active',
   ARCHIVED: 'archived',
 };
+const COUNSELLOR_REGISTRATION_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  DECLINED: 'declined',
+  SUSPENDED: 'suspended',
+};
+
+const COUNSELLING_REQUEST_STATUS = {
+  PENDING: 'pending',
+  ACCEPTED: 'accepted',
+  DECLINED: 'declined',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+};
+
 
 const CONVERSATION_CHANNELS = {
   SUPPORT: 'support',
@@ -211,6 +226,8 @@ const initialState = {
   teacherRequests: [],
   teacherAssignments: [],
   teacherReviews: [],
+  counsellorRegistrations: [],
+  counsellingRequests: [],
   counselorProfile: {
     name: 'Counsellor Aisha Peer',
     title: 'Student Support and Guidance',
@@ -395,6 +412,60 @@ function sanitizeSessionRecord(session, validUserIds) {
   };
 }
 
+function sanitizeCounsellorRegistration(record) {
+  if (!record || typeof record !== 'object') return null;
+  return {
+    id: typeof record.id === 'string' && record.id ? record.id : uid('creg'),
+    userId: String(record.userId || ''),
+    fullName: String(record.fullName || '').trim(),
+    displayName: String(record.displayName || '').trim(),
+    email: String(record.email || '').trim().toLowerCase(),
+    mobileNumber: String(record.mobileNumber || '').trim(),
+    country: String(record.country || '').trim(),
+    city: String(record.city || '').trim(),
+    languagesSpoken: Array.isArray(record.languagesSpoken) ? record.languagesSpoken.map(String).filter(Boolean) : [],
+    profilePhotoUrl: String(record.profilePhotoUrl || ''),
+    categories: Array.isArray(record.categories) ? record.categories.map(String).filter(Boolean) : [],
+    highestQualification: String(record.highestQualification || '').trim(),
+    institution: String(record.institution || '').trim(),
+    certifications: String(record.certifications || '').trim(),
+    yearsOfExperience: String(record.yearsOfExperience || '').trim(),
+    registrationBody: String(record.registrationBody || '').trim(),
+    professionalMemberships: String(record.professionalMemberships || '').trim(),
+    serviceDelivery: Array.isArray(record.serviceDelivery) ? record.serviceDelivery.map(String).filter(Boolean) : [],
+    availability: {
+      weekdays: Boolean(record.availability?.weekdays),
+      weekends: Boolean(record.availability?.weekends),
+      evenings: Boolean(record.availability?.evenings),
+      timeZone: String(record.availability?.timeZone || '').trim(),
+    },
+    bio: String(record.bio || '').trim(),
+    status: Object.values(COUNSELLOR_REGISTRATION_STATUS).includes(record.status)
+      ? record.status : COUNSELLOR_REGISTRATION_STATUS.PENDING,
+    adminNotes: String(record.adminNotes || '').trim(),
+    submittedAt: record.submittedAt || nowIso(),
+    reviewedAt: String(record.reviewedAt || ''),
+    updatedAt: record.updatedAt || nowIso(),
+  };
+}
+
+function sanitizeCounsellingRequest(record) {
+  if (!record || typeof record !== 'object') return null;
+  return {
+    id: typeof record.id === 'string' && record.id ? record.id : uid('creq'),
+    studentId: String(record.studentId || ''),
+    counsellorRegistrationId: String(record.counsellorRegistrationId || ''),
+    categories: Array.isArray(record.categories) ? record.categories.map(String).filter(Boolean) : [],
+    note: String(record.note || '').trim(),
+    preferredContact: String(record.preferredContact || '').trim(),
+    status: Object.values(COUNSELLING_REQUEST_STATUS).includes(record.status)
+      ? record.status : COUNSELLING_REQUEST_STATUS.PENDING,
+    adminNotes: String(record.adminNotes || '').trim(),
+    createdAt: record.createdAt || nowIso(),
+    updatedAt: record.updatedAt || nowIso(),
+  };
+}
+
 function sanitizeTeacherRequestRecord(record, validUserIds) {
   if (!record || typeof record !== 'object') return null;
   const studentId = String(record.studentId || '');
@@ -565,6 +636,12 @@ function loadState() {
         .filter(Boolean),
       teacherReviews: (parsed.teacherReviews || [])
         .map((record) => sanitizeTeacherReviewRecord(record, validUserIds))
+        .filter(Boolean),
+      counsellorRegistrations: (parsed.counsellorRegistrations || [])
+        .map((record) => sanitizeCounsellorRegistration(record))
+        .filter(Boolean),
+      counsellingRequests: (parsed.counsellingRequests || [])
+        .map((record) => sanitizeCounsellingRequest(record))
         .filter(Boolean),
       transportProviders: (parsed.transportProviders || [])
         .map((provider) => sanitizeTransportProviderRecord(provider, validUserIds))
@@ -738,6 +815,36 @@ export function PlatformProvider({ children }) {
         )[0] || null
     );
   }, [state.teacherRequests, currentUser]);
+
+  // ── Counsellor computed values ──────────────────────────────────────────
+  const currentCounsellorRegistration = useMemo(() => {
+    if (!currentUser) return null;
+    return [...state.counsellorRegistrations]
+      .filter((r) => r.userId === currentUser.id)
+      .sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''))[0] || null;
+  }, [state.counsellorRegistrations, currentUser]);
+
+  const approvedCounsellors = useMemo(
+    () => state.counsellorRegistrations.filter(
+      (r) => r.status === COUNSELLOR_REGISTRATION_STATUS.APPROVED
+    ),
+    [state.counsellorRegistrations]
+  );
+
+  const myStudentCounsellingRequests = useMemo(() => {
+    if (!currentUser || currentUser.role !== ROLES.STUDENT) return [];
+    return [...state.counsellingRequests]
+      .filter((r) => r.studentId === currentUser.id)
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  }, [state.counsellingRequests, currentUser]);
+
+  const myCounsellorRequests = useMemo(() => {
+    if (!currentCounsellorRegistration) return [];
+    return [...state.counsellingRequests]
+      .filter((r) => r.counsellorRegistrationId === currentCounsellorRegistration.id)
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  }, [state.counsellingRequests, currentCounsellorRegistration]);
+
 
   const visibleConversations = useMemo(() => {
     if (!currentUser) return [];
@@ -1617,6 +1724,89 @@ export function PlatformProvider({ children }) {
     }));
   }
 
+  // ── Counsellor functions ────────────────────────────────────────────────
+
+  function submitCounsellorRegistration(payload) {
+    if (!currentUser) throw new Error('You must be signed in.');
+    const existing = state.counsellorRegistrations.find(
+      (r) => r.userId === currentUser.id && r.status === COUNSELLOR_REGISTRATION_STATUS.PENDING
+    );
+    if (existing) throw new Error('You already have a pending counsellor application.');
+    const record = sanitizeCounsellorRegistration({
+      id: uid('creg'),
+      userId: currentUser.id,
+      ...payload,
+      status: COUNSELLOR_REGISTRATION_STATUS.PENDING,
+      submittedAt: nowIso(),
+      updatedAt: nowIso(),
+    });
+    setState((prev) => ({ ...prev, counsellorRegistrations: [record, ...prev.counsellorRegistrations] }));
+  }
+
+  function approveCounsellorRegistration(registrationId, decision, adminNotes = '') {
+    if (!isAdmin) return;
+    const nextStatus = decision === 'approved'
+      ? COUNSELLOR_REGISTRATION_STATUS.APPROVED
+      : COUNSELLOR_REGISTRATION_STATUS.DECLINED;
+    setState((prev) => {
+      const reg = prev.counsellorRegistrations.find((r) => r.id === registrationId);
+      if (!reg) return prev;
+      const updatedRegs = prev.counsellorRegistrations.map((r) =>
+        r.id === registrationId
+          ? { ...r, status: nextStatus, adminNotes: adminNotes.trim(), reviewedAt: nowIso(), updatedAt: nowIso() }
+          : r
+      );
+      const updatedUsers = nextStatus === COUNSELLOR_REGISTRATION_STATUS.APPROVED
+        ? prev.users.map((u) =>
+            u.id === reg.userId ? { ...u, role: ROLES.COUNSELOR, status: USER_STATUS.APPROVED } : u
+          )
+        : prev.users;
+      return { ...prev, counsellorRegistrations: updatedRegs, users: updatedUsers };
+    });
+  }
+
+  function requestCounselling(payload) {
+    if (!currentUser) throw new Error('You must be signed in.');
+    const record = sanitizeCounsellingRequest({
+      id: uid('creq'),
+      studentId: currentUser.id,
+      ...payload,
+      status: COUNSELLING_REQUEST_STATUS.PENDING,
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+    });
+    setState((prev) => ({ ...prev, counsellingRequests: [record, ...prev.counsellingRequests] }));
+  }
+
+  function manageCounsellingRequest(requestId, action, adminNotes = '') {
+    const nextStatus = {
+      accept: COUNSELLING_REQUEST_STATUS.ACCEPTED,
+      decline: COUNSELLING_REQUEST_STATUS.DECLINED,
+      complete: COUNSELLING_REQUEST_STATUS.COMPLETED,
+      cancel: COUNSELLING_REQUEST_STATUS.CANCELLED,
+    }[action];
+    if (!nextStatus) return;
+    setState((prev) => ({
+      ...prev,
+      counsellingRequests: prev.counsellingRequests.map((r) =>
+        r.id === requestId
+          ? { ...r, status: nextStatus, adminNotes: adminNotes.trim(), updatedAt: nowIso() }
+          : r
+      ),
+    }));
+  }
+
+  function updateCounsellorProfile(registrationId, updates) {
+    setState((prev) => ({
+      ...prev,
+      counsellorRegistrations: prev.counsellorRegistrations.map((r) =>
+        r.id === registrationId
+          ? sanitizeCounsellorRegistration({ ...r, ...updates, updatedAt: nowIso() })
+          : r
+      ),
+    }));
+  }
+
   function registerTransportProvider(payload) {
     if (!currentUser) return;
     const provider = sanitizeTransportProviderRecord(
@@ -1820,6 +2010,18 @@ export function PlatformProvider({ children }) {
     updateSessionStatus,
     recordPayment,
     setLetterAudio,
+    // ── Counsellor ──
+    counsellorRegistrationStatus: COUNSELLOR_REGISTRATION_STATUS,
+    counsellingRequestStatus: COUNSELLING_REQUEST_STATUS,
+    currentCounsellorRegistration,
+    approvedCounsellors,
+    myStudentCounsellingRequests,
+    myCounsellorRequests,
+    submitCounsellorRegistration,
+    approveCounsellorRegistration,
+    requestCounselling,
+    manageCounsellingRequest,
+    updateCounsellorProfile,
     bookCounseling,
     updateCounselorPrice,
     registerTransportProvider,

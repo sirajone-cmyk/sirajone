@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { ArrowRight, BookOpen, Eye, EyeOff, KeyRound, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { SUBJECTS } from '../../lib/subjects';
+import { COUNSELLOR_CATEGORIES } from '../../lib/roles';
+import {
+  COUNSELLOR_AVAILABILITY_KEYS,
+  COUNSELLOR_DELIVERY_MODES,
+  createEmptyCounsellorApplication,
+  normalizeCounsellorName,
+} from '../../lib/counsellorSchema';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -13,6 +20,7 @@ const AUTH_MODES = {
 const REGISTER_TYPES = {
   STUDENT: 'student',
   TEACHER: 'teacher',
+  COUNSELLOR: 'counsellor',
 };
 
 function normalizeEmail(value) {
@@ -20,10 +28,19 @@ function normalizeEmail(value) {
 }
 
 function FieldLabel({ children }) {
+  return <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">{children}</label>;
+}
+
+function FormTextArea({ value, onChange, placeholder, rows = 3, disabled }) {
   return (
-    <label className="mb-2 block text-sm font-medium text-[rgba(223,253,238,0.86)]">
-      {children}
-    </label>
+    <textarea
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      disabled={disabled}
+      rows={rows}
+      className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
+    />
   );
 }
 
@@ -32,11 +49,7 @@ function PasswordInput({ label, visible, onToggleVisible, ...props }) {
     <div>
       <FieldLabel>{label}</FieldLabel>
       <div className="relative">
-        <Input
-          {...props}
-          type={visible ? 'text' : 'password'}
-          className="pr-12"
-        />
+        <Input {...props} type={visible ? 'text' : 'password'} className="pr-12" />
         <button
           type="button"
           onClick={onToggleVisible}
@@ -51,8 +64,29 @@ function PasswordInput({ label, visible, onToggleVisible, ...props }) {
   );
 }
 
+function TogglePill({ checked, onChange, children, disabled }) {
+  return (
+    <label
+      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition ${
+        checked
+          ? 'border-emerald-500/60 bg-emerald-500/12 text-[#7ef6bc]'
+          : 'border-[rgba(34,197,94,0.18)] bg-[rgba(3,10,7,0.4)] text-[rgba(217,251,232,0.74)] hover:border-emerald-500/35'
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+        className="h-4 w-4 rounded border-emerald-700 bg-transparent text-emerald-500 focus:ring-emerald-500"
+      />
+      {children}
+    </label>
+  );
+}
+
 export function AuthGateway({ onAuthenticated }) {
-  const { login, registerStudent, applyAsTeacher, resetPassword } = useAuth();
+  const { login, registerStudent, applyAsTeacher, applyAsCounsellor, resetPassword } = useAuth();
   const [mode, setMode] = useState(AUTH_MODES.LOGIN);
   const [registerType, setRegisterType] = useState(REGISTER_TYPES.STUDENT);
   const [busy, setBusy] = useState(false);
@@ -62,11 +96,7 @@ export function AuthGateway({ onAuthenticated }) {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({
     fullName: '',
     email: '',
@@ -82,11 +112,18 @@ export function AuthGateway({ onAuthenticated }) {
     personalityDescription: '',
     targetSubjects: [],
   });
-
-  const hasAdmin = true;
+  const [counsellorForm, setCounsellorForm] = useState(createEmptyCounsellorApplication());
 
   function updateRegisterField(field, value) {
     setRegisterForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function updateCounsellorField(field, value) {
+    setCounsellorForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function updateCounsellorNested(section, field, value) {
+    setCounsellorForm((prev) => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
   }
 
   function toggleTargetSubject(subjectId) {
@@ -95,6 +132,15 @@ export function AuthGateway({ onAuthenticated }) {
       if (current.has(subjectId)) current.delete(subjectId);
       else current.add(subjectId);
       return { ...prev, targetSubjects: Array.from(current) };
+    });
+  }
+
+  function toggleCounsellorCategory(category) {
+    setCounsellorForm((prev) => {
+      const current = new Set(prev.categories);
+      if (current.has(category)) current.delete(category);
+      else current.add(category);
+      return { ...prev, categories: Array.from(current) };
     });
   }
 
@@ -125,24 +171,37 @@ export function AuthGateway({ onAuthenticated }) {
       setError('Password and confirmation do not match.');
       return false;
     }
+
     if (registerType === REGISTER_TYPES.TEACHER) {
       if (!registerForm.institutionQualified.trim() || !registerForm.qualificationLevel.trim()) {
         setError('Add your institution and qualification level for the teacher application.');
         return false;
       }
-      if (!registerForm.referenceContact.trim()) {
-        setError('Add a reference contact for the teacher application.');
-        return false;
-      }
-      if (!registerForm.bio.trim()) {
-        setError('Add a short bio for your public teacher profile.');
-        return false;
-      }
-      if (registerForm.targetSubjects.length === 0) {
-        setError('Choose at least one target subject you want to teach.');
+      if (!registerForm.referenceContact.trim() || !registerForm.bio.trim() || registerForm.targetSubjects.length === 0) {
+        setError('Complete the teacher reference, bio, and target subjects.');
         return false;
       }
     }
+
+    if (registerType === REGISTER_TYPES.COUNSELLOR) {
+      if (!counsellorForm.mobileNumber.trim() || !counsellorForm.country.trim() || !counsellorForm.city.trim()) {
+        setError('Add mobile number, country, and city for the counsellor application.');
+        return false;
+      }
+      if (!counsellorForm.highestQualification.trim() || !counsellorForm.institution.trim()) {
+        setError('Add your highest qualification and institution for counsellor verification.');
+        return false;
+      }
+      if (counsellorForm.categories.length === 0) {
+        setError('Choose at least one counselling category.');
+        return false;
+      }
+      if (!Object.values(counsellorForm.serviceDeliveryModes).some(Boolean)) {
+        setError('Choose at least one service delivery mode.');
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -162,19 +221,18 @@ export function AuthGateway({ onAuthenticated }) {
       personalityDescription: '',
       targetSubjects: [],
     });
+    setCounsellorForm(createEmptyCounsellorApplication());
   }
 
   async function handleForgotPassword(event) {
     event.preventDefault();
     setError('');
     setInfo('');
-
     const email = normalizeEmail(loginForm.email);
     if (!email) {
       setError('Enter your email address first, then click Forgot password.');
       return;
     }
-
     setBusy(true);
     try {
       await resetPassword(email);
@@ -191,12 +249,11 @@ export function AuthGateway({ onAuthenticated }) {
     setError('');
     setInfo('');
     if (!validateLogin()) return;
-
     setBusy(true);
     try {
       await login(loginForm.email, loginForm.password);
       if (typeof onAuthenticated === 'function') onAuthenticated();
-    } catch (authError) {
+    } catch {
       setError('Invalid email or password. Please try again.');
     } finally {
       setBusy(false);
@@ -210,7 +267,7 @@ export function AuthGateway({ onAuthenticated }) {
     if (!validateRegister()) return;
 
     const email = normalizeEmail(registerForm.email);
-    const fullName = registerForm.fullName.trim();
+    const fullName = normalizeCounsellorName(registerForm.fullName.trim(), { allowTitle: false });
 
     setBusy(true);
     try {
@@ -229,6 +286,14 @@ export function AuthGateway({ onAuthenticated }) {
           targetSubjects: registerForm.targetSubjects,
         });
         setInfo('Teacher application submitted. Your account is pending review.');
+      } else if (registerType === REGISTER_TYPES.COUNSELLOR) {
+        await applyAsCounsellor(email, registerForm.password, fullName, {
+          ...counsellorForm,
+          fullName,
+          displayName: counsellorForm.displayName || fullName,
+          email,
+        });
+        setInfo('Counsellor application submitted. Your account is pending review.');
       } else {
         await registerStudent(email, registerForm.password, fullName);
         setInfo('Student account created successfully.');
@@ -252,7 +317,6 @@ export function AuthGateway({ onAuthenticated }) {
               <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#7ef6bc]">
                 SirajOne Platform
               </div>
-
               <div className="mt-6 flex items-center gap-3 sm:mt-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[rgba(34,197,94,0.48)] bg-[rgba(34,197,94,0.14)] shadow-[0_0_18px_rgba(34,197,94,0.22)]">
                   <BookOpen size={22} className="text-[#30d986]" />
@@ -262,13 +326,12 @@ export function AuthGateway({ onAuthenticated }) {
                   <p className="text-sm font-medium text-[#30d986]">Faith. Knowledge. Action.</p>
                 </div>
               </div>
-
               <div className="mt-8 space-y-4 sm:mt-12">
                 <h2 className="max-w-[540px] text-[30px] font-semibold leading-[1.1] text-[#f4fff9] sm:text-[38px]">
                   Welcome to SirajOne
                 </h2>
                 <p className="max-w-[560px] text-base leading-relaxed text-[rgba(228,253,240,0.82)] sm:text-lg">
-                  Your secure platform for Islamic education and counselling. Sign in to continue or create an account for admin approval.
+                  Your secure platform for Islamic education, counselling support, and guided learning. Sign in to continue or apply for a verified role.
                 </p>
               </div>
             </div>
@@ -276,321 +339,149 @@ export function AuthGateway({ onAuthenticated }) {
 
           <section className="p-6 sm:p-8 md:p-10">
             <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.86)] p-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(AUTH_MODES.LOGIN);
-                  setError('');
-                  setInfo('');
-                }}
-                className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                  mode === AUTH_MODES.LOGIN
-                    ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
-                    : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
-                }`}
-              >
-                <LogIn size={15} />
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(AUTH_MODES.REGISTER);
-                  setError('');
-                  setInfo('');
-                }}
-                className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                  mode === AUTH_MODES.REGISTER
-                    ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
-                    : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
-                }`}
-              >
-                <UserPlus size={15} />
-                Register
-              </button>
+              {[{ id: AUTH_MODES.LOGIN, label: 'Log In', icon: LogIn }, { id: AUTH_MODES.REGISTER, label: 'Register', icon: UserPlus }].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    setMode(id);
+                    setError('');
+                    setInfo('');
+                  }}
+                  className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                    mode === id ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]' : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
+                  }`}
+                >
+                  <Icon size={15} />
+                  {label}
+                </button>
+              ))}
             </div>
 
             {mode === AUTH_MODES.LOGIN ? (
               <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
                 <div>
                   <FieldLabel>Email</FieldLabel>
-                  <Input
-                    type="email"
-                    name="username"
-                    value={loginForm.email}
-                    onChange={(event) =>
-                      setLoginForm((prev) => ({ ...prev, email: event.target.value }))
-                    }
-                    placeholder="you@example.com"
-                    autoComplete="username"
-                    disabled={busy}
-                  />
+                  <Input type="email" name="username" value={loginForm.email} onChange={(event) => setLoginForm((prev) => ({ ...prev, email: event.target.value }))} placeholder="you@example.com" autoComplete="username" disabled={busy} />
                 </div>
-
-                <PasswordInput
-                  label="Password"
-                  name="current-password"
-                  value={loginForm.password}
-                  onChange={(event) =>
-                    setLoginForm((prev) => ({ ...prev, password: event.target.value }))
-                  }
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  disabled={busy}
-                  visible={showLoginPassword}
-                  onToggleVisible={() => setShowLoginPassword((value) => !value)}
-                />
-
+                <PasswordInput label="Password" name="current-password" value={loginForm.password} onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))} placeholder="Enter your password" autoComplete="current-password" disabled={busy} visible={showLoginPassword} onToggleVisible={() => setShowLoginPassword((value) => !value)} />
                 <div className="flex items-center justify-between pt-1">
-                  <a
-                    href="#forgot-password"
-                    onClick={handleForgotPassword}
-                    className="inline-flex items-center gap-1 text-sm text-[#83f3bd] hover:text-[#a7ffcf]"
-                  >
+                  <a href="#forgot-password" onClick={handleForgotPassword} className="inline-flex items-center gap-1 text-sm text-[#83f3bd] hover:text-[#a7ffcf]">
                     <KeyRound size={14} />
                     Forgot password?
                   </a>
                 </div>
-
-                <Button type="submit" className="mt-6 w-full justify-center" disabled={busy}>
-                  {busy ? 'Logging in...' : 'Log In'}
-                </Button>
+                <Button type="submit" className="mt-6 w-full justify-center" disabled={busy}>{busy ? 'Logging in...' : 'Log In'}</Button>
               </form>
             ) : (
               <form onSubmit={handleRegister} autoComplete="on">
                 <div className="max-h-[80vh] space-y-4 overflow-y-auto px-1 pb-6 sm:max-h-full">
-                  <div className="grid grid-cols-2 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.72)] p-1">
-                    <button
-                      type="button"
-                      onClick={() => setRegisterType(REGISTER_TYPES.STUDENT)}
-                      disabled={busy}
-                      className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                        registerType === REGISTER_TYPES.STUDENT
-                          ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
-                          : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
-                      }`}
-                    >
-                      Student
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRegisterType(REGISTER_TYPES.TEACHER)}
-                      disabled={busy}
-                      className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                        registerType === REGISTER_TYPES.TEACHER
-                          ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]'
-                          : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'
-                      }`}
-                    >
-                      Applying to Teach
-                    </button>
+                  <div className="grid grid-cols-3 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.72)] p-1">
+                    {[
+                      { id: REGISTER_TYPES.STUDENT, label: 'Student' },
+                      { id: REGISTER_TYPES.TEACHER, label: 'Teach' },
+                      { id: REGISTER_TYPES.COUNSELLOR, label: 'Counsellor' },
+                    ].map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setRegisterType(option.id)}
+                        disabled={busy}
+                        className={`rounded-lg px-2 py-2 text-xs font-semibold transition sm:text-sm ${registerType === option.id ? 'bg-[rgba(34,197,94,0.18)] text-[#6ef0b3]' : 'text-[rgba(217,251,232,0.72)] hover:bg-[rgba(34,197,94,0.08)]'}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
 
                   <div>
                     <FieldLabel>Full name</FieldLabel>
-                    <Input
-                      type="text"
-                      name="name"
-                      value={registerForm.fullName}
-                      onChange={(event) => updateRegisterField('fullName', event.target.value)}
-                      placeholder="Full name"
-                      autoComplete="name"
-                      disabled={busy}
-                    />
+                    <Input type="text" name="name" value={registerForm.fullName} onBlur={() => updateRegisterField('fullName', normalizeCounsellorName(registerForm.fullName, { allowTitle: false }))} onChange={(event) => updateRegisterField('fullName', event.target.value)} placeholder="Full name" autoComplete="name" disabled={busy} />
                   </div>
-
                   <div>
                     <FieldLabel>Email</FieldLabel>
-                    <Input
-                      type="email"
-                      name="username"
-                      value={registerForm.email}
-                      onChange={(event) => updateRegisterField('email', event.target.value)}
-                      placeholder="you@example.com"
-                      autoComplete="username"
-                      disabled={busy}
-                    />
+                    <Input type="email" name="username" value={registerForm.email} onChange={(event) => updateRegisterField('email', event.target.value)} placeholder="you@example.com" autoComplete="username" disabled={busy} />
                   </div>
-
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <PasswordInput
-                      label="Password"
-                      name="new-password"
-                      value={registerForm.password}
-                      onChange={(event) => updateRegisterField('password', event.target.value)}
-                      placeholder="Create password"
-                      autoComplete="new-password"
-                      disabled={busy}
-                      visible={showRegisterPassword}
-                      onToggleVisible={() => setShowRegisterPassword((value) => !value)}
-                    />
-                    <PasswordInput
-                      label="Confirm password"
-                      name="confirm-new-password"
-                      value={registerForm.confirmPassword}
-                      onChange={(event) => updateRegisterField('confirmPassword', event.target.value)}
-                      placeholder="Confirm password"
-                      autoComplete="new-password"
-                      disabled={busy}
-                      visible={showConfirmPassword}
-                      onToggleVisible={() => setShowConfirmPassword((value) => !value)}
-                    />
+                    <PasswordInput label="Password" name="new-password" value={registerForm.password} onChange={(event) => updateRegisterField('password', event.target.value)} placeholder="Create password" autoComplete="new-password" disabled={busy} visible={showRegisterPassword} onToggleVisible={() => setShowRegisterPassword((value) => !value)} />
+                    <PasswordInput label="Confirm password" name="confirm-new-password" value={registerForm.confirmPassword} onChange={(event) => updateRegisterField('confirmPassword', event.target.value)} placeholder="Confirm password" autoComplete="new-password" disabled={busy} visible={showConfirmPassword} onToggleVisible={() => setShowConfirmPassword((value) => !value)} />
                   </div>
 
-                  {registerType === REGISTER_TYPES.TEACHER ? (
+                  {registerType === REGISTER_TYPES.TEACHER && (
                     <div className="max-h-[80vh] space-y-4 overflow-y-auto rounded-2xl border border-[rgba(34,197,94,0.18)] bg-[rgba(6,16,12,0.42)] px-1 pb-6 pt-4 sm:max-h-full sm:px-4">
                       <div className="grid gap-4 px-3 sm:grid-cols-2 sm:px-0">
-                        <div>
-                          <FieldLabel>Institution Qualified</FieldLabel>
-                          <Input
-                            type="text"
-                            value={registerForm.institutionQualified}
-                            onChange={(event) => updateRegisterField('institutionQualified', event.target.value)}
-                            placeholder="Institution name"
-                            autoComplete="organization"
-                            disabled={busy}
-                          />
-                        </div>
-                        <div>
-                          <FieldLabel>Qualification Level</FieldLabel>
-                          <Input
-                            type="text"
-                            value={registerForm.qualificationLevel}
-                            onChange={(event) => updateRegisterField('qualificationLevel', event.target.value)}
-                            placeholder="Qualification level"
-                            autoComplete="off"
-                            disabled={busy}
-                          />
-                        </div>
-                        <div>
-                          <FieldLabel>Reference Contact</FieldLabel>
-                          <Input
-                            type="text"
-                            value={registerForm.referenceContact}
-                            onChange={(event) => updateRegisterField('referenceContact', event.target.value)}
-                            placeholder="Name, phone, or email"
-                            autoComplete="off"
-                            disabled={busy}
-                          />
-                        </div>
-                        <div>
-                          <FieldLabel>Years of Experience</FieldLabel>
-                          <Input
-                            type="number"
-                            min="0"
-                            value={registerForm.yearsOfExperience}
-                            onChange={(event) => updateRegisterField('yearsOfExperience', event.target.value)}
-                            placeholder="0"
-                            autoComplete="off"
-                            disabled={busy}
-                          />
-                        </div>
-                        <div>
-                          <FieldLabel>Current Workplace</FieldLabel>
-                          <Input
-                            type="text"
-                            value={registerForm.currentWorkplace}
-                            onChange={(event) => updateRegisterField('currentWorkplace', event.target.value)}
-                            placeholder="Current workplace"
-                            autoComplete="organization"
-                            disabled={busy}
-                          />
-                        </div>
-                        <div>
-                          <FieldLabel>Certifications Upload Reference</FieldLabel>
-                          <Input
-                            type="text"
-                            value={registerForm.certificationsUploadReference}
-                            onChange={(event) => updateRegisterField('certificationsUploadReference', event.target.value)}
-                            placeholder="Link or file reference"
-                            autoComplete="off"
-                            disabled={busy}
-                          />
-                        </div>
+                        <div><FieldLabel>Institution Qualified</FieldLabel><Input value={registerForm.institutionQualified} onChange={(event) => updateRegisterField('institutionQualified', event.target.value)} placeholder="Institution name" autoComplete="organization" disabled={busy} /></div>
+                        <div><FieldLabel>Qualification Level</FieldLabel><Input value={registerForm.qualificationLevel} onChange={(event) => updateRegisterField('qualificationLevel', event.target.value)} placeholder="Qualification level" disabled={busy} /></div>
+                        <div><FieldLabel>Reference Contact</FieldLabel><Input value={registerForm.referenceContact} onChange={(event) => updateRegisterField('referenceContact', event.target.value)} placeholder="Name, phone, or email" disabled={busy} /></div>
+                        <div><FieldLabel>Years of Experience</FieldLabel><Input type="number" min="0" value={registerForm.yearsOfExperience} onChange={(event) => updateRegisterField('yearsOfExperience', event.target.value)} placeholder="0" disabled={busy} /></div>
+                        <div><FieldLabel>Current Workplace</FieldLabel><Input value={registerForm.currentWorkplace} onChange={(event) => updateRegisterField('currentWorkplace', event.target.value)} placeholder="Current workplace" autoComplete="organization" disabled={busy} /></div>
+                        <div><FieldLabel>Certifications Upload Reference</FieldLabel><Input value={registerForm.certificationsUploadReference} onChange={(event) => updateRegisterField('certificationsUploadReference', event.target.value)} placeholder="Link or file reference" disabled={busy} /></div>
                       </div>
-
-                      <div className="px-3 sm:px-0">
-                        <FieldLabel>Bio</FieldLabel>
-                        <textarea
-                          value={registerForm.bio}
-                          onChange={(event) => updateRegisterField('bio', event.target.value)}
-                          placeholder="Write a short public bio for students and families."
-                          disabled={busy}
-                          rows={3}
-                          className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
-                        />
-                      </div>
-
-                      <div className="px-3 sm:px-0">
-                        <FieldLabel>Personality Description</FieldLabel>
-                        <textarea
-                          value={registerForm.personalityDescription}
-                          onChange={(event) => updateRegisterField('personalityDescription', event.target.value)}
-                          placeholder="Briefly describe your teaching style and student approach."
-                          disabled={busy}
-                          rows={2}
-                          className="w-full rounded-xl border border-[rgba(34,197,94,0.22)] bg-[rgba(3,10,7,0.72)] px-4 py-3 text-sm text-[#ecfff4] outline-none transition placeholder:text-[rgba(217,251,232,0.38)] focus:border-[#30d986] focus:ring-2 focus:ring-[rgba(48,217,134,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
-                        />
-                      </div>
-
+                      <div className="px-3 sm:px-0"><FieldLabel>Bio</FieldLabel><FormTextArea value={registerForm.bio} onChange={(event) => updateRegisterField('bio', event.target.value)} placeholder="Write a short public bio for students and families." disabled={busy} /></div>
+                      <div className="px-3 sm:px-0"><FieldLabel>Personality Description</FieldLabel><FormTextArea value={registerForm.personalityDescription} onChange={(event) => updateRegisterField('personalityDescription', event.target.value)} placeholder="Briefly describe your teaching style and student approach." rows={2} disabled={busy} /></div>
                       <div className="px-3 sm:px-0">
                         <FieldLabel>Target Subject(s)</FieldLabel>
                         <div className="grid gap-2 sm:grid-cols-2">
-                          {SUBJECTS.map((subject) => {
-                            const checked = registerForm.targetSubjects.includes(subject.id);
-                            return (
-                              <label
-                                key={subject.id}
-                                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition ${
-                                  checked
-                                    ? 'border-emerald-500/60 bg-emerald-500/12 text-[#7ef6bc]'
-                                    : 'border-[rgba(34,197,94,0.18)] bg-[rgba(3,10,7,0.4)] text-[rgba(217,251,232,0.74)] hover:border-emerald-500/35'
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => toggleTargetSubject(subject.id)}
-                                  disabled={busy}
-                                  className="h-4 w-4 rounded border-emerald-700 bg-transparent text-emerald-500 focus:ring-emerald-500"
-                                />
-                                {subject.label}
-                              </label>
-                            );
-                          })}
+                          {SUBJECTS.map((subject) => <TogglePill key={subject.id} checked={registerForm.targetSubjects.includes(subject.id)} onChange={() => toggleTargetSubject(subject.id)} disabled={busy}>{subject.label}</TogglePill>)}
                         </div>
-                        <p className="mt-2 text-xs leading-relaxed text-[rgba(217,251,232,0.62)]">
-                          Teacher applications stay pending until an administrator approves the account.
-                        </p>
                       </div>
                     </div>
-                  ) : null}
+                  )}
+
+                  {registerType === REGISTER_TYPES.COUNSELLOR && (
+                    <div className="max-h-[80vh] space-y-4 overflow-y-auto rounded-2xl border border-[rgba(34,197,94,0.18)] bg-[rgba(6,16,12,0.42)] px-1 pb-6 pt-4 sm:max-h-full sm:px-4">
+                      <div className="grid gap-4 px-3 sm:grid-cols-2 sm:px-0">
+                        <div><FieldLabel>Display Name</FieldLabel><Input value={counsellorForm.displayName} onBlur={() => updateCounsellorField('displayName', normalizeCounsellorName(counsellorForm.displayName || registerForm.fullName, { allowTitle: true }))} onChange={(event) => updateCounsellorField('displayName', event.target.value)} placeholder="Counsellor Aisha Peer" autoComplete="name" disabled={busy} /></div>
+                        <div><FieldLabel>Mobile Number</FieldLabel><Input value={counsellorForm.mobileNumber} onChange={(event) => updateCounsellorField('mobileNumber', event.target.value)} placeholder="+27 ..." autoComplete="tel" disabled={busy} /></div>
+                        <div><FieldLabel>Country</FieldLabel><Input value={counsellorForm.country} onChange={(event) => updateCounsellorField('country', event.target.value)} placeholder="South Africa" autoComplete="country-name" disabled={busy} /></div>
+                        <div><FieldLabel>City</FieldLabel><Input value={counsellorForm.city} onChange={(event) => updateCounsellorField('city', event.target.value)} placeholder="Durban" autoComplete="address-level2" disabled={busy} /></div>
+                        <div><FieldLabel>Languages Spoken</FieldLabel><Input value={counsellorForm.languagesSpoken} onChange={(event) => updateCounsellorField('languagesSpoken', event.target.value)} placeholder="English, Urdu, Arabic" autoComplete="off" disabled={busy} /></div>
+                        <div><FieldLabel>Profile Photo Reference</FieldLabel><Input value={counsellorForm.profilePhoto} onChange={(event) => updateCounsellorField('profilePhoto', event.target.value)} placeholder="Optional URL or storage reference" autoComplete="off" disabled={busy} /></div>
+                        <div><FieldLabel>Highest Qualification</FieldLabel><Input value={counsellorForm.highestQualification} onChange={(event) => updateCounsellorField('highestQualification', event.target.value)} placeholder="Qualification" disabled={busy} /></div>
+                        <div><FieldLabel>Institution</FieldLabel><Input value={counsellorForm.institution} onChange={(event) => updateCounsellorField('institution', event.target.value)} placeholder="Institution" autoComplete="organization" disabled={busy} /></div>
+                        <div><FieldLabel>Certifications</FieldLabel><Input value={counsellorForm.certifications} onChange={(event) => updateCounsellorField('certifications', event.target.value)} placeholder="Comma separated" disabled={busy} /></div>
+                        <div><FieldLabel>Years of Experience</FieldLabel><Input type="number" min="0" value={counsellorForm.yearsOfExperience} onChange={(event) => updateCounsellorField('yearsOfExperience', event.target.value)} placeholder="0" disabled={busy} /></div>
+                        <div><FieldLabel>Registration Body</FieldLabel><Input value={counsellorForm.registrationBody} onChange={(event) => updateCounsellorField('registrationBody', event.target.value)} placeholder="Professional registration body" disabled={busy} /></div>
+                        <div><FieldLabel>Professional Memberships</FieldLabel><Input value={counsellorForm.professionalMemberships} onChange={(event) => updateCounsellorField('professionalMemberships', event.target.value)} placeholder="Comma separated" disabled={busy} /></div>
+                      </div>
+
+                      <div className="px-3 sm:px-0"><FieldLabel>Bio</FieldLabel><FormTextArea value={counsellorForm.bio || ''} onChange={(event) => updateCounsellorField('bio', event.target.value)} placeholder="Write a short public counselling support bio." disabled={busy} /></div>
+
+                      <div className="px-3 sm:px-0">
+                        <FieldLabel>Counselling Categories</FieldLabel>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {COUNSELLOR_CATEGORIES.map((category) => <TogglePill key={category} checked={counsellorForm.categories.includes(category)} onChange={() => toggleCounsellorCategory(category)} disabled={busy}>{category}</TogglePill>)}
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 px-3 sm:grid-cols-2 sm:px-0">
+                        <div>
+                          <FieldLabel>Service Delivery</FieldLabel>
+                          <div className="space-y-2">
+                            {COUNSELLOR_DELIVERY_MODES.map((modeOption) => <TogglePill key={modeOption.key} checked={counsellorForm.serviceDeliveryModes[modeOption.key]} onChange={() => updateCounsellorNested('serviceDeliveryModes', modeOption.key, !counsellorForm.serviceDeliveryModes[modeOption.key])} disabled={busy}>{modeOption.label}</TogglePill>)}
+                          </div>
+                        </div>
+                        <div>
+                          <FieldLabel>Availability</FieldLabel>
+                          <div className="space-y-2">
+                            {COUNSELLOR_AVAILABILITY_KEYS.map((slot) => <TogglePill key={slot.key} checked={counsellorForm.availability[slot.key]} onChange={() => updateCounsellorNested('availability', slot.key, !counsellorForm.availability[slot.key])} disabled={busy}>{slot.label}</TogglePill>)}
+                          </div>
+                          <div className="mt-3"><FieldLabel>Time Zone</FieldLabel><Input value={counsellorForm.availability.timeZone} onChange={(event) => updateCounsellorNested('availability', 'timeZone', event.target.value)} disabled={busy} /></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <Button type="submit" className="mt-8 w-full justify-center" disabled={busy}>
-                    {busy
-                      ? 'Creating account...'
-                      : registerType === REGISTER_TYPES.TEACHER
-                        ? 'Submit Teacher Application'
-                        : hasAdmin
-                          ? 'Create Student Account'
-                          : 'Create Admin Account'}
+                    {busy ? 'Creating account...' : registerType === REGISTER_TYPES.TEACHER ? 'Submit Teacher Application' : registerType === REGISTER_TYPES.COUNSELLOR ? 'Submit Counsellor Application' : 'Create Student Account'}
                     <ArrowRight size={16} />
                   </Button>
                 </div>
               </form>
             )}
 
-            {error ? (
-              <div className="mt-4 rounded-xl border border-[rgba(248,113,113,0.38)] bg-[rgba(98,25,25,0.35)] px-4 py-3 text-sm text-[#ffb4b4]">
-                {error}
-              </div>
-            ) : null}
-
-            {info ? (
-              <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.38)] bg-[rgba(10,56,33,0.34)] px-4 py-3 text-sm text-[#b6ffd8]">
-                {info}
-              </div>
-            ) : null}
+            {error ? <div className="mt-4 rounded-xl border border-[rgba(248,113,113,0.38)] bg-[rgba(98,25,25,0.35)] px-4 py-3 text-sm text-[#ffb4b4]">{error}</div> : null}
+            {info ? <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.38)] bg-[rgba(10,56,33,0.34)] px-4 py-3 text-sm text-[#b6ffd8]">{info}</div> : null}
           </section>
         </div>
       </div>
