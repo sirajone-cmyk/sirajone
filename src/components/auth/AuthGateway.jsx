@@ -250,7 +250,7 @@ export function AuthGateway({ onAuthenticated }) {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.17),transparent_58%)]" />
             <div className="relative">
               <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(34,197,94,0.35)] bg-[rgba(34,197,94,0.12)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#7ef6bc]">
-                Authentication Gateway
+                SirajOne Platform
               </div>
 
               <div className="mt-6 flex items-center gap-3 sm:mt-8">
@@ -265,11 +265,10 @@ export function AuthGateway({ onAuthenticated }) {
 
               <div className="mt-8 space-y-4 sm:mt-12">
                 <h2 className="max-w-[540px] text-[30px] font-semibold leading-[1.1] text-[#f4fff9] sm:text-[38px]">
-                  Secure entry for students, teachers, and families.
+                  Welcome to SirajOne
                 </h2>
                 <p className="max-w-[560px] text-base leading-relaxed text-[rgba(228,253,240,0.82)] sm:text-lg">
-                  Access learning, counselling, transport, and community services through one protected platform.
-                  Sign in to continue, or register a new account for admin approval.
+                  Your secure platform for Islamic education and counselling. Sign in to continue or create an account for admin approval.
                 </p>
               </div>
             </div>
