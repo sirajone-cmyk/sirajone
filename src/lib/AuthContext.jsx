@@ -14,6 +14,12 @@ import { buildCounsellorApplicationPayload, normalizeCounsellorName } from './co
 
 const AuthContext = createContext();
 
+const createDefaultOnboardingState = () => ({
+  hasCompletedTour: false,
+  currentStepIndex: 0,
+  lastActiveTimestamp: serverTimestamp(),
+});
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,6 +42,7 @@ export const AuthProvider = ({ children }) => {
               email: firebaseUser.email,
               role: isOwner ? ROLES.ADMIN : ROLES.STUDENT,
               status: isOwner ? USER_STATUS.APPROVED : USER_STATUS.PENDING,
+              onboarding: createDefaultOnboardingState(),
               created_at: serverTimestamp(),
             });
           }
@@ -88,6 +95,7 @@ export const AuthProvider = ({ children }) => {
         email,
         role,
         status,
+        onboarding: createDefaultOnboardingState(),
         created_at: serverTimestamp(),
         ...extraProfile,
       });
@@ -129,6 +137,7 @@ export const AuthProvider = ({ children }) => {
         email,
         role: ROLES.TEACHER,
         status: USER_STATUS.PENDING,
+        onboarding: createDefaultOnboardingState(),
         created_at: submittedAt,
       });
 
@@ -177,6 +186,7 @@ export const AuthProvider = ({ children }) => {
         email,
         role: ROLES.COUNSELLOR,
         status: USER_STATUS.PENDING,
+        onboarding: createDefaultOnboardingState(),
         created_at: submittedAt,
       });
 
@@ -239,4 +249,9 @@ export const useAuth = () => {
   }
   return context;
 };
+
+
+
+
+
 

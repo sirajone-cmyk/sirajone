@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
-import { ArrowRight, BookOpen, Eye, EyeOff, KeyRound, LogIn, UserPlus } from 'lucide-react';
+import { ArrowRight, BookOpen, Eye, EyeOff, HelpCircle, KeyRound, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
+import { useOnboarding } from '../onboarding/useOnboarding';
 import { SUBJECTS } from '../../lib/subjects';
 import { COUNSELLOR_CATEGORIES } from '../../lib/roles';
 import {
@@ -87,6 +88,7 @@ function TogglePill({ checked, onChange, children, disabled }) {
 
 export function AuthGateway({ onAuthenticated }) {
   const { login, registerStudent, applyAsTeacher, applyAsCounsellor, resetPassword } = useAuth();
+  const { startPreviewTour } = useOnboarding();
   const [mode, setMode] = useState(AUTH_MODES.LOGIN);
   const [registerType, setRegisterType] = useState(REGISTER_TYPES.STUDENT);
   const [busy, setBusy] = useState(false);
@@ -358,6 +360,15 @@ export function AuthGateway({ onAuthenticated }) {
               ))}
             </div>
 
+            <button
+              type="button"
+              onClick={startPreviewTour}
+              className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-50 transition hover:border-emerald-300/45 hover:bg-emerald-400/15"
+            >
+              <HelpCircle size={16} />
+              First Time Here? Take a Quick Tour
+            </button>
+
             {mode === AUTH_MODES.LOGIN ? (
               <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
                 <div>
@@ -488,3 +499,4 @@ export function AuthGateway({ onAuthenticated }) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Navbar from '../components/Navbar';
@@ -11,6 +11,7 @@ import {
   Clock3,
   Compass,
   GraduationCap,
+  HelpCircle,
   Home,
   Library,
   LayoutDashboard,
@@ -25,6 +26,7 @@ import {
 import { useAuth } from '@/lib/AuthContext';
 import { db } from '@/lib/firebase';
 import { getStageLabel, SUBMISSION_STATUS } from '@/lib/submissionPipeline';
+import { useOnboarding } from '@/components/onboarding/useOnboarding';
 
 const FOCUS_ITEMS = [
   {
@@ -193,6 +195,7 @@ function PathCard({ item, index }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { replayTour } = useOnboarding();
   const storageKey = `sirajone-dashboard-focus-${user?.uid || 'guest'}`;
   const [completed, setCompleted] = useState({});
   const [reviewAlerts, setReviewAlerts] = useState([]);
@@ -311,6 +314,14 @@ export default function Dashboard() {
                 <p className="mt-3 text-xs leading-5 text-slate-500">
                   {completedCount} of {FOCUS_ITEMS.length} focus items completed today.
                 </p>
+                <button
+                  type="button"
+                  onClick={replayTour}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-3 text-sm font-bold text-emerald-100 transition hover:border-emerald-300/40 hover:bg-emerald-400/15"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Replay Onboarding Guide
+                </button>
               </div>
             </div>
           </div>
@@ -343,7 +354,7 @@ export default function Dashboard() {
                           {isCorrection ? 'Correction needed' : 'Approved by teacher'}
                         </h3>
                         <p className="mt-1 text-sm text-slate-300">
-                          {getStageLabel(submission.stage)} · {submission.lessonId} · {submission.itemId}
+                          {getStageLabel(submission.stage)} Â· {submission.lessonId} Â· {submission.itemId}
                         </p>
                       </div>
                       <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${
@@ -504,5 +515,9 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+
+
 
 

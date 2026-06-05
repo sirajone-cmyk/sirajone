@@ -1,6 +1,7 @@
 ﻿import React from 'react';
-import { BookOpen, Camera, Users, PlayCircle, Send } from 'lucide-react';
+import { BookOpen, Camera, Users, PlayCircle, Send, HelpCircle } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { useOnboarding } from '../onboarding/useOnboarding';
 
 const QUICK_LINKS = [{ label: 'Home', href: '#home' },{ label: 'Programs', href: '#programs' },{ label: 'Teachers', href: '#teachers' },{ label: 'Enroll', href: '#enroll' },{ label: 'Dashboard', href: '#dashboard' },{ label: 'Contact', href: '#contact' }];
 const PROGRAMMES  = [{ label: "Qa'idah & Reading", href: '#programs' },{ label: 'Tajwid Foundations', href: '#programs' },{ label: 'Hifz Programme', href: '#programs' },{ label: 'Advanced Recitation', href: '#programs' }];
@@ -11,6 +12,8 @@ const FooterLink    = ({ href, children }) => <a href={href} className="block te
 const FooterHeading = ({ children }) => <h4 className="text-[#F0FDF4] font-semibold text-sm tracking-wide mb-5 uppercase">{children}</h4>;
 
 export function Footer({ className }) {
+  const { replayTour } = useOnboarding();
+
   return (
     <footer className={cn('bg-[#060D09] border-t-2 border-[rgba(34,197,94,0.2)]', className)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -32,7 +35,16 @@ export function Footer({ className }) {
               ))}
             </div>
           </div>
-          <div><FooterHeading>Quick Links</FooterHeading><div className="space-y-1">{QUICK_LINKS.map(l => <FooterLink key={l.label} href={l.href}>{l.label}</FooterLink>)}</div></div>
+          <div>
+            <FooterHeading>Quick Links</FooterHeading>
+            <div className="space-y-1">
+              {QUICK_LINKS.map(l => <FooterLink key={l.label} href={l.href}>{l.label}</FooterLink>)}
+              <button type="button" onClick={replayTour} className="mt-2 inline-flex items-center gap-2 text-sm text-[rgba(134,239,172,0.7)] transition-colors hover:text-[#86EFAC]">
+                <HelpCircle size={14} />
+                Replay Onboarding Guide
+              </button>
+            </div>
+          </div>
           <div><FooterHeading>Programmes</FooterHeading><div className="space-y-1">{PROGRAMMES.map(l => <FooterLink key={l.label} href={l.href}>{l.label}</FooterLink>)}</div></div>
           <div><FooterHeading>Contact</FooterHeading><div className="space-y-2">{CONTACT_INFO.map(item => <p key={item.label} className="text-sm text-[rgba(134,239,172,0.55)]">{item.label}</p>)}</div></div>
         </div>

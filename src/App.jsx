@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Toaster } from "react-hot-toast"
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import SplashScreen from '@/components/SplashScreen';
 import PendingApproval from '@/components/auth/PendingApproval';
 import SuspendedAccount from '@/components/auth/SuspendedAccount';
 import SecurityWrapper from '@/components/SecurityWrapper';
+import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
@@ -107,7 +108,9 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <AuthenticatedApp />
+          <OnboardingProvider>
+            <AuthenticatedApp />
+          </OnboardingProvider>
         </Router>
         <Toaster position="top-right" />
       </QueryClientProvider>
@@ -116,4 +119,8 @@ function App() {
 }
 
 export default App;
+
+
+
+
 
