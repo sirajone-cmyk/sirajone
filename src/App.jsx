@@ -3,7 +3,7 @@ import { Toaster } from "react-hot-toast"
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import { ROLES, USER_STATUS, isCounsellorRole } from '@/lib/roles';
+import { ROLES, USER_STATUS, isCounsellorRole, isCounsellingClientRole } from '@/lib/roles';
 import SplashScreen from '@/components/SplashScreen';
 import PendingApproval from '@/components/auth/PendingApproval';
 import SuspendedAccount from '@/components/auth/SuspendedAccount';
@@ -20,6 +20,7 @@ import Library from './pages/Library';
 import Teachers from './pages/Teachers';
 import Counsellors from './pages/Counsellors';
 import CounsellorPortal from './pages/CounsellorPortal';
+import CounsellingClientDashboard from './pages/CounsellingClientDashboard';
 import Messages from './pages/Messages';
 import AdminMessages from './pages/AdminMessages';
 import RoleManagement from './pages/RoleManagement';
@@ -62,12 +63,20 @@ const AuthenticatedApp = () => {
   const isAdmin = isApproved && (user?.role === ROLES.ADMIN || user?.role === ROLES.CO_ADMIN);
   const canAccessTeacherPortal = isAdmin || (isApproved && user?.role === ROLES.TEACHER);
   const canAccessCounsellorPortal = isAdmin || (isApproved && isCounsellorRole(user?.role));
+  const canAccessCounsellingClientDashboard = isApproved && isCounsellingClientRole(user?.role);
+
+  const dashboardElement = (() => {
+    if (isApproved && user?.role === ROLES.TEACHER) return <TeacherPortal />;
+    if (isApproved && isCounsellorRole(user?.role)) return <CounsellorPortal />;
+    if (canAccessCounsellingClientDashboard) return <CounsellingClientDashboard />;
+    return <Dashboard />;
+  })();
   const protect = (element) => <SecurityWrapper>{element}</SecurityWrapper>;
 
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={protect(<Dashboard />)} />
+      <Route path="/dashboard" element={protect(dashboardElement)} />
       <Route path="/letters" element={protect(<LetterCatalog />)} />
       <Route path="/practice-workbook" element={protect(<PracticalWorkbook />)} />
       <Route path="/part-two-workbook" element={protect(<PartTwoWorkbook />)} />
@@ -90,6 +99,10 @@ const AuthenticatedApp = () => {
       <Route
         path="/counsellor"
         element={canAccessCounsellorPortal ? protect(<CounsellorPortal />) : <Navigate to="/dashboard" replace />}
+      />
+      <Route
+        path="/counselling-client"
+        element={canAccessCounsellingClientDashboard || isAdmin ? protect(<CounsellingClientDashboard />) : <Navigate to="/dashboard" replace />}
       />
       {isAdmin && <Route path="/admin" element={protect(<AdminDashboard />)} />}
       {isAdmin && <Route path="/admin/messages" element={protect(<AdminMessages />)} />}
@@ -122,6 +135,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

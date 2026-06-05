@@ -6,6 +6,8 @@ export const ROLES = Object.freeze({
   COUNSELLOR: 'Counsellor',
   // Legacy spelling kept for backwards compat with seeded data
   COUNSELOR: 'Counselor',
+  // Person seeking counselling sessions (distinct from COUNSELLOR therapist)
+  COUNSELLING_CLIENT: 'counsellingClient',
 });
 
 export const USER_STATUS = Object.freeze({
@@ -68,6 +70,12 @@ export function isCounsellorRole(role) {
   return role === ROLES.COUNSELLOR || role === ROLES.COUNSELOR;
 }
 
+export const LEGACY_COUNSELLING_CLIENT_ROLES = Object.freeze(['CounsellingClient']);
+
+export function isCounsellingClientRole(role) {
+  return role === ROLES.COUNSELLING_CLIENT || LEGACY_COUNSELLING_CLIENT_ROLES.includes(role);
+}
+
 export function enrichUserProfile(profile = {}) {
   const role = profile.role || ROLES.STUDENT;
   const status = profile.status || USER_STATUS.PENDING;
@@ -84,5 +92,7 @@ export function enrichUserProfile(profile = {}) {
     isTeacherPending: role === ROLES.TEACHER && status === USER_STATUS.PENDING,
     isCounsellor: isCounsellorRole(role) && status === USER_STATUS.APPROVED,
     isCounsellorPending: isCounsellorRole(role) && status === USER_STATUS.PENDING,
+    isCounsellingClient: isCounsellingClientRole(role) && status === USER_STATUS.APPROVED,
+    isCounsellingClientPending: isCounsellingClientRole(role) && status === USER_STATUS.PENDING,
   };
 }

@@ -127,9 +127,13 @@ function RequestModal({ counsellor, onClose }) {
     setError('');
     try {
       await addDoc(collection(db, 'counsellingRequests'), {
+        clientId: user.uid,
+        clientName: user.full_name || user.name || user.email || 'SirajOne Client',
+        clientEmail: user.email || '',
         studentId: user.uid,
         studentName: user.full_name || user.name || user.email || 'SirajOne Student',
         studentEmail: user.email || '',
+        requesterRole: user.role || '',
         counsellorId: counsellor.id,
         counsellorName: normalizeCounsellorName(counsellor.displayName || counsellor.fullName || 'SirajOne Counsellor', { allowTitle: true }),
         categories: form.categories,

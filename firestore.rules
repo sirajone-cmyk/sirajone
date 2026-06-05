@@ -1,4 +1,4 @@
-rules_version = '2';
+﻿rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -31,7 +31,7 @@ service cloud.firestore {
     }
 
     function isKnownRole(role) {
-      return role in ['Student', 'Teacher', 'Admin', 'Co-Admin', 'Counsellor', 'Counselor'];
+      return role in ['Student', 'Teacher', 'Admin', 'Co-Admin', 'Counsellor', 'Counselor', 'counsellingClient', 'CounsellingClient'];
     }
 
     function isKnownStatus(status) {
@@ -78,6 +78,11 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
     }
 
+    function validCounsellingClientSignup() {
+      return request.resource.data.role == 'counsellingClient'
+        && request.resource.data.status == 'pending';
+    }
+
     function validOwnerBootstrap() {
       return isOwnerEmail()
         && request.resource.data.role == 'Admin'
@@ -89,7 +94,7 @@ service cloud.firestore {
         && !userProfileExists(userId)
         && isKnownRole(request.resource.data.role)
         && isKnownStatus(request.resource.data.status)
-        && (validStudentSignup() || validTeacherApplication() || validCounsellorApplication() || validOwnerBootstrap());
+        && (validStudentSignup() || validTeacherApplication() || validCounsellorApplication() || validCounsellingClientSignup() || validOwnerBootstrap());
     }
 
     function onlyTeacherEditablePublicFieldsChanged() {
@@ -116,16 +121,48 @@ service cloud.firestore {
       return signedIn()
         && (
           data.studentId == request.auth.uid
+          || data.clientId == request.auth.uid
           || data.counsellorId == request.auth.uid
         );
     }
 
     function validCounsellingRequestCreate() {
       return isApprovedUser()
-        && request.resource.data.studentId == request.auth.uid
+        && (request.resource.data.studentId == request.auth.uid || request.resource.data.clientId == request.auth.uid)
         && request.resource.data.status == 'pending'
         && request.resource.data.counsellorId is string
         && request.resource.data.categories is list;
+    }
+
+    function ownsCounsellingClientData(data) {
+      return signedIn() && (
+        data.clientId == request.auth.uid
+        || data.studentId == request.auth.uid
+        || data.counsellorId == request.auth.uid
+      );
+    }
+
+    function validCounsellingSessionCreate() {
+      return isApprovedUser()
+        && request.resource.data.counsellorId is string
+        && (request.resource.data.clientId is string || request.resource.data.studentId is string)
+        && ownsCounsellingClientData(request.resource.data);
+    }
+
+    function validCounsellingMessageCreate() {
+      return isApprovedUser()
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.body is string
+        && request.resource.data.counsellorId is string
+        && (request.resource.data.clientId is string || request.resource.data.studentId is string)
+        && ownsCounsellingClientData(request.resource.data);
+    }
+
+    function validCounsellingResourceCreate() {
+      return isApprovedUser()
+        && request.resource.data.counsellorId is string
+        && (request.resource.data.clientId is string || request.resource.data.studentId is string)
+        && ownsCounsellingClientData(request.resource.data);
     }
 
     function onlySeatIncrementChanged() {
@@ -313,7 +350,7 @@ service cloud.firestore {
       allow update: if isAdminUser()
         || (ownsCounsellingRequestData(resource.data)
           && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'updatedAt', 'lastMessageAt', 'studentNote', 'counsellorReply']));
+            .hasOnly(['status', 'updatedAt', 'lastMessageAt', 'studentNote', 'clientNote', 'counsellorReply', 'counsellorNote', 'followUpPending', 'followUpStatus', 'lastSessionAt', 'clientName', 'clientEmail']));
       allow delete: if isAdminUser();
     }
 
@@ -376,6 +413,24 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Co-Admin', 'Teacher'];
     }
 
+    match /counsellingSessions/{documentId} {
+      allow read: if isAdminUser() || ownsCounsellingClientData(resource.data);
+      allow create: if isAdminUser() || validCounsellingSessionCreate();
+      allow update, delete: if isAdminUser() || (isApprovedUser() && resource.data.counsellorId == request.auth.uid);
+    }
+
+    match /counsellingMessages/{documentId} {
+      allow read: if isAdminUser() || ownsCounsellingClientData(resource.data);
+      allow create: if isAdminUser() || validCounsellingMessageCreate();
+      allow update, delete: if isAdminUser() || (signedIn() && resource.data.senderId == request.auth.uid);
+    }
+
+    match /counsellingResources/{documentId} {
+      allow read: if isAdminUser() || ownsCounsellingClientData(resource.data);
+      allow create: if isAdminUser() || validCounsellingResourceCreate();
+      allow update, delete: if isAdminUser() || (isApprovedUser() && resource.data.counsellorId == request.auth.uid);
+    }
+
     match /contacts/{documentId} {
       allow create: if true;
       allow read, update, delete: if isAdminUser();
@@ -391,4 +446,5 @@ service cloud.firestore {
     }
   }
 }
+
 

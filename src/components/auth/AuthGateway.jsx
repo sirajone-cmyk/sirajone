@@ -2,6 +2,7 @@
 import { ArrowRight, BookOpen, Eye, EyeOff, HelpCircle, KeyRound, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useOnboarding } from '../onboarding/useOnboarding';
+import { ROLES } from '../../lib/roles';
 import { SUBJECTS } from '../../lib/subjects';
 import { COUNSELLOR_CATEGORIES } from '../../lib/roles';
 import {
@@ -19,9 +20,10 @@ const AUTH_MODES = {
 };
 
 const REGISTER_TYPES = {
-  STUDENT: 'student',
-  TEACHER: 'teacher',
-  COUNSELLOR: 'counsellor',
+  STUDENT:           'student',
+  TEACHER:           'teacher',
+  COUNSELLOR:        'counsellor',
+  COUNSELLING_CLIENT:'counsellingClient',
 };
 
 function normalizeEmail(value) {
@@ -87,7 +89,14 @@ function TogglePill({ checked, onChange, children, disabled }) {
 }
 
 export function AuthGateway({ onAuthenticated }) {
-  const { login, registerStudent, applyAsTeacher, applyAsCounsellor, resetPassword } = useAuth();
+  const {
+    login,
+    registerStudent,
+    registerCounsellingClient,
+    applyAsTeacher,
+    applyAsCounsellor,
+    resetPassword,
+  } = useAuth();
   const { startPreviewTour } = useOnboarding();
   const [mode, setMode] = useState(AUTH_MODES.LOGIN);
   const [registerType, setRegisterType] = useState(REGISTER_TYPES.STUDENT);
@@ -113,6 +122,8 @@ export function AuthGateway({ onAuthenticated }) {
     bio: '',
     personalityDescription: '',
     targetSubjects: [],
+    // Counselling client fields
+    counsellingNotes: '',
   });
   const [counsellorForm, setCounsellorForm] = useState(createEmptyCounsellorApplication());
 
@@ -204,6 +215,8 @@ export function AuthGateway({ onAuthenticated }) {
       }
     }
 
+    // Counselling Client has no extra required fields — name/email/password validation above is enough.
+
     return true;
   }
 
@@ -222,6 +235,7 @@ export function AuthGateway({ onAuthenticated }) {
       bio: '',
       personalityDescription: '',
       targetSubjects: [],
+      counsellingNotes: '',
     });
     setCounsellorForm(createEmptyCounsellorApplication());
   }
@@ -296,6 +310,9 @@ export function AuthGateway({ onAuthenticated }) {
           email,
         });
         setInfo('Counsellor application submitted. Your account is pending review.');
+      } else if (registerType === REGISTER_TYPES.COUNSELLING_CLIENT) {
+        await registerCounsellingClient(email, registerForm.password, fullName, registerForm.counsellingNotes);
+        setInfo('Your counselling request has been submitted. An administrator will review and approve your account shortly.');
       } else {
         await registerStudent(email, registerForm.password, fullName);
         setInfo('Student account created successfully.');
@@ -390,6 +407,7 @@ export function AuthGateway({ onAuthenticated }) {
                   <div className="grid grid-cols-3 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.72)] p-1">
                     {[
                       { id: REGISTER_TYPES.STUDENT, label: 'Student' },
+                      { id: REGISTER_TYPES.COUNSELLING_CLIENT, label: 'Counselling Client' },
                       { id: REGISTER_TYPES.TEACHER, label: 'Teach' },
                       { id: REGISTER_TYPES.COUNSELLOR, label: 'Counsellor' },
                     ].map((option) => (
@@ -439,7 +457,27 @@ export function AuthGateway({ onAuthenticated }) {
                     </div>
                   )}
 
-                  {registerType === REGISTER_TYPES.COUNSELLOR && (
+  
+                {registerType === REGISTER_TYPES.COUNSELLING_CLIENT && (
+                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">Counselling support only</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                      This registration is for personal counselling sessions. No lesson stages, workbook recordings, or Qur'an learning fields will be requested.
+                    </p>
+                    <div className="mt-4">
+                      <FieldLabel>Optional note for the counselling team</FieldLabel>
+                      <FormTextArea
+                        value={registerForm.counsellingNotes}
+                        onChange={(event) => updateRegisterField('counsellingNotes', event.target.value)}
+                        placeholder="Share what kind of support you are looking for. You can keep this brief."
+                        rows={4}
+                        disabled={busy}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {registerType === REGISTER_TYPES.COUNSELLOR && (
                     <div className="max-h-[80vh] space-y-4 overflow-y-auto rounded-2xl border border-[rgba(34,197,94,0.18)] bg-[rgba(6,16,12,0.42)] px-1 pb-6 pt-4 sm:max-h-full sm:px-4">
                       <div className="grid gap-4 px-3 sm:grid-cols-2 sm:px-0">
                         <div><FieldLabel>Display Name</FieldLabel><Input value={counsellorForm.displayName} onBlur={() => updateCounsellorField('displayName', normalizeCounsellorName(counsellorForm.displayName || registerForm.fullName, { allowTitle: true }))} onChange={(event) => updateCounsellorField('displayName', event.target.value)} placeholder="Counsellor Aisha Peer" autoComplete="name" disabled={busy} /></div>

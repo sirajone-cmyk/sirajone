@@ -1,233 +1,357 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { collection, doc, getDoc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { BookOpen, CalendarDays, CheckCircle, ClipboardList, FileText, HeartHandshake, Loader2, MessageCircle, UserRound } from 'lucide-react';
+import { addDoc, collection, doc, getDoc, onSnapshot, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
+import { CalendarDays, ClipboardList, MessageCircle, Send, Users } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/AuthContext';
-import { isAdminRole, isCounsellorRole } from '@/lib/roles';
-import { COUNSELLOR_DELIVERY_MODES, normalizeCounsellorName } from '@/lib/counsellorSchema';
+import { db } from '@/lib/firebase';
+import { ROLES } from '@/lib/roles';
 
-const sections = [
-  { id: 'profile', label: 'Profile', icon: UserRound },
-  { id: 'requests', label: 'Counselling Requests', icon: ClipboardList },
-  { id: 'messages', label: 'Messages', icon: MessageCircle },
-  { id: 'availability', label: 'Availability', icon: CalendarDays },
-  { id: 'resources', label: 'Resources', icon: BookOpen },
-];
+const sessionTypes = ['Online', 'In-Person', 'Phone', 'WhatsApp', 'Group Session'];
 
-function EmptyState({ icon: Icon, title, body, cta }) {
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDate(value) {
+  const date = toDate(value);
+  if (!date) return 'No session yet';
+  return new Intl.DateTimeFormat('en-ZA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date);
+}
+
+function sortRecent(a, b) {
+  return (toDate(b.createdAt || b.sessionDate)?.getTime() || 0) - (toDate(a.createdAt || a.sessionDate)?.getTime() || 0);
+}
+
+function EmptyState({ title, text }) {
   return (
-    <div className="rounded-3xl border border-dashed border-emerald-800/60 bg-white/[0.03] px-6 py-12 text-center">
-      <Icon className="mx-auto mb-4 h-10 w-10 text-emerald-500/80" />
-      <h3 className="font-serif text-2xl font-bold text-white">{title}</h3>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">{body}</p>
-      {cta && <div className="mt-6">{cta}</div>}
+    <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-6 text-center">
+      <ClipboardList className="mx-auto h-8 w-8 text-slate-500" />
+      <h3 className="mt-4 font-serif text-2xl font-black text-white">{title}</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">{text}</p>
     </div>
   );
 }
 
-function Badge({ children, tone = 'emerald' }) {
-  const tones = {
-    emerald: 'border-emerald-700/60 bg-emerald-950/50 text-emerald-300',
-    amber: 'border-amber-700/60 bg-amber-950/40 text-amber-300',
-    slate: 'border-slate-700 bg-slate-900 text-slate-300',
-  };
-  return <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${tones[tone]}`}>{children}</span>;
-}
-
-function Detail({ label, value }) {
-  const display = Array.isArray(value) ? value.join(', ') : value;
+function StatCard({ title, value, icon: Icon, tone = 'emerald' }) {
+  const toneClass = tone === 'amber' ? 'text-amber-300' : tone === 'sky' ? 'text-sky-300' : 'text-emerald-300';
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{label}</p>
-      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-200">{display || 'Not provided'}</p>
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+      <Icon className={`h-6 w-6 ${toneClass}`} />
+      <p className="mt-4 text-3xl font-black text-white">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-slate-400">{title}</p>
     </div>
   );
 }
 
-function ProfileView({ profile, privateData }) {
-  if (!profile) {
-    return <EmptyState icon={UserRound} title="No counsellor profile found" body="Your counsellor profile will appear here after your registration is submitted and stored in Firestore." />;
-  }
-
-  const delivery = COUNSELLOR_DELIVERY_MODES.filter((mode) => profile.serviceDeliveryModes?.[mode.key]).map((mode) => mode.label);
-  const name = normalizeCounsellorName(profile.displayName || profile.fullName || 'SirajOne Counsellor', { allowTitle: true });
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-3xl border border-white/10 bg-[#102018] p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-400">Verification Profile</p>
-            <h2 className="mt-2 text-3xl font-bold text-white">{name}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{profile.bio || 'No public bio has been added yet.'}</p>
-          </div>
-          <Badge tone={profile.profileStatus === 'approved' ? 'emerald' : 'amber'}>{profile.profileStatus || 'pending'}</Badge>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Detail label="Email" value={profile.email} />
-        <Detail label="Mobile Number" value={profile.mobileNumber} />
-        <Detail label="Location" value={[profile.city, profile.country].filter(Boolean).join(', ')} />
-        <Detail label="Languages Spoken" value={profile.languagesSpoken} />
-        <Detail label="Counselling Categories" value={profile.categories} />
-        <Detail label="Service Delivery" value={delivery} />
-        <Detail label="Highest Qualification" value={privateData?.highestQualification} />
-        <Detail label="Institution" value={privateData?.institution} />
-        <Detail label="Years of Experience" value={privateData?.yearsOfExperience ? `${privateData.yearsOfExperience} years` : ''} />
-        <Detail label="Registration Body" value={privateData?.registrationBody} />
-        <Detail label="Certifications" value={privateData?.certifications} />
-        <Detail label="Professional Memberships" value={privateData?.professionalMemberships} />
-      </div>
-    </div>
-  );
+function clientStatus(client) {
+  if (client.followUpPending) return 'Needs Follow-up';
+  if (client.requestStatus === 'pending') return 'New';
+  return 'Active';
 }
 
-function RequestsView({ requests, onUpdate }) {
-  if (requests.length === 0) {
-    return <EmptyState icon={ClipboardList} title="No counselling requests yet" body="Incoming student assistance cases will appear here once students request support." />;
-  }
-
-  return (
-    <div className="space-y-4">
-      {requests.map((request) => (
-        <article key={request.id} className="rounded-3xl border border-white/10 bg-[#102018] p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h3 className="font-bold text-white">{request.studentName || 'Student Request'}</h3>
-              <p className="mt-1 text-xs text-slate-500">{request.studentEmail || 'No email listed'}</p>
-            </div>
-            <Badge tone={request.status === 'pending' ? 'amber' : 'emerald'}>{request.status || 'pending'}</Badge>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {(request.categories || []).map((category) => <Badge key={category}>{category}</Badge>)}
-          </div>
-          {request.note && <p className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-slate-300">{request.note}</p>}
-          <p className="mt-3 text-xs text-slate-500">Preferred contact: {request.preferredContact || 'Not listed'}</p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {request.status === 'pending' && (
-              <>
-                <button type="button" onClick={() => onUpdate(request.id, 'accepted')} className="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600">Accept</button>
-                <button type="button" onClick={() => onUpdate(request.id, 'declined')} className="rounded-xl border border-red-700/50 bg-red-950/30 px-4 py-2 text-xs font-bold text-red-200 hover:bg-red-900/40">Decline</button>
-              </>
-            )}
-            {request.status === 'accepted' && (
-              <button type="button" onClick={() => onUpdate(request.id, 'completed')} className="rounded-xl border border-sky-700/50 bg-sky-950/30 px-4 py-2 text-xs font-bold text-sky-200 hover:bg-sky-900/40">Mark Complete</button>
-            )}
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function AvailabilityView({ profile }) {
-  const availability = profile?.availability || {};
-  const hasAvailability = availability.weekdays || availability.weekends || availability.evenings || availability.timeZone;
-
-  if (!hasAvailability) {
-    return <EmptyState icon={CalendarDays} title="No availability published" body="Availability slots will appear here once they are configured." />;
-  }
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Detail label="Weekdays" value={availability.weekdays ? 'Available' : 'Not listed'} />
-      <Detail label="Weekends" value={availability.weekends ? 'Available' : 'Not listed'} />
-      <Detail label="Evenings" value={availability.evenings ? 'Available' : 'Not listed'} />
-      <Detail label="Time Zone" value={availability.timeZone} />
-    </div>
-  );
+function statusClasses(label) {
+  if (label === 'Needs Follow-up') return 'border-amber-400/30 bg-amber-400/10 text-amber-200';
+  if (label === 'New') return 'border-sky-400/30 bg-sky-400/10 text-sky-200';
+  return 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200';
 }
 
 export default function CounsellorPortal() {
   const { user } = useAuth();
-  const [active, setActive] = useState('profile');
   const [profile, setProfile] = useState(null);
   const [privateData, setPrivateData] = useState(null);
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [sessions, setSessions] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [noteClient, setNoteClient] = useState(null);
+  const [messageText, setMessageText] = useState('');
+  const [sessionForm, setSessionForm] = useState({ sessionDate: '', sessionType: 'Online', notes: '' });
+  const [resourceForm, setResourceForm] = useState({ title: '', note: '', url: '' });
+  const [busy, setBusy] = useState(false);
 
-  const isAdmin = isAdminRole(user?.role);
-  const isCounsellor = isCounsellorRole(user?.role);
+  const isAdmin = user?.role === ROLES.ADMIN || user?.role === ROLES.CO_ADMIN;
 
   useEffect(() => {
     if (!user?.uid) return undefined;
-
-    const unsubscribers = [];
-
-    if (isCounsellor) {
-      unsubscribers.push(onSnapshot(doc(db, 'counsellors', user.uid), (snapshot) => {
-        setProfile(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
-        setLoading(false);
-      }, (error) => {
-        console.error(error);
-        setLoading(false);
-      }));
-
-      getDoc(doc(db, 'counsellors', user.uid, 'private_data', 'verification'))
-        .then((snapshot) => setPrivateData(snapshot.exists() ? snapshot.data() : null))
-        .catch(console.error);
-    } else {
-      setLoading(false);
+    let active = true;
+    async function loadProfile() {
+      const publicSnap = await getDoc(doc(db, 'counsellors', user.uid));
+      const privateSnap = await getDoc(doc(db, 'counsellors', user.uid, 'private_data', 'verification'));
+      if (!active) return;
+      setProfile(publicSnap.exists() ? { id: publicSnap.id, ...publicSnap.data() } : null);
+      setPrivateData(privateSnap.exists() ? privateSnap.data() : null);
     }
+    loadProfile();
+    return () => { active = false; };
+  }, [user?.uid]);
 
-    unsubscribers.push(onSnapshot(collection(db, 'counsellingRequests'), (snapshot) => {
-      const rows = snapshot.docs.map((document) => ({ id: document.id, ...document.data() }));
-      setRequests(isAdmin ? rows : rows.filter((request) => request.counsellorId === user.uid));
-    }, console.error));
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+    const scoped = (name) => (isAdmin ? collection(db, name) : query(collection(db, name), where('counsellorId', '==', user.uid)));
+    const watchers = [
+      onSnapshot(scoped('counsellingRequests'), (snap) => setRequests(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(sortRecent))),
+      onSnapshot(scoped('counsellingSessions'), (snap) => setSessions(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(sortRecent))),
+      onSnapshot(scoped('counsellingMessages'), (snap) => setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(sortRecent))),
+      onSnapshot(scoped('counsellingResources'), (snap) => setResources(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(sortRecent))),
+    ];
+    return () => watchers.forEach((unsub) => unsub());
+  }, [isAdmin, user?.uid]);
 
-    return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
-  }, [user?.uid, isAdmin, isCounsellor]);
+  const clients = useMemo(() => {
+    const map = new Map();
+    const ensure = (id, data = {}) => {
+      if (!id) return null;
+      if (!map.has(id)) map.set(id, { id, name: 'Counselling Client', email: '', requestId: '', requestStatus: 'active', followUpPending: false, sessionCount: 0, lastSessionDate: null });
+      const item = map.get(id);
+      item.name = data.name || item.name;
+      item.email = data.email || item.email;
+      item.requestId = data.requestId || item.requestId;
+      item.requestStatus = data.requestStatus || item.requestStatus;
+      item.followUpPending = Boolean(data.followUpPending || item.followUpPending);
+      return item;
+    };
+    requests.forEach((request) => ensure(request.clientId || request.studentId, {
+      name: request.clientName || request.studentName,
+      email: request.clientEmail || request.studentEmail,
+      requestId: request.id,
+      requestStatus: request.status,
+      followUpPending: request.followUpPending,
+    }));
+    sessions.forEach((session) => {
+      const client = ensure(session.clientId || session.studentId, { name: session.clientName || session.studentName, email: session.clientEmail || session.studentEmail });
+      if (!client) return;
+      client.sessionCount += 1;
+      const date = toDate(session.sessionDate || session.date);
+      if (date && (!client.lastSessionDate || date > client.lastSessionDate)) client.lastSessionDate = date;
+    });
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [requests, sessions]);
 
-  const pendingCount = useMemo(() => requests.filter((request) => request.status === 'pending').length, [requests]);
+  const selectedClient = clients.find((client) => client.id === selectedClientId) || clients[0];
+  const selectedSessions = sessions.filter((session) => (session.clientId || session.studentId) === noteClient?.id);
+  const selectedMessages = messages.filter((message) => (message.clientId || message.studentId) === noteClient?.id);
+  const selectedResources = resources.filter((resource) => (resource.clientId || resource.studentId) === noteClient?.id);
 
-  const updateRequest = async (requestId, status) => {
-    await updateDoc(doc(db, 'counsellingRequests', requestId), {
-      status,
+  const sessionsThisWeek = useMemo(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return sessions.filter((session) => {
+      const date = toDate(session.sessionDate || session.date);
+      return date && date >= start && date <= end;
+    }).length;
+  }, [sessions]);
+
+  const unread = messages.filter((message) => message.senderId !== user?.uid && !message.readByCounsellor).length;
+  const followUps = clients.filter((client) => client.followUpPending).length;
+  const counsellorName = profile?.displayName || profile?.fullName || user?.full_name || user?.email || 'SirajOne Counsellor';
+
+  async function sendMessage() {
+    if (!selectedClient || !messageText.trim()) return;
+    setBusy(true);
+    try {
+      await addDoc(collection(db, 'counsellingMessages'), {
+        clientId: selectedClient.id,
+        clientName: selectedClient.name,
+        clientEmail: selectedClient.email,
+        counsellorId: user.uid,
+        counsellorName,
+        senderId: user.uid,
+        senderName: counsellorName,
+        senderRole: user.role,
+        body: messageText.trim(),
+        readByClient: false,
+        readByCounsellor: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      setMessageText('');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function logSession() {
+    if (!selectedClient || !sessionForm.sessionDate) return;
+    setBusy(true);
+    try {
+      await addDoc(collection(db, 'counsellingSessions'), {
+        clientId: selectedClient.id,
+        clientName: selectedClient.name,
+        clientEmail: selectedClient.email,
+        counsellorId: user.uid,
+        counsellorName,
+        sessionDate: new Date(sessionForm.sessionDate),
+        sessionType: sessionForm.sessionType,
+        notes: sessionForm.notes.trim(),
+        status: new Date(sessionForm.sessionDate).getTime() < Date.now() ? 'completed' : 'upcoming',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      setSessionForm({ sessionDate: '', sessionType: 'Online', notes: '' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function flagFollowUp(client = selectedClient) {
+    if (!client?.requestId) return;
+    await updateDoc(doc(db, 'counsellingRequests', client.requestId), {
+      followUpPending: true,
+      followUpStatus: 'Needs Follow-up',
       updatedAt: serverTimestamp(),
     });
-  };
+  }
 
-  const renderActive = () => {
-    if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-emerald-400" /></div>;
-    if (active === 'profile') return <ProfileView profile={profile} privateData={privateData} />;
-    if (active === 'requests') return <RequestsView requests={requests} onUpdate={updateRequest} />;
-    if (active === 'messages') return <EmptyState icon={MessageCircle} title="Messages" body="Secure counselling conversations will appear here through the SirajOne messaging layer." cta={<a href="/messages" className="rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600">Open Messages</a>} />;
-    if (active === 'availability') return <AvailabilityView profile={profile} />;
-    return <EmptyState icon={FileText} title="No resources yet" body="Shared documentation templates and counselling resources will appear here when added." />;
-  };
+  async function shareResource() {
+    if (!selectedClient || !resourceForm.title.trim()) return;
+    setBusy(true);
+    try {
+      await addDoc(collection(db, 'counsellingResources'), {
+        clientId: selectedClient.id,
+        clientName: selectedClient.name,
+        clientEmail: selectedClient.email,
+        counsellorId: user.uid,
+        counsellorName,
+        title: resourceForm.title.trim(),
+        note: resourceForm.note.trim(),
+        url: resourceForm.url.trim(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      setResourceForm({ title: '', note: '', url: '' });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-[#07150d] text-white">
+    <div className="min-h-screen bg-[#06170f] text-white">
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-emerald-400">Counsellor Dashboard</p>
-          <h1 className="mt-2 font-serif text-4xl font-black text-white">Counsellor Workspace</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Manage your profile, incoming requests, messaging, availability, and resources.</p>
-        </div>
+      <main className="mx-auto max-w-[95rem] px-4 py-8 sm:px-6 lg:px-8">
+        <section className="rounded-[2rem] border border-emerald-400/20 bg-[#10261a] p-6 shadow-2xl shadow-black/30">
+          <p className="text-xs font-black uppercase tracking-[0.35em] text-emerald-300">Counsellor Workspace</p>
+          <h1 className="mt-4 font-serif text-4xl font-black text-white sm:text-5xl">Case Management</h1>
+          <p className="mt-3 max-w-3xl text-lg leading-8 text-slate-300">Manage clients, sessions, follow-ups, messages, and shared resources without any Qur'an learning stage or recording UI.</p>
+          <p className="mt-4 text-sm text-slate-500">{privateData?.highestQualification || profile?.highestQualification || 'Verification profile ready'}</p>
+        </section>
 
-        <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-          <aside className="rounded-3xl border border-white/10 bg-[#102018] p-3">
-            <nav className="space-y-1">
-              {sections.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActive(id)}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-bold transition ${active === id ? 'bg-emerald-700 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="flex-1">{label}</span>
-                  {id === 'requests' && pendingCount > 0 && <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] text-black">{pendingCount}</span>}
-                </button>
-              ))}
-            </nav>
+        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard title="Total Active Clients" value={clients.length} icon={Users} />
+          <StatCard title="Sessions This Week" value={sessionsThisWeek} icon={CalendarDays} tone="sky" />
+          <StatCard title="Follow-ups Pending" value={followUps} icon={ClipboardList} tone="amber" />
+          <StatCard title="New Messages Unread" value={unread} icon={MessageCircle} tone="sky" />
+        </section>
+
+        <section className="mt-8 grid gap-6 xl:grid-cols-[0.95fr_1.25fr_0.9fr]">
+          <aside className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="font-serif text-3xl font-black text-white">Client List</h2>
+            <div className="mt-5 space-y-4">
+              {clients.length ? clients.map((client) => {
+                const label = clientStatus(client);
+                return (
+                  <article key={client.id} className={`rounded-2xl border p-4 ${selectedClient?.id === client.id ? 'border-emerald-400/50 bg-emerald-400/10' : 'border-white/10 bg-[#0b1f15]'}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <button type="button" onClick={() => setSelectedClientId(client.id)} className="text-left">
+                        <h3 className="font-bold text-white">{client.name}</h3>
+                        <p className="text-xs text-slate-500">{client.email}</p>
+                      </button>
+                      <span className={`rounded-full border px-3 py-1 text-[11px] font-black ${statusClasses(label)}`}>{label}</span>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-400">
+                      <p><span className="block text-xs uppercase tracking-[0.18em] text-slate-500">Last Session</span>{client.lastSessionDate ? formatDate(client.lastSessionDate) : 'None yet'}</p>
+                      <p><span className="block text-xs uppercase tracking-[0.18em] text-slate-500">Sessions</span>{client.sessionCount}</p>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => setNoteClient(client)} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-slate-200">View Notes</button>
+                      <button type="button" onClick={() => setSelectedClientId(client.id)} className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-black text-[#03140c]">Send Message</button>
+                    </div>
+                  </article>
+                );
+              }) : <EmptyState title="No clients yet" text="Approved counselling clients and assigned support requests will appear here." />}
+            </div>
           </aside>
 
-          <section>{renderActive()}</section>
-        </div>
+          <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="font-serif text-3xl font-black text-white">Upcoming & Recent Sessions</h2>
+            <div className="mt-5 space-y-4">
+              {sessions.length ? sessions.slice(0, 8).map((session) => (
+                <article key={session.id} className="rounded-2xl border border-white/10 bg-[#0b1f15] p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-300">{session.sessionType || 'Session'}</p>
+                      <h3 className="mt-2 text-xl font-bold text-white">{session.clientName || session.studentName || 'Counselling Client'}</h3>
+                      <p className="mt-1 text-sm text-slate-400">{formatDate(session.sessionDate || session.date)}</p>
+                    </div>
+                    <button type="button" onClick={() => setNoteClient(clients.find((client) => client.id === (session.clientId || session.studentId)) || null)} className="rounded-xl border border-emerald-400/30 px-4 py-2 text-sm font-bold text-emerald-200">Add Notes</button>
+                  </div>
+                  {session.notes && <p className="mt-4 text-sm leading-6 text-slate-300">{session.notes}</p>}
+                </article>
+              )) : <EmptyState title="No sessions logged" text="Use Quick Actions to log sessions. Upcoming and recent sessions will collect here." />}
+            </div>
+          </section>
+
+          <aside className="space-y-6">
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
+              <h2 className="font-serif text-3xl font-black text-white">Quick Actions</h2>
+              <label className="mt-5 block text-xs font-black uppercase tracking-[0.24em] text-slate-400">Selected client</label>
+              <select value={selectedClient?.id || ''} onChange={(e) => setSelectedClientId(e.target.value)} className="mt-2 w-full rounded-2xl border border-white/10 bg-[#081b12] px-4 py-3 text-white outline-none focus:border-emerald-400">
+                {clients.length ? clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>) : <option value="">No clients available</option>}
+              </select>
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-[#0b1f15] p-4">
+                <p className="flex items-center gap-2 text-sm font-black text-white"><Send className="h-4 w-4 text-emerald-300" /> Message a client</p>
+                <textarea value={messageText} onChange={(e) => setMessageText(e.target.value)} rows={3} placeholder="Write a private message..." className="mt-3 w-full rounded-xl border border-white/10 bg-[#06170f] px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-emerald-400" />
+                <button type="button" disabled={busy || !selectedClient || !messageText.trim()} onClick={sendMessage} className="mt-3 w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-black text-[#03140c] disabled:opacity-50">Send Message</button>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-white/10 bg-[#0b1f15] p-4">
+                <p className="flex items-center gap-2 text-sm font-black text-white"><CalendarDays className="h-4 w-4 text-emerald-300" /> Log a session</p>
+                <input type="datetime-local" value={sessionForm.sessionDate} onChange={(e) => setSessionForm((v) => ({ ...v, sessionDate: e.target.value }))} className="mt-3 w-full rounded-xl border border-white/10 bg-[#06170f] px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" />
+                <select value={sessionForm.sessionType} onChange={(e) => setSessionForm((v) => ({ ...v, sessionType: e.target.value }))} className="mt-3 w-full rounded-xl border border-white/10 bg-[#06170f] px-3 py-2 text-sm text-white outline-none focus:border-emerald-400">
+                  {sessionTypes.map((type) => <option key={type}>{type}</option>)}
+                </select>
+                <textarea value={sessionForm.notes} onChange={(e) => setSessionForm((v) => ({ ...v, notes: e.target.value }))} rows={3} placeholder="Session note..." className="mt-3 w-full rounded-xl border border-white/10 bg-[#06170f] px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-emerald-400" />
+                <button type="button" disabled={busy || !selectedClient || !sessionForm.sessionDate} onClick={logSession} className="mt-3 w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-black text-[#03140c] disabled:opacity-50">Log Session</button>
+              </div>
+
+              <button type="button" disabled={!selectedClient?.requestId} onClick={() => flagFollowUp(selectedClient)} className="mt-4 w-full rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-black text-amber-200 disabled:opacity-40">Flag Client for Follow-up</button>
+            </div>
+
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
+              <h2 className="font-serif text-2xl font-black text-white">Share Resource</h2>
+              <input value={resourceForm.title} onChange={(e) => setResourceForm((v) => ({ ...v, title: e.target.value }))} placeholder="Resource title" className="mt-4 w-full rounded-xl border border-white/10 bg-[#06170f] px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-emerald-400" />
+              <input value={resourceForm.url} onChange={(e) => setResourceForm((v) => ({ ...v, url: e.target.value }))} placeholder="Optional link" className="mt-3 w-full rounded-xl border border-white/10 bg-[#06170f] px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-emerald-400" />
+              <textarea value={resourceForm.note} onChange={(e) => setResourceForm((v) => ({ ...v, note: e.target.value }))} rows={3} placeholder="Short note" className="mt-3 w-full rounded-xl border border-white/10 bg-[#06170f] px-3 py-2 text-sm text-white outline-none placeholder:text-slate-600 focus:border-emerald-400" />
+              <button type="button" disabled={busy || !selectedClient || !resourceForm.title.trim()} onClick={shareResource} className="mt-3 w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-black text-[#03140c] disabled:opacity-50">Share Resource</button>
+            </div>
+          </aside>
+        </section>
+
+        {noteClient && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setNoteClient(null)}>
+            <div className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/10 bg-[#10261a] p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-start justify-between gap-4">
+                <div><p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-300">Client Notes</p><h2 className="mt-2 font-serif text-3xl font-black text-white">{noteClient.name}</h2></div>
+                <button type="button" onClick={() => setNoteClient(null)} className="rounded-xl border border-white/10 px-3 py-2 text-sm font-bold text-slate-300">Close</button>
+              </div>
+              <div className="mt-6 space-y-4">
+                {selectedSessions.length || selectedMessages.length || selectedResources.length ? (
+                  <>
+                    {selectedSessions.map((item) => <article key={item.id} className="rounded-2xl border border-white/10 bg-[#06170f] p-4"><p className="font-bold text-white">{formatDate(item.sessionDate || item.date)}</p><p className="mt-2 text-sm text-slate-300">{item.notes || 'No note captured.'}</p></article>)}
+                    {selectedMessages.map((item) => <article key={item.id} className="rounded-2xl border border-white/10 bg-[#06170f] p-4"><p className="font-bold text-white">Message</p><p className="mt-2 text-sm text-slate-300">{item.body}</p></article>)}
+                    {selectedResources.map((item) => <article key={item.id} className="rounded-2xl border border-white/10 bg-[#06170f] p-4"><p className="font-bold text-white">{item.title}</p><p className="mt-2 text-sm text-slate-300">{item.note}</p></article>)}
+                  </>
+                ) : <EmptyState title="No notes for this client" text="Messages, sessions, and shared resources for this client will appear here." />}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

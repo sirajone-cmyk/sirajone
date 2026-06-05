@@ -116,6 +116,29 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  /**
+   * Register a counselling client (person seeking counselling sessions).
+   * Role stored as ROLES.COUNSELLING_CLIENT.
+   * Status starts as PENDING — admin must approve before access is granted.
+   *
+   * @param {string} email
+   * @param {string} password
+   * @param {string} fullName
+   * @param {string} [registrationNotes] – optional reason/note for counsellor
+   */
+  const registerCounsellingClient = async (email, password, fullName, registrationNotes = '') => {
+    return createUserProfile({
+      email,
+      password,
+      fullName,
+      role: ROLES.COUNSELLING_CLIENT,
+      status: USER_STATUS.PENDING,
+      extraProfile: registrationNotes.trim()
+        ? { registrationNotes: registrationNotes.trim() }
+        : {},
+    });
+  };
+
   const applyAsTeacher = async (email, password, fullName, teacherApplication = {}) => {
     setAuthError(null);
     try {
@@ -232,6 +255,7 @@ export const AuthProvider = ({ children }) => {
       login,
       register: registerStudent,
       registerStudent,
+      registerCounsellingClient,
       applyAsTeacher,
       applyAsCounsellor,
       logout,
