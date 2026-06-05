@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Toaster } from "react-hot-toast"
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { ROLES, USER_STATUS, isCounsellorRole } from '@/lib/roles';
 import SplashScreen from '@/components/SplashScreen';
 import PendingApproval from '@/components/auth/PendingApproval';
 import SuspendedAccount from '@/components/auth/SuspendedAccount';
+import SecurityWrapper from '@/components/SecurityWrapper';
 
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
@@ -59,38 +60,39 @@ const AuthenticatedApp = () => {
   const isAdmin = isApproved && (user?.role === ROLES.ADMIN || user?.role === ROLES.CO_ADMIN);
   const canAccessTeacherPortal = isAdmin || (isApproved && user?.role === ROLES.TEACHER);
   const canAccessCounsellorPortal = isAdmin || (isApproved && isCounsellorRole(user?.role));
+  const protect = (element) => <SecurityWrapper>{element}</SecurityWrapper>;
 
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/letters" element={<LetterCatalog />} />
-      <Route path="/practice-workbook" element={<PracticalWorkbook />} />
-      <Route path="/part-two-workbook" element={<PartTwoWorkbook />} />
+      <Route path="/dashboard" element={protect(<Dashboard />)} />
+      <Route path="/letters" element={protect(<LetterCatalog />)} />
+      <Route path="/practice-workbook" element={protect(<PracticalWorkbook />)} />
+      <Route path="/part-two-workbook" element={protect(<PartTwoWorkbook />)} />
       <Route path="/programs" element={<Programs />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/library" element={<Library />} />
       <Route path="/teachers" element={<Teachers />} />
       <Route path="/counsellors" element={<Counsellors />} />
-      <Route path="/messages" element={<Messages />} />
-      <Route path="/enroll" element={<Enroll />} />
-      <Route path="/classroom/:subjectId" element={<ClassroomPortal />} />
+      <Route path="/messages" element={protect(<Messages />)} />
+      <Route path="/enroll" element={protect(<Enroll />)} />
+      <Route path="/classroom/:subjectId" element={protect(<ClassroomPortal />)} />
       <Route
         path="/teacher-portal"
-        element={canAccessTeacherPortal ? <TeacherPortal /> : <Navigate to="/dashboard" replace />}
+        element={canAccessTeacherPortal ? protect(<TeacherPortal />) : <Navigate to="/dashboard" replace />}
       />
       <Route
         path="/teacher"
-        element={canAccessTeacherPortal ? <TeacherPortal /> : <Navigate to="/dashboard" replace />}
+        element={canAccessTeacherPortal ? protect(<TeacherPortal />) : <Navigate to="/dashboard" replace />}
       />
       <Route
         path="/counsellor"
-        element={canAccessCounsellorPortal ? <CounsellorPortal /> : <Navigate to="/dashboard" replace />}
+        element={canAccessCounsellorPortal ? protect(<CounsellorPortal />) : <Navigate to="/dashboard" replace />}
       />
-      {isAdmin && <Route path="/admin" element={<AdminDashboard />} />}
-      {isAdmin && <Route path="/admin/messages" element={<AdminMessages />} />}
-      {isAdmin && <Route path="/admin/roles" element={<RoleManagement />} />}
-      {isAdmin && <Route path="/admin/finance" element={<AdminFinance />} />}
+      {isAdmin && <Route path="/admin" element={protect(<AdminDashboard />)} />}
+      {isAdmin && <Route path="/admin/messages" element={protect(<AdminMessages />)} />}
+      {isAdmin && <Route path="/admin/roles" element={protect(<RoleManagement />)} />}
+      {isAdmin && <Route path="/admin/finance" element={protect(<AdminFinance />)} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -114,3 +116,4 @@ function App() {
 }
 
 export default App;
+

@@ -1,83 +1,53 @@
-import { useContext } from 'react';
-import { PlatformContext } from '../state/PlatformContext';
-import { useContentProtection } from '../hooks/useContentProtection';
+import { useMemo } from 'react';
+import { useAuth } from '@/lib/AuthContext';
+import { useContentProtection } from '@/hooks/useContentProtection';
 
-/**
- * SecurityWrapper
- *
- * Wrap any protected section (workbook pages, counsellor dashboard, etc.).
- * Provides three layers:
- *   1. Diagonal tiled watermark with the logged-in user's name + email.
- *   2. user-select: none on the content area to block text highlighting / copy.
- *   3. onContextMenu prevention to disable right-click menus.
- *   4. Full-screen mask when the window loses focus (via useContentProtection).
- *
- * Usage:
- *   <SecurityWrapper>
- *     <YourProtectedContent />
- *   </SecurityWrapper>
- *
- * Prop `enabled` (default: true) — set to false in dev if you need free interaction.
- */
+function resolveUserLabel(user) {
+  const displayName =
+    user?.display_name ||
+    user?.displayName ||
+    user?.full_name ||
+    user?.fullName ||
+    user?.name ||
+    'SirajOne User';
+
+  return `${displayName} | ${user?.email || 'protected account'}`;
+}
+
 export default function SecurityWrapper({ children, enabled = true }) {
-  const ctx = useContext(PlatformContext);
-  const currentUser = ctx?.currentUser;
+  const { user } = useAuth();
+  const { masked, notice } = useContentProtection({ enabled });
+  const watermarkLabel = resolveUserLabel(user);
 
-  const { masked } = useContentProtection({ enabled });
-
-  // Build the watermark label — falls back gracefully if no user yet
-  const watermarkLabel = currentUser
-    ? `${currentUser.name || 'SirajOne User'}  |  ${currentUser.email || ''}`
-    : 'SirajOne — Protected Content';
-
-  // Repeat the label enough times to tile the entire viewport diagonally
-  const tiles = Array.from({ length: 60 }, (_, i) => i);
+  const tiles = useMemo(() => Array.from({ length: 96 }, (_, index) => index), []);
 
   return (
     <div
-      className="relative"
-      onContextMenu={enabled ? (e) => e.preventDefault() : undefined}
+      className="relative min-h-full"
+      onContextMenu={enabled ? (event) => event.preventDefault() : undefined}
       style={enabled ? { userSelect: 'none', WebkitUserSelect: 'none' } : undefined}
     >
-      {/* ── Tiled watermark overlay ─────────────────────────────────────────── */}
-      {enabled && currentUser && (
+      {children}
+
+      {enabled && (
         <div
           aria-hidden="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9998,
-            pointerEvents: 'none',
-            overflow: 'hidden',
-          }}
+          className="fixed inset-0 overflow-hidden"
+          style={{ zIndex: 80, pointerEvents: 'none' }}
         >
           <div
+            className="absolute flex flex-wrap content-start"
             style={{
-              position: 'absolute',
-              inset: '-50%',           // extend beyond viewport so rotation has no gaps
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignContent: 'flex-start',
+              inset: '-55%',
               transform: 'rotate(-15deg)',
               opacity: 0.04,
             }}
           >
-            {tiles.map((i) => (
+            {tiles.map((tile) => (
               <span
-                key={i}
-                style={{
-                  display: 'block',
-                  width: '340px',
-                  padding: '28px 0',
-                  color: '#ffffff',
-                  fontSize: '12px',
-                  fontFamily: 'monospace',
-                  fontWeight: 600,
-                  letterSpacing: '0.06em',
-                  whiteSpace: 'nowrap',
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none',
-                }}
+                key={tile}
+                className="block whitespace-nowrap py-8 font-mono text-xs font-semibold tracking-[0.12em] text-white"
+                style={{ width: 380 }}
               >
                 {watermarkLabel}
               </span>
@@ -86,92 +56,32 @@ export default function SecurityWrapper({ children, enabled = true }) {
         </div>
       )}
 
-      {/* ── Focus-loss protection mask ──────────────────────────────────────── */}
-      {enabled && masked && (
+      {enabled && notice && (
         <div
-          aria-live="polite"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(7, 23, 15, 0.97)',
-            backdropFilter: 'blur(18px)',
-            WebkitBackdropFilter: 'blur(18px)',
-          }}
+          role="status"
+          className="fixed left-1/2 top-5 z-[9999] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-amber-300/25 bg-[#08130d]/95 px-5 py-3 text-center text-sm font-bold text-amber-100 shadow-2xl shadow-black/40 backdrop-blur-xl"
         >
-          {/* Hexagonal emblem */}
-          <svg
-            width="56"
-            height="56"
-            viewBox="0 0 56 56"
-            fill="none"
-            style={{ marginBottom: '24px', opacity: 0.6 }}
-          >
-            <polygon
-              points="28,4 52,16 52,40 28,52 4,40 4,16"
-              fill="none"
-              stroke="#34d399"
-              strokeWidth="1.5"
-            />
-            <polygon
-              points="28,12 44,21 44,35 28,44 12,35 12,21"
-              fill="none"
-              stroke="#34d399"
-              strokeWidth="0.8"
-              opacity="0.5"
-            />
-            <circle cx="28" cy="28" r="5" fill="#34d399" opacity="0.7" />
-          </svg>
-
-          <p
-            style={{
-              color: '#d1fae5',
-              fontSize: '13px',
-              fontWeight: 700,
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              marginBottom: '12px',
-              opacity: 0.7,
-            }}
-          >
-            SirajOne
-          </p>
-
-          <h2
-            style={{
-              color: '#ffffff',
-              fontSize: 'clamp(1.1rem, 3vw, 1.5rem)',
-              fontWeight: 700,
-              textAlign: 'center',
-              maxWidth: '380px',
-              lineHeight: 1.4,
-              margin: '0 0 12px',
-            }}
-          >
-            Content Protected
-          </h2>
-
-          <p
-            style={{
-              color: '#6ee7b7',
-              fontSize: '13px',
-              textAlign: 'center',
-              maxWidth: '320px',
-              lineHeight: 1.6,
-              opacity: 0.75,
-            }}
-          >
-            Return to this window to continue your session.
-          </p>
+          {notice}
         </div>
       )}
 
-      {/* ── Protected content ───────────────────────────────────────────────── */}
-      {children}
+      {enabled && masked && (
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-[#06110b]/98 px-6 text-center backdrop-blur-2xl">
+          <div className="max-w-md rounded-3xl border border-emerald-300/15 bg-white/[0.04] p-8 shadow-2xl shadow-black/50">
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-300/25 bg-emerald-400/10 text-2xl text-emerald-200">
+              S1
+            </div>
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">SirajOne</p>
+            <h2 className="mt-3 text-2xl font-black text-white">Content Protected</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              Content Protected for Security Policy Enforcements
+            </p>
+            <p className="mt-4 text-xs leading-5 text-slate-500">
+              Return to this window to continue your protected learning session.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
