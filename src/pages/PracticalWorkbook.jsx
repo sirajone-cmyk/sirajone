@@ -1,8 +1,13 @@
-﻿import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Recorder } from '../components/platform/Recorder';
 import { PRACTICAL_WORKBOOK_META, PRACTICAL_WORKBOOK_UNITS } from '../data/practicalWorkbook';
+import SubmissionControls from '../components/submissions/SubmissionControls';
+import { useAuth } from '@/lib/AuthContext';
+import { db } from '@/lib/firebase';
+import { PIPELINE_STAGES } from '@/lib/submissionPipeline';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
   ArrowLeft,
   BookOpen,
@@ -112,7 +117,10 @@ export default function PracticalWorkbook() {
   const [activeUnitId, setActiveUnitId] = useState(PRACTICAL_WORKBOOK_UNITS[0]?.id);
   const [completedUnits, setCompletedUnits] = useState({});
   const [selectedPractice, setSelectedPractice] = useState(null);
+  const [recordingBlob, setRecordingBlob] = useState(null);
+  const [submissions, setSubmissions] = useState({});
   const { speak, speakingId } = useArabicSpeech();
+  const { user } = useAuth();
 
   const activeUnit = useMemo(() => {
     return PRACTICAL_WORKBOOK_UNITS.find((unit) => unit.id === activeUnitId) || PRACTICAL_WORKBOOK_UNITS[0];
@@ -120,6 +128,30 @@ export default function PracticalWorkbook() {
 
   const activeIndex = PRACTICAL_WORKBOOK_UNITS.findIndex((unit) => unit.id === activeUnit.id) + 1;
   const progress = Math.round((Object.values(completedUnits).filter(Boolean).length / PRACTICAL_WORKBOOK_UNITS.length) * 100);
+  const selectedPracticeId = selectedPractice?.id || selectedPractice?.name || 'unit-practice';
+  const activeSubmission = submissions[`${activeUnit.id}::${selectedPracticeId}`] || null;
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setSubmissions({});
+      return undefined;
+    }
+
+    const submissionsQuery = query(
+      collection(db, 'submissions'),
+      where('studentId', '==', user.uid),
+      where('stage', '==', PIPELINE_STAGES.PRACTICAL_WORKBOOK)
+    );
+
+    return onSnapshot(submissionsQuery, (snapshot) => {
+      const nextSubmissions = {};
+      snapshot.docs.forEach((doc) => {
+        const data = { id: doc.id, ...doc.data() };
+        nextSubmissions[`${data.lessonId}::${data.itemId}`] = data;
+      });
+      setSubmissions(nextSubmissions);
+    });
+  }, [user?.uid]);
 
   const playFullUnit = () => {
     const text = activeUnit.letters.flatMap((letter) => letter.examples?.length ? letter.examples : [letter.arabic]).join('. ');
@@ -134,10 +166,12 @@ export default function PracticalWorkbook() {
     window.speechSynthesis?.cancel();
     setCompletedUnits((current) => ({ ...current, [activeUnit.id]: false }));
     setSelectedPractice(null);
+    setRecordingBlob(null);
   };
 
   const startPractice = (letter) => {
     setSelectedPractice(letter);
+    setRecordingBlob(null);
     document.getElementById('student-recording')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
   return (
@@ -352,7 +386,19 @@ export default function PracticalWorkbook() {
                 <p className="mb-4 text-sm leading-7 text-slate-400">
                   Flow: Listen, record, play, compare, repeat. Replay your own voice and correct one point before recording again.
                 </p>
-                <Recorder />
+                <Recorder
+                  onRecordingReady={(blob) => setRecordingBlob(blob)}
+                  onClearRecording={() => setRecordingBlob(null)}
+                >
+                  <SubmissionControls
+                    audioBlob={recordingBlob}
+                    stage={PIPELINE_STAGES.PRACTICAL_WORKBOOK}
+                    lessonId={activeUnit.id}
+                    itemId={selectedPracticeId}
+                    submission={activeSubmission}
+                    onCleared={() => setRecordingBlob(null)}
+                  />
+                </Recorder>
               </div>
 
               <TeacherCorrectionPanel />
@@ -370,3 +416,6 @@ export default function PracticalWorkbook() {
     </div>
   );
 }
+
+
+

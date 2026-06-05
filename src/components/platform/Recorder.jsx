@@ -9,7 +9,7 @@ function formatDuration(seconds) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-export function Recorder({ className = '' }) {
+export function Recorder({ className = '', onRecordingReady, onClearRecording, children }) {
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
@@ -64,6 +64,7 @@ export function Recorder({ className = '' }) {
       const url = URL.createObjectURL(blob);
       setAudioUrl(url);
       setStatus('ready');
+      onRecordingReady?.(blob, url);
       chunksRef.current = [];
 
       if (streamRef.current) {
@@ -109,6 +110,7 @@ export function Recorder({ className = '' }) {
     setStatus('idle');
     setSeconds(0);
     setError('');
+    onClearRecording?.();
   }
 
   return (
@@ -152,6 +154,8 @@ export function Recorder({ className = '' }) {
       ) : (
         <p className="mt-3 text-xs text-[rgba(217,251,232,0.5)]">Flow: Listen, Record, Play, Compare, Repeat.</p>
       )}
+
+      {children ? <div className="mt-4">{children}</div> : null}
     </div>
   );
 }

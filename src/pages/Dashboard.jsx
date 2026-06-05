@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Navbar from '../components/Navbar';
 import {
   ArrowRight,
@@ -22,6 +23,8 @@ import {
   Users,
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import { db } from '@/lib/firebase';
+import { getStageLabel, SUBMISSION_STATUS } from '@/lib/submissionPipeline';
 
 const FOCUS_ITEMS = [
   {
@@ -192,6 +195,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const storageKey = `sirajone-dashboard-focus-${user?.uid || 'guest'}`;
   const [completed, setCompleted] = useState({});
+  const [reviewAlerts, setReviewAlerts] = useState([]);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(storageKey);
@@ -201,6 +205,23 @@ export default function Dashboard() {
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(completed));
   }, [completed, storageKey]);
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const submissionsQuery = query(
+      collection(db, 'submissions'),
+      where('studentId', '==', user.uid)
+    );
+
+    return onSnapshot(submissionsQuery, (snapshot) => {
+      const reviewed = snapshot.docs
+        .map((submissionDoc) => ({ id: submissionDoc.id, ...submissionDoc.data() }))
+        .filter((submission) => submission.status && submission.status !== SUBMISSION_STATUS.PENDING)
+        .sort((a, b) => (b.reviewedAt?.seconds || b.submittedAt?.seconds || 0) - (a.reviewedAt?.seconds || a.submittedAt?.seconds || 0));
+      setReviewAlerts(reviewed.slice(0, 4));
+    });
+  }, [user?.uid]);
 
   const studentName = useMemo(() => {
     const displayName = user?.full_name?.trim();
@@ -294,6 +315,62 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
+
+        {reviewAlerts.length > 0 && (
+          <section className="mb-6 rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5 sm:p-6">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Teacher Feedback</p>
+                <h2 className="mt-2 text-2xl font-black text-white">Recent review updates</h2>
+              </div>
+              <MessageCircle className="h-6 w-6 text-emerald-300" />
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {reviewAlerts.map((submission) => {
+                const isCorrection = submission.status === SUBMISSION_STATUS.NEEDS_IMPROVEMENT;
+                return (
+                  <article
+                    key={submission.id}
+                    className={`rounded-2xl border p-4 ${
+                      isCorrection
+                        ? 'border-red-300/20 bg-red-400/10'
+                        : 'border-emerald-300/20 bg-black/15'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-black text-white">
+                          {isCorrection ? 'Correction needed' : 'Approved by teacher'}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-300">
+                          {getStageLabel(submission.stage)} · {submission.lessonId} · {submission.itemId}
+                        </p>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${
+                        isCorrection ? 'bg-red-400/15 text-red-100' : 'bg-emerald-400/15 text-emerald-100'
+                      }`}>
+                        {submission.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                    {submission.teacherFeedbackAudioUrl ? (
+                      <audio controls src={submission.teacherFeedbackAudioUrl} className="mt-4 w-full" />
+                    ) : (
+                      <p className="mt-4 text-sm text-slate-400">No voice note was attached to this review.</p>
+                    )}
+                    {isCorrection && (
+                      <Link
+                        to={submission.stage === 'part_two' ? '/part-two-workbook' : '/practice-workbook'}
+                        className="mt-4 inline-flex rounded-xl bg-red-500 px-4 py-2 text-sm font-black text-white transition hover:bg-red-400"
+                      >
+                        Re-record this item
+                      </Link>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <section className="mb-6 rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:p-6">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4">

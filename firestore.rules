@@ -153,6 +153,48 @@ service cloud.firestore {
         );
     }
 
+    function isSubmissionStage(stage) {
+      return stage in ['letter_guide', 'practical_workbook', 'part_two', 'murshidul_qari', 'hifz'];
+    }
+
+    function isSubmissionStatus(status) {
+      return status in ['pending', 'approved', 'needs_improvement'];
+    }
+
+    function ownsSubmission(data) {
+      return signedIn() && data.studentId == request.auth.uid;
+    }
+
+    function teachesSubmission(data) {
+      return isApprovedUser()
+        && myProfileData().role == 'Teacher'
+        && data.teacherId == request.auth.uid;
+    }
+
+    function validSubmissionCreate() {
+      return isApprovedUser()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.teacherId is string
+        && isSubmissionStage(request.resource.data.stage)
+        && request.resource.data.lessonId is string
+        && request.resource.data.itemId is string
+        && request.resource.data.studentAudioUrl is string
+        && request.resource.data.status == 'pending'
+        && request.resource.data.teacherFeedbackAudioUrl == null;
+    }
+
+    function validTeacherSubmissionReview() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['status', 'teacherFeedbackAudioUrl', 'teacherFeedbackAudioPath', 'reviewedBy', 'reviewedByName', 'reviewedAt', 'updatedAt'])
+        && isSubmissionStatus(request.resource.data.status)
+        && request.resource.data.studentId == resource.data.studentId
+        && request.resource.data.teacherId == resource.data.teacherId
+        && request.resource.data.stage == resource.data.stage
+        && request.resource.data.lessonId == resource.data.lessonId
+        && request.resource.data.itemId == resource.data.itemId
+        && request.resource.data.studentAudioUrl == resource.data.studentAudioUrl;
+    }
+
     function hasParticipantIds(data) {
       return data.keys().hasAll(['participantIds'])
         && data.participantIds is list;
@@ -269,6 +311,15 @@ service cloud.firestore {
     match /payments/{documentId} {
       allow read: if isAdminUser() || ownsPaymentData(resource.data);
       allow create, update, delete: if false;
+    }
+
+    match /submissions/{documentId} {
+      allow read: if isAdminUser() || ownsSubmission(resource.data) || teachesSubmission(resource.data);
+      allow create: if validSubmissionCreate();
+      allow update: if (isAdminUser() || teachesSubmission(resource.data))
+        && validTeacherSubmissionReview();
+      allow delete: if isAdminUser()
+        || (ownsSubmission(resource.data) && resource.data.status == 'needs_improvement');
     }
 
     match /payouts/{documentId} {

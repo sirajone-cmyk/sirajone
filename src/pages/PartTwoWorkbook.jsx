@@ -1,16 +1,24 @@
 import { ArrowLeft, ChevronLeft, ChevronRight, Mic, Play, RotateCcw, Square, Volume2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { partTwoWorkbookLessons } from '../data/partTwoWorkbook';
+import SubmissionControls from '../components/submissions/SubmissionControls';
+import { useAuth } from '@/lib/AuthContext';
+import { db } from '@/lib/firebase';
+import { PIPELINE_STAGES } from '@/lib/submissionPipeline';
 
 export default function PartTwoWorkbook() {
   const [activeLessonIndex, setActiveLessonIndex] = useState(0);
   const [activeCellId, setActiveCellId] = useState(null);
   const [recordingCellId, setRecordingCellId] = useState(null);
   const [recordedCells, setRecordedCells] = useState({});
+  const [recordedBlobs, setRecordedBlobs] = useState({});
+  const [submissions, setSubmissions] = useState({});
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const { user } = useAuth();
 
   const currentLesson = partTwoWorkbookLessons[activeLessonIndex];
   const gridItems = currentLesson.gridItems || currentLesson.examples || [];
@@ -21,6 +29,32 @@ export default function PartTwoWorkbook() {
   );
 
   const activeRecordingUrl = activeCell ? recordedCells[activeCell.id] : null;
+  const activeRecordingBlob = activeCell ? recordedBlobs[activeCell.id] : null;
+  const currentLessonId = currentLesson.id || `unit-${currentLesson.unitNumber}-lesson-${currentLesson.lessonNumber}`;
+  const activeSubmissionKey = activeCell ? `${currentLessonId}::${activeCell.id}` : '';
+  const activeSubmission = submissions[activeSubmissionKey] || null;
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const submissionsQuery = query(
+      collection(db, 'submissions'),
+      where('studentId', '==', user.uid),
+      where('stage', '==', PIPELINE_STAGES.PART_TWO)
+    );
+
+    return onSnapshot(submissionsQuery, (snapshot) => {
+      const nextSubmissions = {};
+      snapshot.forEach((submissionDoc) => {
+        const data = submissionDoc.data();
+        nextSubmissions[`${data.lessonId}::${data.itemId}`] = {
+          id: submissionDoc.id,
+          ...data,
+        };
+      });
+      setSubmissions(nextSubmissions);
+    });
+  }, [user?.uid]);
 
   const goToLesson = (direction) => {
     setActiveLessonIndex((currentIndex) => {
@@ -60,6 +94,7 @@ export default function PartTwoWorkbook() {
       const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
       const audioUrl = URL.createObjectURL(blob);
       setRecordedCells((current) => ({ ...current, [activeCell.id]: audioUrl }));
+      setRecordedBlobs((current) => ({ ...current, [activeCell.id]: blob }));
       stream.getTracks().forEach((track) => track.stop());
     };
 
@@ -85,6 +120,11 @@ export default function PartTwoWorkbook() {
     if (!activeCell) return;
 
     setRecordedCells((current) => {
+      const next = { ...current };
+      delete next[activeCell.id];
+      return next;
+    });
+    setRecordedBlobs((current) => {
       const next = { ...current };
       delete next[activeCell.id];
       return next;
@@ -237,6 +277,15 @@ export default function PartTwoWorkbook() {
                 <RotateCcw className="h-4 w-4" /> Retry
               </button>
             </div>
+
+            <SubmissionControls
+              audioBlob={activeRecordingBlob}
+              stage={PIPELINE_STAGES.PART_TWO}
+              lessonId={currentLessonId}
+              itemId={activeCell?.id || ''}
+              submission={activeSubmission}
+              onCleared={() => clearRecording()}
+            />
           </div>
         </section>
       </section>

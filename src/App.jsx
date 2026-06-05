@@ -80,6 +80,10 @@ const AuthenticatedApp = () => {
         element={canAccessTeacherPortal ? <TeacherPortal /> : <Navigate to="/dashboard" replace />}
       />
       <Route
+        path="/teacher"
+        element={canAccessTeacherPortal ? <TeacherPortal /> : <Navigate to="/dashboard" replace />}
+      />
+      <Route
         path="/counsellor"
         element={canAccessCounsellorPortal ? <CounsellorPortal /> : <Navigate to="/dashboard" replace />}
       />

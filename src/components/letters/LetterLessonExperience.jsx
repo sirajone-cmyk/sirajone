@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
   BookOpen,
   ChevronLeft,
@@ -16,6 +17,10 @@ import {
   ZoomOut,
 } from 'lucide-react';
 import { usePlatform } from '../../state/PlatformContext';
+import SubmissionControls from '../submissions/SubmissionControls';
+import { useAuth } from '@/lib/AuthContext';
+import { db } from '@/lib/firebase';
+import { PIPELINE_STAGES } from '@/lib/submissionPipeline';
 import {
   DEFAULT_LETTER_LESSON_ID,
   LETTER_LESSONS,
@@ -261,7 +266,7 @@ function LessonOfficialAudioCard({ lesson, uploadedSrc }) {
   );
 }
 
-function LessonRecorderCard() {
+function LessonRecorderCard({ lesson }) {
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
@@ -270,7 +275,37 @@ function LessonRecorderCard() {
   const [status, setStatus] = useState('idle');
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioUrl, setAudioUrl] = useState('');
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [submission, setSubmission] = useState(null);
   const [message, setMessage] = useState('Flow: Listen, Record, Play, Compare, Repeat.');
+  const { user } = useAuth();
+  const itemId = `letter_${lesson.id}`;
+
+  useEffect(() => {
+    if (!user?.uid || !lesson?.id) {
+      setSubmission(null);
+      return undefined;
+    }
+
+    const submissionsQuery = query(
+      collection(db, 'submissions'),
+      where('studentId', '==', user.uid),
+      where('stage', '==', PIPELINE_STAGES.LETTER_GUIDE),
+      where('lessonId', '==', lesson.id)
+    );
+
+    return onSnapshot(submissionsQuery, (snapshot) => {
+      const latestSubmission = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((entry) => entry.itemId === itemId)
+        .sort((a, b) => {
+          const left = a.submittedAt?.toMillis?.() || 0;
+          const right = b.submittedAt?.toMillis?.() || 0;
+          return right - left;
+        })[0] || null;
+      setSubmission(latestSubmission);
+    });
+  }, [itemId, lesson?.id, user?.uid]);
 
   useEffect(() => {
     return () => {
@@ -318,6 +353,8 @@ function LessonRecorderCard() {
           URL.revokeObjectURL(audioUrl);
         }
         setAudioUrl(nextUrl);
+
+        setAudioBlob(blob);
         setStatus('ready');
         setMessage('Great work today. Your recording is ready to review.');
         chunksRef.current = [];
@@ -380,6 +417,8 @@ function LessonRecorderCard() {
       URL.revokeObjectURL(audioUrl);
     }
     setAudioUrl('');
+
+    setAudioBlob(null);
     setStatus('idle');
     setRecordingTime(0);
     setMessage('Recording cleared. Try again whenever you are ready.');
@@ -427,6 +466,14 @@ function LessonRecorderCard() {
 
       <p className="letter-lesson-practice-status">{message}</p>
       <p className="letter-lesson-practice-helper">Flow: Listen, Record, Play, Compare, Repeat.</p>
+      <SubmissionControls
+        audioBlob={audioBlob}
+        stage={PIPELINE_STAGES.LETTER_GUIDE}
+        lessonId={lesson.id}
+        itemId={itemId}
+        submission={submission}
+        onCleared={resetRecording}
+      />
     </article>
   );
 }
@@ -581,7 +628,7 @@ function LessonWorkspaceBody({ lesson }) {
               <p>{lesson.practiceLoopNote}</p>
               <div className="letter-lesson-practice-grid">
                 <LessonOfficialAudioCard lesson={lesson} uploadedSrc={activeAudioSource} />
-                <LessonRecorderCard />
+                <LessonRecorderCard lesson={lesson} />
               </div>
             </div>
           </div>
@@ -710,3 +757,6 @@ export function LetterLessonExperience({
 
   return content;
 }
+
+
+
