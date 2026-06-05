@@ -1,4 +1,6 @@
-import { ChevronLeft, ChevronRight, Mic, Play, RotateCcw, Square, Volume2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Mic, Play, RotateCcw, Square, Volume2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 import { useMemo, useRef, useState } from 'react';
 import { partTwoWorkbookLessons } from '../data/partTwoWorkbook';
 
@@ -90,8 +92,22 @@ export default function PartTwoWorkbook() {
   };
 
   return (
-    <main className="min-h-screen bg-[#07170f] px-3 py-6 text-white sm:px-6">
+    <div className="min-h-screen bg-[#07170f] text-white">
+      <Navbar />
+      <main className="px-3 py-6 sm:px-6">
       <section className="mx-auto max-w-4xl rounded-[2rem] border border-emerald-400/20 bg-[#121212] px-4 py-6 shadow-2xl shadow-black/30 sm:px-6">
+
+        {/* ← Back to Dashboard */}
+        <div className="mb-5 px-1">
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-emerald-200 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </div>
+
         <div className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#1a1a1a] p-3 sm:p-4">
           <button
             type="button"
@@ -224,6 +240,7 @@ export default function PartTwoWorkbook() {
           </div>
         </section>
       </section>
-    </main>
+      </main>
+    </div>
   );
 }
