@@ -1,8 +1,37 @@
+/**
+ * Teachers.jsx
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Public teacher directory with live enrollment request system.
+ *
+ * Changes from previous version:
+ *   • Added "Request Enrollment" button to every approved teacher card.
+ *   • Added <EnrollmentModal> with two paths:
+ *       Path A — Direct: writes to `assignments` with status:'pending_educator'
+ *       Path B — Admin:  writes to `assignments` with status:'pending_admin'
+ *   • Removed external WhatsApp / email footer links (replaced by in-app flow).
+ *   • All existing filter, sort, and display logic is preserved unchanged.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
 import { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { ArrowRight, BookOpen, Loader2, Users } from 'lucide-react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  Loader2,
+  UserCheck,
+  Users,
+  X,
+} from 'lucide-react';
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { db }              from '@/lib/firebase';
+import { useAuth }         from '@/lib/AuthContext';
 import { FOUNDER_TEACHER_PROFILE } from '@/lib/teacherSchema';
 import { getSubjectLabel, SUBJECTS } from '@/lib/subjects';
 
@@ -13,17 +42,18 @@ const FILTERS = Object.freeze([
   ...SUBJECTS,
 ]);
 
+// ── Normalise teacher docs ────────────────────────────────────────────────────
+
 function toPublicTeacher(docId, data = {}, options = {}) {
   const profile = data.publicProfile || data;
-
   return {
-    id: docId,
-    name: profile.name || profile.fullName || 'Unnamed Teacher',
-    bio: profile.bio || '',
+    id:                    docId,
+    name:                  profile.name || profile.fullName || 'Unnamed Teacher',
+    bio:                   profile.bio || '',
     personalityDescription: profile.personalityDescription || '',
-    assignedSubjects: Array.isArray(profile.assignedSubjects) ? profile.assignedSubjects : [],
-    profileStatus: profile.profileStatus || 'pending',
-    isFallback: Boolean(options.isFallback),
+    assignedSubjects:      Array.isArray(profile.assignedSubjects) ? profile.assignedSubjects : [],
+    profileStatus:         profile.profileStatus || 'pending',
+    isFallback:            Boolean(options.isFallback),
   };
 }
 
@@ -31,11 +61,178 @@ function founderFallbackTeacher() {
   return toPublicTeacher(
     FOUNDER_TEACHER_PROFILE.uid || FOUNDER_TEACHER_PROFILE.id,
     FOUNDER_TEACHER_PROFILE,
-    { isFallback: true }
+    { isFallback: true },
   );
 }
 
-function TeacherCard({ teacher, featured = false }) {
+// ── Enrollment modal ──────────────────────────────────────────────────────────
+
+/**
+ * Two-path enrollment modal.
+ * Path A — Direct request to the selected teacher (status: pending_educator).
+ * Path B — Admin matching request (status: pending_admin, no assignedId).
+ */
+function EnrollmentModal({ teacher, onClose }) {
+  const { user }               = useAuth();
+  const [note, setNote]        = useState('');
+  const [busy, setBusy]        = useState(false);
+  const [error, setError]      = useState('');
+  const [success, setSuccess]  = useState(null); // null | 'direct' | 'admin'
+
+  if (!teacher) return null;
+
+  async function submit(path) {
+    if (!user?.uid) {
+      setError('Please sign in to request enrollment.');
+      return;
+    }
+
+    setBusy(true);
+    setError('');
+
+    const isDirect = path === 'direct';
+
+    try {
+      await addDoc(collection(db, 'assignments'), {
+        studentId:    user.uid,
+        studentName:  user.full_name || user.displayName || user.email || 'Student',
+        assignedId:   isDirect ? teacher.id   : null,
+        assignedName: isDirect ? teacher.name : null,
+        type:         'teacher',
+        status:       isDirect ? 'pending_educator' : 'pending_admin',
+        note:         note.trim(),
+        createdAt:    serverTimestamp(),
+        updatedAt:    serverTimestamp(),
+      });
+      setSuccess(path);
+    } catch (err) {
+      console.error('[EnrollmentModal] error:', err);
+      setError(err.message || 'Unable to submit request. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#102018] shadow-2xl shadow-black/50">
+
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-white/10 px-5 py-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">
+              Enrollment Request
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-white">{teacher.name}</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 transition hover:text-white"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Success state */}
+        {success ? (
+          <div className="p-6 text-center">
+            <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-emerald-400" />
+            <h3 className="text-xl font-bold text-white">
+              {success === 'direct' ? 'Request Sent to Teacher' : 'Admin Matching Requested'}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              {success === 'direct'
+                ? `Your enrollment request has been sent directly to ${teacher.name}. You will be notified once they respond.`
+                : 'The SirajOne team will review your profile and match you with the most suitable teacher.'}
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-6 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-600"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-5 p-5">
+            {/* Context copy */}
+            <p className="text-sm leading-6 text-slate-300">
+              Would you like to register with <strong className="text-white">{teacher.name}</strong>{' '}
+              directly, or have the Admin assign the best fit for you?
+            </p>
+
+            {/* Optional note */}
+            <div>
+              <label htmlFor="enrollment-note" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                Short note <span className="normal-case font-normal text-slate-600">(optional)</span>
+              </label>
+              <textarea
+                id="enrollment-note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={3}
+                placeholder="Tell us briefly about your level or learning goals…"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/70"
+              />
+            </div>
+
+            {error && (
+              <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
+                {error}
+              </div>
+            )}
+
+            {/* Path A — Direct */}
+            <button
+              type="button"
+              onClick={() => submit('direct')}
+              disabled={busy}
+              className="flex w-full items-start gap-4 rounded-2xl border border-emerald-700/60 bg-emerald-950/50 px-5 py-4 text-left transition hover:border-emerald-600 hover:bg-emerald-950/70 disabled:opacity-50"
+            >
+              <UserCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-400" />
+              <div>
+                <p className="font-bold text-white">Register directly with {teacher.name}</p>
+                <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                  Your request goes directly to this teacher for review and acceptance.
+                </p>
+              </div>
+              <ArrowRight className="ml-auto mt-0.5 h-4 w-4 flex-shrink-0 text-slate-500" />
+            </button>
+
+            {/* Path B — Admin matching */}
+            <button
+              type="button"
+              onClick={() => submit('admin')}
+              disabled={busy}
+              className="flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-left transition hover:border-white/20 hover:bg-white/8 disabled:opacity-50"
+            >
+              <Users className="mt-0.5 h-5 w-5 flex-shrink-0 text-slate-400" />
+              <div>
+                <p className="font-bold text-white">Let Admin find the best match for me</p>
+                <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                  SirajOne admin will review your profile and match you with the most suitable teacher.
+                </p>
+              </div>
+              <ArrowRight className="ml-auto mt-0.5 h-4 w-4 flex-shrink-0 text-slate-500" />
+            </button>
+
+            {busy && (
+              <div className="flex items-center justify-center gap-2 text-sm text-emerald-400">
+                <Loader2 className="h-4 w-4 animate-spin" /> Submitting…
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Teacher card ──────────────────────────────────────────────────────────────
+
+function TeacherCard({ teacher, featured = false, onEnroll }) {
   const subjectLabels = teacher.assignedSubjects.map(getSubjectLabel);
 
   return (
@@ -82,7 +279,7 @@ function TeacherCard({ teacher, featured = false }) {
           ) : null}
 
           {subjectLabels.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-4">
               {subjectLabels.map((subject) => (
                 <span
                   key={subject}
@@ -97,28 +294,46 @@ function TeacherCard({ teacher, featured = false }) {
               ))}
             </div>
           ) : null}
+
+          {/* ── Enrollment button — only for approved, non-fallback profiles ── */}
+          {!teacher.isFallback && (
+            <button
+              type="button"
+              onClick={() => onEnroll(teacher)}
+              className={
+                featured
+                  ? 'inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-600'
+                  : 'inline-flex items-center gap-2 rounded-xl border border-emerald-700/60 bg-emerald-950/50 px-4 py-2 text-xs font-bold text-emerald-200 transition hover:bg-emerald-900/60'
+              }
+            >
+              <UserCheck className={featured ? 'h-4 w-4' : 'h-3.5 w-3.5'} aria-hidden="true" />
+              Request Enrollment
+            </button>
+          )}
         </div>
       </div>
     </article>
   );
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function Teachers() {
-  const [teachers, setTeachers] = useState([]);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [loadError, setLoadError] = useState('');
+  const [teachers,      setTeachers]      = useState([]);
+  const [hasLoaded,     setHasLoaded]     = useState(false);
+  const [loadError,     setLoadError]     = useState('');
   const [activeSubject, setActiveSubject] = useState('all');
+  const [enrollTarget,  setEnrollTarget]  = useState(null); // teacher for modal
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, 'teachers'),
       (snapshot) => {
-        if (snapshot.empty) {
-          setTeachers([founderFallbackTeacher()]);
-        } else {
-          setTeachers(snapshot.docs.map((doc) => toPublicTeacher(doc.id, doc.data())));
-        }
-
+        setTeachers(
+          snapshot.empty
+            ? [founderFallbackTeacher()]
+            : snapshot.docs.map((d) => toPublicTeacher(d.id, d.data())),
+        );
         setLoadError('');
         setHasLoaded(true);
       },
@@ -127,37 +342,39 @@ export default function Teachers() {
         setLoadError('Unable to load teacher profiles right now. Showing the founder profile until the live list is available.');
         setTeachers([founderFallbackTeacher()]);
         setHasLoaded(true);
-      }
+      },
     );
-
     return () => unsubscribe();
   }, []);
 
   const approvedTeachers = useMemo(
-    () => teachers.filter((teacher) => teacher.profileStatus === APPROVED_PROFILE_STATUS),
-    [teachers]
+    () => teachers.filter((t) => t.profileStatus === APPROVED_PROFILE_STATUS || t.isFallback),
+    [teachers],
   );
 
   const filteredTeachers = useMemo(() => {
     if (activeSubject === 'all') return approvedTeachers;
-    return approvedTeachers.filter((teacher) => teacher.assignedSubjects.includes(activeSubject));
+    return approvedTeachers.filter((t) => t.assignedSubjects.includes(activeSubject));
   }, [activeSubject, approvedTeachers]);
 
-  const featuredTeacher = filteredTeachers[0];
+  const featuredTeacher   = filteredTeachers[0];
   const remainingTeachers = filteredTeachers.slice(1);
 
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white">
       <Navbar />
+
       <div className="text-center py-14 px-4">
         <span className="text-emerald-500 text-xs font-bold uppercase tracking-widest">Our Faculty</span>
         <h1 className="text-4xl font-bold mt-3 mb-3">Our Teachers</h1>
         <p className="text-slate-400 max-w-lg mx-auto">
           Approved SirajOne teachers for Qur'an learning, Islamic studies, and guided student development.
+          Request enrollment directly or let our admin team match you.
         </p>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 pb-16 space-y-5">
+        {/* Subject filter */}
         <div className="flex flex-wrap justify-center gap-2">
           {FILTERS.map((subject) => (
             <button
@@ -175,20 +392,20 @@ export default function Teachers() {
           ))}
         </div>
 
-        {!hasLoaded ? (
+        {!hasLoaded && (
           <div className="flex items-center justify-center py-16 text-slate-400">
             <Loader2 className="mr-2 h-5 w-5 animate-spin text-emerald-400" />
-            Loading teacher profiles...
+            Loading teacher profiles…
           </div>
-        ) : null}
+        )}
 
-        {loadError ? (
+        {loadError && (
           <div className="rounded-2xl border border-amber-800 bg-amber-950/30 px-4 py-3 text-center text-sm text-amber-300">
             {loadError}
           </div>
-        ) : null}
+        )}
 
-        {hasLoaded && filteredTeachers.length === 0 ? (
+        {hasLoaded && filteredTeachers.length === 0 && (
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
             <Users className="mx-auto mb-3 h-8 w-8 text-slate-500" />
             <h2 className="text-xl font-bold text-white">No approved teachers found</h2>
@@ -196,41 +413,46 @@ export default function Teachers() {
               There are no approved teacher profiles for this category yet. Please check back soon or contact SirajOne for guidance.
             </p>
           </div>
-        ) : null}
+        )}
 
-        {featuredTeacher ? <TeacherCard teacher={featuredTeacher} featured /> : null}
+        {featuredTeacher && (
+          <TeacherCard teacher={featuredTeacher} featured onEnroll={setEnrollTarget} />
+        )}
 
-        {remainingTeachers.length > 0 ? (
+        {remainingTeachers.length > 0 && (
           <div className="grid sm:grid-cols-2 gap-4">
             {remainingTeachers.map((teacher) => (
-              <TeacherCard key={teacher.id} teacher={teacher} />
+              <TeacherCard key={teacher.id} teacher={teacher} onEnroll={setEnrollTarget} />
             ))}
           </div>
-        ) : null}
+        )}
 
+        {/* In-app matching CTA — replaces WhatsApp/email links */}
         <div className="bg-white/5 border border-white/10 rounded-3xl p-7 text-center">
-          <h2 className="text-2xl font-bold mb-3">Find the Right Teacher</h2>
+          <h2 className="text-2xl font-bold mb-3">Not sure which teacher is right for you?</h2>
           <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
-            Contact SirajOne to be matched with the right teacher for your level, age, and goals.
+            Click "Request Enrollment" on any teacher card and choose the Admin matching option.
+            The SirajOne team will assess your level and place you with the best match.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href="https://wa.me/27676340225"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl transition-all"
-            >
-              WhatsApp Us <ArrowRight className="w-4 h-4" />
-            </a>
-            <a
-              href="mailto:sirajone7@gmail.com?subject=Teacher Booking Request"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/8 hover:bg-white/15 border border-white/10 text-white font-semibold text-sm rounded-xl transition-all"
-            >
-              Email Request
-            </a>
+            {featuredTeacher && !featuredTeacher.isFallback && (
+              <button
+                type="button"
+                onClick={() => setEnrollTarget(featuredTeacher)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl transition-all"
+              >
+                Request Enrollment <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Enrollment modal */}
+      <EnrollmentModal
+        teacher={enrollTarget}
+        onClose={() => setEnrollTarget(null)}
+      />
     </div>
   );
 }

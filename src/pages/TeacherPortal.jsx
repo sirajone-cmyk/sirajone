@@ -40,6 +40,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
   writeBatch,
 } from 'firebase/firestore';
@@ -48,12 +49,16 @@ import {
   Bell,
   BookOpen,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock3,
   Megaphone,
   MessageCircle,
   Mic,
   Play,
   Square,
+  UserCheck,
+  UserX,
   Users,
   XCircle,
 } from 'lucide-react';
@@ -172,6 +177,54 @@ function StatCard({ icon: Icon, label, value, accent = 'emerald' }) {
 export default function TeacherPortal() {
   const { user }             = useAuth();
   const { count: unreadCount } = useUnreadMessages(user?.uid);
+
+  // ── Pending assignment requests (status: pending_educator) ────────────────
+  const [pendingRequests,      setPendingRequests]      = useState([]);
+  const [requestsExpanded,     setRequestsExpanded]     = useState(true);
+  const [requestActionBusy,    setRequestActionBusy]    = useState(null); // assignmentId | null
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const q = query(
+      collection(db, 'assignments'),
+      where('assignedId', '==', user.uid),
+      where('status',     '==', 'pending_educator'),
+      where('type',       '==', 'teacher'),
+    );
+
+    return onSnapshot(q, (snap) => {
+      setPendingRequests(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    }, (err) => console.error('[TeacherPortal] pending assignments:', err));
+  }, [user?.uid]);
+
+  async function handleAccept(assignmentId) {
+    setRequestActionBusy(assignmentId);
+    try {
+      await updateDoc(doc(db, 'assignments', assignmentId), {
+        status:    'active',
+        updatedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error('[TeacherPortal] accept error:', err);
+    } finally {
+      setRequestActionBusy(null);
+    }
+  }
+
+  async function handleDecline(assignmentId) {
+    setRequestActionBusy(assignmentId);
+    try {
+      await updateDoc(doc(db, 'assignments', assignmentId), {
+        status:    'declined',
+        updatedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error('[TeacherPortal] decline error:', err);
+    } finally {
+      setRequestActionBusy(null);
+    }
+  }
 
   // ── Submissions stream ─────────────────────────────────────────────────────
   const [submissions, setSubmissions] = useState([]);
@@ -433,6 +486,88 @@ export default function TeacherPortal() {
                 <p className="text-xs text-slate-500">{rosterStudents.length} students</p>
               </div>
             </div>
+
+            {/* ── Pending Enrollment Requests ── */}
+            {pendingRequests.length > 0 && (
+              <div className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-950/20">
+                {/* Toggle header */}
+                <button
+                  type="button"
+                  onClick={() => setRequestsExpanded((x) => !x)}
+                  className="flex w-full items-center justify-between px-4 py-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                    <span className="text-sm font-bold text-amber-300">
+                      Enrollment Requests
+                    </span>
+                    <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-black">
+                      {pendingRequests.length}
+                    </span>
+                  </div>
+                  {requestsExpanded
+                    ? <ChevronUp  className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                    : <ChevronDown className="h-4 w-4 text-amber-500" aria-hidden="true" />}
+                </button>
+
+                {requestsExpanded && (
+                  <div className="border-t border-amber-500/20 px-3 pb-3 pt-2 space-y-2">
+                    {pendingRequests.map((req) => {
+                      const isBusy = requestActionBusy === req.id;
+                      const ts = req.createdAt?.toDate?.();
+                      const dateStr = ts
+                        ? ts.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })
+                        : 'Recently';
+
+                      return (
+                        <div
+                          key={req.id}
+                          className="rounded-xl border border-amber-500/20 bg-amber-950/30 p-3"
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-white">
+                                {req.studentName || 'Student'}
+                              </p>
+                              <p className="text-[10px] text-slate-500">
+                                Requested {dateStr}
+                              </p>
+                            </div>
+                          </div>
+
+                          {req.note && (
+                            <p className="mb-2 rounded-lg border border-white/8 bg-white/[0.03] px-3 py-2 text-xs leading-5 text-slate-400 line-clamp-2">
+                              {req.note}
+                            </p>
+                          )}
+
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleAccept(req.id)}
+                              disabled={isBusy}
+                              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-700 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+                            >
+                              <UserCheck className="h-3 w-3" aria-hidden="true" />
+                              Accept
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDecline(req.id)}
+                              disabled={isBusy}
+                              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-700/40 bg-red-950/30 py-1.5 text-xs font-bold text-red-200 transition hover:bg-red-950/50 disabled:opacity-50"
+                            >
+                              <UserX className="h-3 w-3" aria-hidden="true" />
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {rosterStudents.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-white/15 p-6 text-center">

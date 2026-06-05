@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { Search, SlidersHorizontal, Languages, Video, MapPin, HeartHandshake, X, Send, Loader2 } from 'lucide-react';
+import { ArrowRight, Search, SlidersHorizontal, Languages, MapPin, HeartHandshake, X, Send, Loader2, Users } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/AuthContext';
@@ -94,14 +94,32 @@ function CounsellorCard({ counsellor, onRequest }) {
   );
 }
 
+/**
+ * Two-path counselling support modal.
+ *
+ * Step 1 — Path choice:
+ *   Path A (Direct)  → writes to `assignments` (status: pending_educator)
+ *                    + `counsellingRequests` (backward compat for CounsellorPortal)
+ *   Path B (Admin)   → writes to `assignments` (status: pending_admin) only
+ *
+ * Step 2 — Optional detail form (categories, contact preference, note).
+ */
 function RequestModal({ counsellor, onClose }) {
   const { user } = useAuth();
-  const [form, setForm] = useState({ categories: [], preferredContact: 'WhatsApp', note: '' });
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+
+  // 'choice' | 'form' | 'success'
+  const [stage,   setStage]   = useState('choice');
+  const [path,    setPath]    = useState(null);    // 'direct' | 'admin'
+  const [form,    setForm]    = useState({ categories: [], preferredContact: 'WhatsApp', note: '' });
+  const [busy,    setBusy]    = useState(false);
+  const [error,   setError]   = useState('');
 
   if (!counsellor) return null;
+
+  const counsellorName = normalizeCounsellorName(
+    counsellor.displayName || counsellor.fullName || 'SirajOne Counsellor',
+    { allowTitle: true },
+  );
 
   const toggleCategory = (category) => {
     setForm((prev) => {
@@ -112,67 +130,147 @@ function RequestModal({ counsellor, onClose }) {
     });
   };
 
-  const submit = async (event) => {
-    event.preventDefault();
+  function choosePath(chosen) {
     if (!user?.uid) {
       setError('Please sign in before requesting support.');
       return;
     }
-    if (form.categories.length === 0) {
-      setError('Choose at least one support category.');
-      return;
-    }
+    setPath(chosen);
+    setStage('form');
+    setError('');
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!user?.uid) { setError('Please sign in.'); return; }
+    if (form.categories.length === 0) { setError('Choose at least one support category.'); return; }
 
     setBusy(true);
     setError('');
+
+    const isDirect    = path === 'direct';
+    const clientName  = user.full_name || user.displayName || user.email || 'SirajOne Client';
+
+    const assignmentPayload = {
+      studentId:    user.uid,
+      studentName:  clientName,
+      assignedId:   isDirect ? counsellor.id   : null,
+      assignedName: isDirect ? counsellorName  : null,
+      type:         'counsellor',
+      status:       isDirect ? 'pending_educator' : 'pending_admin',
+      categories:   form.categories,
+      preferredContact: form.preferredContact,
+      note:         form.note.trim(),
+      createdAt:    serverTimestamp(),
+      updatedAt:    serverTimestamp(),
+    };
+
     try {
-      await addDoc(collection(db, 'counsellingRequests'), {
-        clientId: user.uid,
-        clientName: user.full_name || user.name || user.email || 'SirajOne Client',
-        clientEmail: user.email || '',
-        studentId: user.uid,
-        studentName: user.full_name || user.name || user.email || 'SirajOne Student',
-        studentEmail: user.email || '',
-        requesterRole: user.role || '',
-        counsellorId: counsellor.id,
-        counsellorName: normalizeCounsellorName(counsellor.displayName || counsellor.fullName || 'SirajOne Counsellor', { allowTitle: true }),
-        categories: form.categories,
-        preferredContact: form.preferredContact,
-        note: form.note.trim(),
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-      setSuccess(true);
+      // Write to assignments (the new central collection)
+      await addDoc(collection(db, 'assignments'), assignmentPayload);
+
+      // Write to counsellingRequests (backward compat — CounsellorPortal reads this)
+      if (isDirect) {
+        await addDoc(collection(db, 'counsellingRequests'), {
+          clientId:       user.uid,
+          clientName,
+          clientEmail:    user.email || '',
+          studentId:      user.uid,
+          studentName:    clientName,
+          studentEmail:   user.email || '',
+          requesterRole:  user.role || '',
+          counsellorId:   counsellor.id,
+          counsellorName,
+          categories:     form.categories,
+          preferredContact: form.preferredContact,
+          note:           form.note.trim(),
+          status:         'pending',
+          createdAt:      serverTimestamp(),
+          updatedAt:      serverTimestamp(),
+        });
+      }
+
+      setStage('success');
     } catch (err) {
-      setError(err.message || 'Could not submit counselling request.');
+      console.error('[RequestModal] submit error:', err);
+      setError(err.message || 'Could not submit your request. Please try again.');
     } finally {
       setBusy(false);
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
       <div className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-[#102018] shadow-2xl shadow-black/50">
+
+        {/* Header */}
         <div className="flex items-start justify-between border-b border-white/10 px-5 py-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">Counselling Support</p>
-            <h2 className="mt-1 text-2xl font-bold text-white">{normalizeCounsellorName(counsellor.displayName || counsellor.fullName, { allowTitle: true })}</h2>
+            <h2 className="mt-1 text-2xl font-bold text-white">{counsellorName}</h2>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 hover:text-white">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {success ? (
-          <div className="p-6 text-center">
-            <HeartHandshake className="mx-auto mb-4 h-12 w-12 text-emerald-400" />
-            <h3 className="text-xl font-bold text-white">Request Sent</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-400">Your support request has been sent. SirajOne will help manage the next step.</p>
-            <button type="button" onClick={onClose} className="mt-6 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600">Done</button>
+        {/* ── Stage: Path choice ── */}
+        {stage === 'choice' && (
+          <div className="space-y-4 p-5">
+            <p className="text-sm leading-6 text-slate-300">
+              Would you like to request support from <strong className="text-white">{counsellorName}</strong>{' '}
+              directly, or have the Admin assign the best counsellor for you?
+            </p>
+
+            {error && (
+              <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
+                {error}
+              </div>
+            )}
+
+            {/* Path A — Direct */}
+            <button
+              type="button"
+              onClick={() => choosePath('direct')}
+              className="flex w-full items-start gap-4 rounded-2xl border border-emerald-700/60 bg-emerald-950/50 px-5 py-4 text-left transition hover:border-emerald-600 hover:bg-emerald-950/70"
+            >
+              <HeartHandshake className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-400" />
+              <div>
+                <p className="font-bold text-white">Request support from {counsellorName}</p>
+                <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                  Your request goes directly to this counsellor for review and acceptance.
+                </p>
+              </div>
+              <ArrowRight className="ml-auto mt-0.5 h-4 w-4 flex-shrink-0 text-slate-500" />
+            </button>
+
+            {/* Path B — Admin */}
+            <button
+              type="button"
+              onClick={() => choosePath('admin')}
+              className="flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-left transition hover:border-white/20 hover:bg-white/8"
+            >
+              <Users className="mt-0.5 h-5 w-5 flex-shrink-0 text-slate-400" />
+              <div>
+                <p className="font-bold text-white">Let Admin find the best counsellor for me</p>
+                <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                  SirajOne admin will review your needs and match you with the most suitable counsellor.
+                </p>
+              </div>
+              <ArrowRight className="ml-auto mt-0.5 h-4 w-4 flex-shrink-0 text-slate-500" />
+            </button>
           </div>
-        ) : (
+        )}
+
+        {/* ── Stage: Detail form ── */}
+        {stage === 'form' && (
           <form onSubmit={submit} className="space-y-5 p-5">
+            <p className="text-xs text-slate-500">
+              {path === 'direct'
+                ? `Your request will be sent directly to ${counsellorName}.`
+                : 'SirajOne admin will match you with the best available counsellor.'}
+            </p>
+
             <div>
               <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Support Categories</label>
               <div className="flex flex-wrap gap-2">
@@ -181,32 +279,89 @@ function RequestModal({ counsellor, onClose }) {
                     key={category}
                     type="button"
                     onClick={() => toggleCategory(category)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${form.categories.includes(category) ? 'border-emerald-500 bg-emerald-700/50 text-white' : 'border-white/10 bg-white/5 text-slate-400 hover:border-emerald-700 hover:text-white'}`}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                      form.categories.includes(category)
+                        ? 'border-emerald-500 bg-emerald-700/50 text-white'
+                        : 'border-white/10 bg-white/5 text-slate-400 hover:border-emerald-700 hover:text-white'
+                    }`}
                   >
                     {category}
                   </button>
                 ))}
               </div>
             </div>
+
             <div>
               <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Preferred Contact</label>
-              <select className={inputClass} value={form.preferredContact} onChange={(event) => setForm((prev) => ({ ...prev, preferredContact: event.target.value }))}>
+              <select
+                className={inputClass}
+                value={form.preferredContact}
+                onChange={(event) => setForm((prev) => ({ ...prev, preferredContact: event.target.value }))}
+              >
                 <option>WhatsApp</option>
                 <option>Phone</option>
                 <option>Email</option>
                 <option>Online Session</option>
               </select>
             </div>
+
             <div>
               <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Short Note</label>
-              <textarea className={inputClass} rows={4} value={form.note} onChange={(event) => setForm((prev) => ({ ...prev, note: event.target.value }))} placeholder="Briefly describe what support you need." />
+              <textarea
+                className={inputClass}
+                rows={4}
+                value={form.note}
+                onChange={(event) => setForm((prev) => ({ ...prev, note: event.target.value }))}
+                placeholder="Briefly describe what support you need."
+              />
             </div>
-            {error && <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">{error}</div>}
-            <button type="submit" disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-60">
-              {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-              Submit Request
-            </button>
+
+            {error && (
+              <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setStage('choice')}
+                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-slate-300 transition hover:bg-white/10"
+              >
+                ← Back
+              </button>
+              <button
+                type="submit"
+                disabled={busy}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {busy ? 'Submitting…' : 'Submit Request'}
+              </button>
+            </div>
           </form>
+        )}
+
+        {/* ── Stage: Success ── */}
+        {stage === 'success' && (
+          <div className="p-6 text-center">
+            <HeartHandshake className="mx-auto mb-4 h-12 w-12 text-emerald-400" />
+            <h3 className="text-xl font-bold text-white">
+              {path === 'direct' ? 'Request Sent' : 'Matching Request Submitted'}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              {path === 'direct'
+                ? 'Your support request has been sent. SirajOne will help manage the next step.'
+                : 'The SirajOne team will review your needs and match you with the most suitable counsellor.'}
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-6 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-600"
+            >
+              Done
+            </button>
+          </div>
         )}
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
   Loader2,
   X,
   HeartHandshake,
+  GitMerge,
 } from 'lucide-react';
 import {
   collection,
@@ -19,9 +20,12 @@ import {
   doc,
   getDoc,
   onSnapshot,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getSubjectLabel } from '@/lib/subjects';
@@ -584,6 +588,256 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
   );
 }
 
+// ── Allocation Panel ──────────────────────────────────────────────────────────
+
+/**
+ * AllocationPanel
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Renders two sections:
+ *   1. Summary Matrix  — every approved educator with their live active count.
+ *   2. Placement Board — all pending_admin assignments with educator dropdown.
+ */
+function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
+  const [pendingAssignments, setPendingAssignments] = useState([]);
+  const [activeAssignments,  setActiveAssignments]  = useState([]);
+  const [loadingA, setLoadingA] = useState(true);
+  const [selections, setSelections] = useState({}); // { [assignmentId]: educatorId }
+  const [confirming, setConfirming] = useState({}); // { [assignmentId]: true }
+  const [confirmed,  setConfirmed]  = useState({}); // { [assignmentId]: true }
+
+  // Stream pending_admin assignments
+  useEffect(() => {
+    const q = query(
+      collection(db, 'assignments'),
+      where('status', '==', 'pending_admin'),
+      orderBy('createdAt', 'desc'),
+    );
+    return onSnapshot(q, (snap) => {
+      setPendingAssignments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      setLoadingA(false);
+    }, console.error);
+  }, []);
+
+  // Stream active assignments (for capacity counts)
+  useEffect(() => {
+    const q = query(
+      collection(db, 'assignments'),
+      where('status', '==', 'active'),
+    );
+    return onSnapshot(q, (snap) => {
+      setActiveAssignments(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    }, console.error);
+  }, []);
+
+  // Build educator options (merged, labelled)
+  const teacherOptions = useMemo(() =>
+    teacherProfiles
+      .filter((p) => p.profileStatus === 'approved')
+      .map((p) => ({
+        id:   p.id,
+        name: p.name || p.displayName || p.fullName || 'Teacher',
+        type: 'teacher',
+      })),
+    [teacherProfiles],
+  );
+
+  const counsellorOptions = useMemo(() =>
+    counsellorProfiles
+      .filter((p) => p.profileStatus === 'approved')
+      .map((p) => ({
+        id:   p.id,
+        name: p.displayName || p.fullName || 'Counsellor',
+        type: 'counsellor',
+      })),
+    [counsellorProfiles],
+  );
+
+  // Active count per educator
+  function activeCountFor(educatorId) {
+    return activeAssignments.filter((a) => a.assignedId === educatorId).length;
+  }
+
+  async function handleConfirm(assignment) {
+    const educatorId = selections[assignment.id];
+    if (!educatorId) return;
+
+    const allOptions   = [...teacherOptions, ...counsellorOptions];
+    const educator     = allOptions.find((e) => e.id === educatorId);
+    if (!educator) return;
+
+    setConfirming((prev) => ({ ...prev, [assignment.id]: true }));
+    try {
+      await updateDoc(doc(db, 'assignments', assignment.id), {
+        assignedId:   educator.id,
+        assignedName: educator.name,
+        status:       'active',
+        updatedAt:    serverTimestamp(),
+      });
+      setConfirmed((prev) => ({ ...prev, [assignment.id]: true }));
+    } catch (err) {
+      console.error('[AllocationPanel] confirm error:', err);
+    } finally {
+      setConfirming((prev) => { const n = { ...prev }; delete n[assignment.id]; return n; });
+    }
+  }
+
+  const allEducators = [...teacherOptions, ...counsellorOptions];
+
+  return (
+    <div className="space-y-8">
+
+      {/* ── Summary Matrix ── */}
+      <section>
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-white">Educator Capacity Matrix</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Live active assignment counts per approved educator.
+          </p>
+        </div>
+
+        {allEducators.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center">
+            <Users className="mx-auto mb-3 h-8 w-8 text-slate-600" />
+            <p className="text-sm text-slate-500">No approved educators yet.</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {allEducators.map((educator) => {
+              const count = activeCountFor(educator.id);
+              return (
+                <div
+                  key={educator.id}
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.045] px-5 py-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-white text-sm">{educator.name}</p>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-0.5">
+                      {educator.type}
+                    </p>
+                  </div>
+                  <div className="ml-4 flex-shrink-0 text-center">
+                    <p className="text-2xl font-black text-emerald-300">{count}</p>
+                    <p className="text-[10px] text-slate-600">active</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ── Placement Board ── */}
+      <section>
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-white">Placement Board</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Incoming requests awaiting admin allocation. Select an educator and confirm.
+          </p>
+        </div>
+
+        {loadingA ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
+          </div>
+        ) : pendingAssignments.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center">
+            <CheckCircle className="mx-auto mb-3 h-8 w-8 text-emerald-600" />
+            <h3 className="text-lg font-bold text-white">No pending allocations</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              All incoming requests have been assigned. New admin-route requests will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left">
+                  <th className="px-5 py-4 font-semibold text-slate-400">Student / Client</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Type</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Note</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Assign to</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/8">
+                {pendingAssignments.map((assignment) => {
+                  const isConfirmed  = confirmed[assignment.id];
+                  const isConfirming = confirming[assignment.id];
+                  const selectedId   = selections[assignment.id] || '';
+
+                  // Filter educator options by assignment type
+                  const options = assignment.type === 'counsellor'
+                    ? counsellorOptions
+                    : assignment.type === 'teacher'
+                      ? teacherOptions
+                      : allEducators;
+
+                  return (
+                    <tr key={assignment.id} className={`transition-colors ${isConfirmed ? 'bg-emerald-950/20' : 'hover:bg-white/3'}`}>
+                      <td className="px-5 py-4">
+                        <div className="font-semibold text-white">
+                          {assignment.studentName || 'Student'}
+                        </div>
+                        <div className="text-xs text-slate-500">{assignment.studentId}</div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300 capitalize">
+                          {assignment.type || '—'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-slate-400 text-xs max-w-[180px]">
+                        <p className="line-clamp-2">{assignment.note || '—'}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        {isConfirmed ? (
+                          <span className="text-xs text-emerald-400 font-semibold">✓ Assigned</span>
+                        ) : (
+                          <select
+                            value={selectedId}
+                            onChange={(e) =>
+                              setSelections((prev) => ({ ...prev, [assignment.id]: e.target.value }))
+                            }
+                            className="rounded-xl border border-white/10 bg-[#0b1a12] px-3 py-2 text-xs text-white outline-none focus:border-emerald-600 min-w-[180px]"
+                          >
+                            <option value="">— Select educator —</option>
+                            {options.map((opt) => (
+                              <option key={opt.id} value={opt.id}>
+                                {opt.name} ({activeCountFor(opt.id)} active)
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
+                        {!isConfirmed && (
+                          <button
+                            type="button"
+                            onClick={() => handleConfirm(assignment)}
+                            disabled={!selectedId || isConfirming}
+                            className="rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {isConfirming ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              'Confirm Allocation'
+                            )}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function AdminDashboard() {
   const [students, setStudents] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -733,9 +987,10 @@ export default function AdminDashboard() {
 
         <div className="mb-8 flex flex-wrap gap-2">
           {[
-            { id: 'users', label: 'Users' },
-            { id: 'counsellors', label: 'Counsellors' },
-            { id: 'financial', label: 'Financial Tracker' },
+            { id: 'users',      label: 'Users' },
+            { id: 'counsellors',label: 'Counsellors' },
+            { id: 'allocation', label: 'Roster Allocation' },
+            { id: 'financial',  label: 'Financial Tracker' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -756,6 +1011,20 @@ export default function AdminDashboard() {
             counsellingRequests={counsellingRequests}
             onApprove={approve}
             onSuspend={suspend}
+          />
+        ) : activeTab === 'allocation' ? (
+          <AllocationPanel
+            teacherProfiles={(() => {
+              // Build from the teacher collection stream via users list
+              const teacherUsers = students.filter(u => isTeacherRole(u.role) && u.status === 'approved');
+              // Prefer counsellorProfiles pattern — create teacher profile objects from users
+              return teacherUsers.map(u => ({
+                id:            u.id,
+                name:          u.full_name || u.name || u.email || 'Teacher',
+                profileStatus: 'approved',
+              }));
+            })()}
+            counsellorProfiles={counsellorProfiles}
           />
         ) : (
           <>
