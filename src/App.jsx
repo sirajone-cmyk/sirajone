@@ -9,6 +9,7 @@ import PendingApproval from '@/components/auth/PendingApproval';
 import SuspendedAccount from '@/components/auth/SuspendedAccount';
 import SecurityWrapper from '@/components/SecurityWrapper';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
+import { StudentNotificationToast } from '@/components/StudentNotificationToast';
 
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
@@ -110,6 +111,8 @@ function App() {
         <Router>
           <OnboardingProvider>
             <AuthenticatedApp />
+            {/* Global student reminder toasts — gated by role inside the component */}
+            <StudentNotificationToast />
           </OnboardingProvider>
         </Router>
         <Toaster position="top-right" />

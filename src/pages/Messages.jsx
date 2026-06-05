@@ -19,11 +19,13 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDocs,
   onSnapshot,
   query,
   serverTimestamp,
   setDoc,
   where,
+  writeBatch,
   orderBy,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -165,6 +167,37 @@ function MessageBubble({ message, isMine, onDelete }) {
 
 export default function Messages() {
   const { user } = useAuth();
+
+  // ── Mark all unread inbox_messages as read the instant this page mounts ──
+  // This clears the Navbar notification badge immediately.
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    async function markAllInboxRead() {
+      const unreadQuery = query(
+        collection(db, 'inbox_messages'),
+        where('recipientId', '==', user.uid),
+        where('isRead', '==', false),
+      );
+      const snap = await getDocs(unreadQuery);
+      if (snap.empty) return;
+
+      const CHUNK = 499;
+      const docs  = snap.docs;
+      for (let i = 0; i < docs.length; i += CHUNK) {
+        const batch = writeBatch(db);
+        docs.slice(i, i + CHUNK).forEach((d) => {
+          batch.update(d.ref, { isRead: true, readAt: serverTimestamp() });
+        });
+        await batch.commit(); // eslint-disable-line no-await-in-loop
+      }
+    }
+
+    markAllInboxRead().catch((err) =>
+      console.error('[Messages] markAllInboxRead error:', err),
+    );
+  }, [user?.uid]);
+
   const [conversations, setConversations] = useState([]);
   const [broadcastConversations, setBroadcastConversations] = useState([]);
   const [messages, setMessages] = useState([]);

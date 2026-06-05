@@ -18,6 +18,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { isCounsellorRole } from '@/lib/roles';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 const primaryLinks = [
   { to: '/', label: 'Home', icon: Home },
@@ -61,6 +62,7 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const { count: unreadCount } = useUnreadMessages(user?.uid);
 
   const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
   const isCounsellor = isCounsellorRole(user?.role);
@@ -112,12 +114,12 @@ export default function Navbar() {
           <Link
             to={messagePath}
             className={`${getLinkClass(pathname.includes('messages'))} relative`}
-            aria-label="Messages and notifications"
+            aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
             title="Messages"
           >
             <MessageCircle className="h-4 w-4 flex-shrink-0" />
             <span className="hidden whitespace-nowrap xl:inline">Messages</span>
-            <NotificationDot />
+            {unreadCount > 0 && <NotificationDot />}
           </Link>
 
           <Link
@@ -182,7 +184,9 @@ export default function Navbar() {
             >
               <MessageCircle className="h-4 w-4" />
               Messages
-              <span className="ml-1 h-2 w-2 rounded-full bg-emerald-400" />
+              {unreadCount > 0 && (
+                <span className="ml-1 h-2 w-2 rounded-full bg-emerald-400" />
+              )}
             </Link>
             {isAdmin && (
               <Link
