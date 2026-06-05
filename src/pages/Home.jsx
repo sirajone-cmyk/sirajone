@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import {
   BookOpen, Mic, Star, ArrowRight, CheckCircle,
-  Award, MapPin,
+  Award, MapPin, CalendarDays,
   TrendingUp, Users, Shield, Heart, Layers
 } from 'lucide-react';
 
@@ -67,28 +67,189 @@ export default function Home() {
     <div className="min-h-screen bg-[#0b1a12] text-white font-sans">
       <Navbar />
 
-      {/* HERO */}
-      <section className="relative isolate text-center pt-28 pb-24 px-4 overflow-hidden min-h-[85vh] flex flex-col justify-center">
-        <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1585036156171-384164a8c675?w=1400&q=80')" }} />
-        <div className="absolute inset-0 z-[1] bg-[#0b1a12]/88" />
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-700 bg-emerald-950/60 text-emerald-400 text-sm font-medium mb-8">
-            <MapPin className="w-3.5 h-3.5" /> Durban, South Africa • In-Person & Online Learning
-          </span>
-          <h1 className="text-5xl md:text-6xl font-bold mb-5 leading-tight">
+      {/* HERO — Premium Islamic manuscript hero */}
+      <section className="relative isolate overflow-hidden flex flex-col justify-center" style={{ minHeight: '100vh', paddingTop: '68px' }}>
+
+        {/* Layer 0 — Quran manuscript background, sharpened */}
+        <div
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1585036156171-384164a8c675?w=2400&q=95&auto=format&fit=crop')",
+            filter: 'contrast(1.06) saturate(1.08) brightness(0.96)',
+          }}
+        />
+
+        {/* Layer 1 — Cinematic base tint, preserves manuscript warmth */}
+        <div className="absolute inset-0 z-[1]" style={{ background: 'rgba(5, 12, 8, 0.58)' }} />
+
+        {/* Layer 2 — Radial spotlight behind text for maximum readability */}
+        <div className="absolute inset-0 z-[2]" style={{
+          background: 'radial-gradient(ellipse 90% 75% at 50% 48%, rgba(3, 9, 5, 0.82) 0%, rgba(3, 9, 5, 0.60) 55%, rgba(3, 9, 5, 0.18) 85%, transparent 100%)',
+        }} />
+
+        {/* Layer 3 — Bottom brand-colour fade */}
+        <div className="absolute bottom-0 inset-x-0 z-[3]" style={{
+          height: '38%',
+          background: 'linear-gradient(to top, #0b1a12 0%, transparent 100%)',
+        }} />
+
+        {/* Layer 4 — Subtle left/right edge vignette */}
+        <div className="absolute inset-0 z-[4]" style={{
+          background: 'linear-gradient(to right, rgba(5,12,8,0.30) 0%, transparent 25%, transparent 75%, rgba(5,12,8,0.30) 100%)',
+          pointerEvents: 'none',
+        }} />
+
+        {/* Content */}
+        <div className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 text-center py-24 sm:py-32">
+
+          {/* Location badge */}
+          <div className="flex justify-center mb-10">
+            <span
+              className="inline-flex items-center gap-2 text-[13px] sm:text-sm font-medium tracking-wide"
+              style={{
+                padding: '9px 20px',
+                borderRadius: '100px',
+                border: '1px solid rgba(120, 185, 145, 0.30)',
+                background: 'rgba(8, 22, 14, 0.70)',
+                backdropFilter: 'blur(14px)',
+                WebkitBackdropFilter: 'blur(14px)',
+                color: '#96C9AB',
+                letterSpacing: '0.035em',
+                boxShadow: '0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
+              }}
+            >
+              <MapPin size={13} style={{ color: '#72B08A', flexShrink: 0 }} />
+              Durban, South Africa • In-Person &amp; Online Learning
+            </span>
+          </div>
+
+          {/* Main heading — luxury serif */}
+          <h1
+            className="text-white"
+            style={{
+              fontFamily: "'Georgia', 'Cambria', 'Times New Roman', serif",
+              fontSize: 'clamp(2.6rem, 6.8vw, 5.6rem)',
+              fontWeight: 700,
+              lineHeight: 1.07,
+              letterSpacing: '-0.02em',
+              marginBottom: '1.4rem',
+              textShadow: '0 2px 40px rgba(0,0,0,0.9), 0 1px 10px rgba(0,0,0,0.95)',
+            }}
+          >
             Faith. Knowledge. Action.
           </h1>
-          <p className="text-slate-300 text-lg md:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
-            Islamic learning, Qur'an studies, weekly classes, and digital resources for children, adults, families, and communities.
+
+          {/* Decorative rule */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div style={{ width: '48px', height: '1px', background: 'rgba(130, 185, 152, 0.38)' }} />
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <polygon points="10,2 18,6 18,14 10,18 2,14 2,6" fill="none" stroke="rgba(130,185,152,0.48)" strokeWidth="0.9"/>
+              <circle cx="10" cy="10" r="2.6" fill="rgba(130,185,152,0.36)"/>
+            </svg>
+            <div style={{ width: '48px', height: '1px', background: 'rgba(130, 185, 152, 0.38)' }} />
+          </div>
+
+          {/* Subtitle */}
+          <p
+            className="mx-auto mb-12"
+            style={{
+              maxWidth: '680px',
+              fontSize: 'clamp(1rem, 1.9vw, 1.2rem)',
+              lineHeight: 1.72,
+              color: 'rgba(215, 235, 223, 0.86)',
+              textShadow: '0 1px 10px rgba(0,0,0,0.65)',
+              fontWeight: 400,
+              letterSpacing: '0.008em',
+            }}
+          >
+            Authentic Islamic learning, Qur'an studies, Seerah, and structured programs for
+            children, adults, families, and communities.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all">
-              Explore Programs <ArrowRight className="w-4 h-4" />
+
+          {/* CTA buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+
+            {/* Primary — forest green */}
+            <Link
+              to="/dashboard"
+              className="group inline-flex items-center justify-center gap-3 font-semibold"
+              style={{
+                minWidth: '220px',
+                padding: '15px 36px',
+                borderRadius: '14px',
+                background: 'linear-gradient(145deg, #1d7048 0%, #145534 100%)',
+                color: '#ffffff',
+                fontSize: '1rem',
+                letterSpacing: '0.012em',
+                border: '1px solid rgba(55, 160, 100, 0.45)',
+                boxShadow: '0 6px 28px rgba(16, 72, 40, 0.60), 0 1px 0 rgba(255,255,255,0.08) inset',
+                textDecoration: 'none',
+                transition: 'transform 0.22s ease, box-shadow 0.22s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.boxShadow = '0 10px 36px rgba(16,72,40,0.70), 0 1px 0 rgba(255,255,255,0.10) inset';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 6px 28px rgba(16,72,40,0.60), 0 1px 0 rgba(255,255,255,0.08) inset';
+              }}
+            >
+              Explore Programs
+              <ArrowRight size={17} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
-            <a href="https://wa.me/27676340225" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold rounded-xl transition-all">
+
+            {/* Secondary — glassmorphism */}
+            <a
+              href="https://wa.me/27676340225"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-3 font-semibold"
+              style={{
+                minWidth: '220px',
+                padding: '15px 36px',
+                borderRadius: '14px',
+                background: 'rgba(255, 255, 255, 0.07)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                color: 'rgba(238, 250, 243, 0.90)',
+                fontSize: '1rem',
+                letterSpacing: '0.012em',
+                border: '1px solid rgba(200, 225, 212, 0.22)',
+                boxShadow: '0 6px 28px rgba(0,0,0,0.32), 0 1px 0 rgba(255,255,255,0.06) inset',
+                textDecoration: 'none',
+                transition: 'transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.11)';
+                e.currentTarget.style.boxShadow = '0 10px 36px rgba(0,0,0,0.40), 0 1px 0 rgba(255,255,255,0.08) inset';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                e.currentTarget.style.boxShadow = '0 6px 28px rgba(0,0,0,0.32), 0 1px 0 rgba(255,255,255,0.06) inset';
+              }}
+            >
+              <CalendarDays size={17} />
               Join a Class
             </a>
           </div>
+
+          {/* Trust bar */}
+          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+            {['Certified Scholars', 'All Ages Welcome', 'In-Person & Online'].map((label, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-2"
+                style={{ color: 'rgba(148, 190, 165, 0.62)', fontSize: '13px', letterSpacing: '0.04em' }}
+              >
+                <span style={{ color: 'rgba(110, 175, 138, 0.55)', fontSize: '7px' }}>◆</span>
+                {label}
+              </span>
+            ))}
+          </div>
+
         </div>
       </section>
 
