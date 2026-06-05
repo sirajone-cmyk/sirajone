@@ -232,6 +232,44 @@ service cloud.firestore {
         && request.resource.data.studentAudioUrl == resource.data.studentAudioUrl;
     }
 
+    function validAssignmentCreate() {
+      return isApprovedUser()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.type in ['teacher', 'counsellor']
+        && request.resource.data.status in ['pending_admin', 'pending_educator']
+        && request.resource.data.keys().hasOnly([
+          'studentId',
+          'studentName',
+          'studentEmail',
+          'assignedId',
+          'assignedName',
+          'type',
+          'status',
+          'note',
+          'categories',
+          'preferredContact',
+          'createdAt',
+          'updatedAt'
+        ]);
+    }
+
+    function ownsAssignmentData(data) {
+      return signedIn()
+        && (data.studentId == request.auth.uid || data.assignedId == request.auth.uid);
+    }
+
+    function validEducatorAssignmentDecision() {
+      return isApprovedUser()
+        && resource.data.assignedId == request.auth.uid
+        && resource.data.status == 'pending_educator'
+        && request.resource.data.studentId == resource.data.studentId
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.assignedId == resource.data.assignedId
+        && request.resource.data.assignedName == resource.data.assignedName
+        && request.resource.data.status in ['active', 'declined']
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'updatedAt', 'acceptedAt', 'declinedAt']);
+    }
     function hasParticipantIds(data) {
       return data.keys().hasAll(['participantIds'])
         && data.participantIds is list;
@@ -354,6 +392,12 @@ service cloud.firestore {
       allow delete: if isAdminUser();
     }
 
+    match /assignments/{documentId} {
+      allow read: if isAdminUser() || ownsAssignmentData(resource.data);
+      allow create: if validAssignmentCreate() || isAdminUser();
+      allow update: if isAdminUser() || validEducatorAssignmentDecision();
+      allow delete: if isAdminUser();
+    }
     match /enrollments/{documentId} {
       allow read: if isAdminUser() || ownsEnrollmentData(resource.data);
       allow create: if validPendingPaymentEnrollment();
