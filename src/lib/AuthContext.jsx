@@ -1,4 +1,4 @@
-﻿import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -20,6 +20,11 @@ const createDefaultOnboardingState = () => ({
   lastActiveTimestamp: serverTimestamp(),
 });
 
+/** Small delay helper used to resolve registration race conditions. */
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,27 +36,43 @@ export const AuthProvider = ({ children }) => {
       if (firebaseUser) {
         // Get extra user data from Firestore
         try {
-          const userRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userRef);
+          const userRef  = doc(db, 'users', firebaseUser.uid);
+          let   userDoc  = await getDoc(userRef);
+
+          // ── Race-condition guard ───────────────────────────────────────────
+          // When a counsellor or teacher registers, onAuthStateChanged fires
+          // immediately after createUserWithEmailAndPassword resolves — before
+          // the registration setDoc can complete. Detecting a first login and
+          // waiting 3 s gives the write time to land before we fall back to
+          // auto-creating a generic Student document.
+          if (!userDoc.exists()) {
+            const isFirstLogin =
+              firebaseUser.metadata.creationTime === firebaseUser.metadata.lastSignInTime;
+
+            if (isFirstLogin) {
+              await wait(3000);
+              userDoc = await getDoc(userRef);
+            }
+          }
 
           if (!userDoc.exists()) {
-            // Auto-create missing profiles safely. Owner emails keep admin access.
+            // Genuinely missing — bootstrap owner, or recover from edge cases.
             const isOwner = isOwnerEmail(firebaseUser.email || '');
             await setDoc(userRef, {
-              full_name: isOwner ? 'Ustaath Admin' : '',
-              email: firebaseUser.email,
-              role: isOwner ? ROLES.ADMIN : ROLES.STUDENT,
-              status: isOwner ? USER_STATUS.APPROVED : USER_STATUS.PENDING,
+              full_name:  isOwner ? 'Ustaath Admin' : '',
+              email:      firebaseUser.email,
+              role:       isOwner ? ROLES.ADMIN   : ROLES.STUDENT,
+              status:     isOwner ? USER_STATUS.APPROVED : USER_STATUS.PENDING,
               onboarding: createDefaultOnboardingState(),
               created_at: serverTimestamp(),
             });
+            userDoc = await getDoc(userRef);
           }
 
-          const freshDoc = await getDoc(userRef);
-          const userData = freshDoc.data() || {};
+          const userData = userDoc.data() || {};
           setUser(enrichUserProfile({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
+            uid:       firebaseUser.uid,
+            email:     firebaseUser.email,
             full_name: userData.full_name || '',
             ...userData,
           }));
@@ -106,13 +127,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const registerStudent = async (email, password, fullName) => {
+  const registerStudent = async (email, password, fullName, options = {}) => {
     return createUserProfile({
       email,
       password,
       fullName,
       role: ROLES.STUDENT,
       status: USER_STATUS.APPROVED,
+      extraProfile: options.parentGuardianConsent === true
+        ? {
+            parentGuardianConsent: true,
+            parentGuardianConsentAt: serverTimestamp(),
+          }
+        : {},
     });
   };
 
@@ -150,35 +177,37 @@ export const AuthProvider = ({ children }) => {
         email,
       });
 
-      const userRef = doc(db, 'users', firebaseUser.uid);
-      const teacherRef = doc(db, 'teachers', firebaseUser.uid);
+      const userRef                = doc(db, 'users',    firebaseUser.uid);
+      const teacherRef             = doc(db, 'teachers', firebaseUser.uid);
       const privateVerificationRef = doc(db, 'teachers', firebaseUser.uid, 'private_data', 'verification');
-      const batch = writeBatch(db);
 
-      batch.set(userRef, {
-        full_name: fullName,
+      // Write users/{uid} FIRST so onAuthStateChanged finds the correct role
+      // immediately, preventing the race that would auto-create a Student doc.
+      await setDoc(userRef, {
+        full_name:  fullName,
         email,
-        role: ROLES.TEACHER,
-        status: USER_STATUS.PENDING,
+        role:       ROLES.TEACHER,
+        status:     USER_STATUS.PENDING,
         onboarding: createDefaultOnboardingState(),
         created_at: submittedAt,
       });
 
+      // Batch only the secondary collections.
+      const batch = writeBatch(db);
       batch.set(teacherRef, {
         ...applicationPayload.publicProfile,
-        uid: firebaseUser.uid,
+        uid:        firebaseUser.uid,
         created_at: submittedAt,
         updated_at: submittedAt,
       });
-
       batch.set(privateVerificationRef, {
         ...applicationPayload.privateData,
-        uid: firebaseUser.uid,
+        uid:          firebaseUser.uid,
         submitted_at: submittedAt,
-        updated_at: submittedAt,
+        updated_at:   submittedAt,
       });
-
       await batch.commit();
+
       return firebaseUser;
     } catch (error) {
       setAuthError(error.message);
@@ -190,7 +219,7 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     try {
       const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
-      const submittedAt = serverTimestamp();
+      const submittedAt        = serverTimestamp();
       const normalizedFullName = normalizeCounsellorName(fullName, { allowTitle: false });
       const applicationPayload = buildCounsellorApplicationPayload({
         ...counsellorApplication,
@@ -198,36 +227,39 @@ export const AuthProvider = ({ children }) => {
         email,
       });
 
-      const userRef = doc(db, 'users', firebaseUser.uid);
-      const counsellorRef = doc(db, 'counsellors', firebaseUser.uid);
+      const userRef                = doc(db, 'users',      firebaseUser.uid);
+      const counsellorRef          = doc(db, 'counsellors', firebaseUser.uid);
       const privateVerificationRef = doc(db, 'counsellors', firebaseUser.uid, 'private_data', 'verification');
-      const batch = writeBatch(db);
 
-      batch.set(userRef, {
-        full_name: normalizedFullName,
+      // Write users/{uid} FIRST so onAuthStateChanged finds the correct
+      // Counsellor role immediately, preventing the race that auto-creates a
+      // Student document before the batch can commit.
+      await setDoc(userRef, {
+        full_name:    normalizedFullName,
         display_name: applicationPayload.publicProfile.displayName,
         email,
-        role: ROLES.COUNSELLOR,
-        status: USER_STATUS.PENDING,
-        onboarding: createDefaultOnboardingState(),
-        created_at: submittedAt,
+        role:         ROLES.COUNSELLOR,
+        status:       USER_STATUS.PENDING,
+        onboarding:   createDefaultOnboardingState(),
+        created_at:   submittedAt,
       });
 
+      // Batch only the secondary counsellor collections.
+      const batch = writeBatch(db);
       batch.set(counsellorRef, {
         ...applicationPayload.publicProfile,
-        uid: firebaseUser.uid,
+        uid:        firebaseUser.uid,
         created_at: submittedAt,
         updated_at: submittedAt,
       });
-
       batch.set(privateVerificationRef, {
         ...applicationPayload.privateData,
-        uid: firebaseUser.uid,
+        uid:          firebaseUser.uid,
         submitted_at: submittedAt,
-        updated_at: submittedAt,
+        updated_at:   submittedAt,
       });
-
       await batch.commit();
+
       return firebaseUser;
     } catch (error) {
       setAuthError(error.message);
@@ -273,6 +305,8 @@ export const useAuth = () => {
   }
   return context;
 };
+
+
 
 
 

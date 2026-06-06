@@ -175,8 +175,8 @@ export function SupportSystemsSection() {
   const [authInfo, setAuthInfo] = useState('');
 
   const [ownerForm, setOwnerForm] = useState({
-    name: 'Madrassa tahseenul Quraan',
-    email: 'madrasatahseenuquraan@gmail.com',
+    name: 'SirajOne Admin',
+    email: 'sirajone7@gmail.com',
     password: '',
   });
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -1701,7 +1701,7 @@ export function SupportSystemsSection() {
                   <Truck size={18} className="text-[#42e59a]" /> Register as Transport Provider
                 </h3>
                 <p className="mt-1 text-xs text-[rgba(217,251,232,0.62)]">
-                  Providers move from Submitted → Under Review → Approved before public listing.
+                  Providers move from Submitted -> Under Review -> Approved before public listing.
                 </p>
 
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -1994,7 +1994,7 @@ export function SupportSystemsSection() {
                   <MapPinned size={18} className="text-[#42e59a]" /> Request Transport
                 </h3>
                 <p className="mt-1 text-xs text-[rgba(217,251,232,0.62)]">
-                  Request flow: Submitted → Pending Review → Awaiting Match → Confirmed.
+                  Request flow: Submitted -> Pending Review -> Awaiting Match -> Confirmed.
                 </p>
 
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -2234,12 +2234,12 @@ export function SupportSystemsSection() {
                           </div>
                           <p className="mt-2 text-xs text-[rgba(217,251,232,0.68)]">
                             <Route size={12} className="mr-1 inline text-[#42e59a]" />
-                            {provider.coverageArea} • {provider.pickupZones.join(', ')} →{' '}
+                            {provider.coverageArea} - {provider.pickupZones.join(', ')} ->{' '}
                             {provider.dropoffZones.join(', ')}
                           </p>
                           <p className="mt-1 text-xs text-[rgba(217,251,232,0.6)]">
-                            {provider.timeWindowStart} - {provider.timeWindowEnd} •{' '}
-                            {provider.availableDays.join(', ')} • {provider.seats} seats •{' '}
+                            {provider.timeWindowStart} - {provider.timeWindowEnd} -{' '}
+                            {provider.availableDays.join(', ')} - {provider.seats} seats -{' '}
                             {provider.serviceType}
                           </p>
                           <div className="mt-3 flex flex-wrap gap-2">
@@ -2322,7 +2322,7 @@ export function SupportSystemsSection() {
                                   {request.firstName} {request.surname}
                                 </p>
                                 <p className="text-xs text-[rgba(217,251,232,0.66)]">
-                                  {request.pickupArea} → {request.destination}
+                                  {request.pickupArea} -> {request.destination}
                                 </p>
                               </div>
                               <TransportStatusBadge
@@ -2331,7 +2331,7 @@ export function SupportSystemsSection() {
                               />
                             </div>
                             <p className="mt-1 text-xs text-[rgba(217,251,232,0.62)]">
-                              {request.madrasaOrMasjidName} • {request.preferredPickupTime} •{' '}
+                              {request.madrasaOrMasjidName} - {request.preferredPickupTime} -{' '}
                               {request.requiredDays.join(', ')}
                             </p>
                             <div className="mt-3 grid gap-2 md:grid-cols-2">
@@ -2449,14 +2449,14 @@ export function SupportSystemsSection() {
                       </div>
                       <p className="mt-2 text-xs text-[rgba(217,251,232,0.62)]">
                         <Route size={12} className="mr-1 inline text-[#42e59a]" />
-                        {provider.pickupZones.join(', ')} → {provider.dropoffZones.join(', ')}
+                        {provider.pickupZones.join(', ')} -> {provider.dropoffZones.join(', ')}
                       </p>
                       <p className="mt-1 text-xs text-[rgba(217,251,232,0.62)]">
-                        {provider.timeWindowStart} - {provider.timeWindowEnd} •{' '}
+                        {provider.timeWindowStart} - {provider.timeWindowEnd} -{' '}
                         {provider.availableDays.join(', ')}
                       </p>
                       <p className="mt-1 text-xs text-[rgba(217,251,232,0.62)]">
-                        {provider.serviceType} • {provider.seats} seats •{' '}
+                        {provider.serviceType} - {provider.seats} seats -{' '}
                         {provider.vehicleType || 'Vehicle type pending'}
                       </p>
                       {provider.routeNotes ? (
@@ -2677,3 +2677,4 @@ export function SupportSystemsSection() {
     </>
   );
 }
+

@@ -1,10 +1,10 @@
 export const SUPPORT_PROFILE = {
-  name: 'Counsellor Aisha Pierre',
+  name: 'Counsellor Aisha Peer',
   title: 'Student Support & Guidance',
-  bio: 'Counsellor Aisha Pierre supports students and families in an educational setting with calm, practical guidance. She is known for helping learners stay emotionally steady, focused, and motivated through structured Islamic learning journeys.',
+  bio: 'Counsellor Aisha Peer supports students and families in an educational setting with calm, practical guidance. She helps learners stay emotionally steady, focused, and motivated through structured Islamic learning journeys.',
   highlights: [
-    'Experienced in supporting large student communities',
-    'Trusted by learners and parents for steady guidance',
+    'Supports student communities with calm practical guidance',
+    'Trusted by learners and parents for steady support',
     'Private support sessions available for students and families',
     'Suitable for learning support, mentoring, and general guidance',
   ],
@@ -35,8 +35,8 @@ export const LESSON_SESSIONS = [
   {
     id: 'sess-101',
     title: 'Tajwid Foundations - Live Lesson',
-    teacher: 'Ustadh Hashim bin Hussain',
-    student: 'Ahmad S.',
+    teacher: 'Teacher Profile 1',
+    student: 'Student Profile 1',
     start: '2026-04-21T17:00:00+02:00',
     durationMinutes: 45,
     status: 'upcoming',
@@ -45,8 +45,8 @@ export const LESSON_SESSIONS = [
   {
     id: 'sess-102',
     title: 'Makharij Correction Session',
-    teacher: 'Muallima Aneesa',
-    student: 'Maryam A.',
+    teacher: 'Teacher Profile 2',
+    student: 'Student Profile 2',
     start: '2026-04-20T20:00:00+02:00',
     durationMinutes: 30,
     status: 'live',
@@ -55,8 +55,8 @@ export const LESSON_SESSIONS = [
   {
     id: 'sess-103',
     title: 'Muraja\'ah Coaching',
-    teacher: 'Qari Abbas',
-    student: 'Yusuf K.',
+    teacher: 'Teacher Profile 3',
+    student: 'Student Profile 3',
     start: '2026-04-19T18:00:00+02:00',
     durationMinutes: 45,
     status: 'completed',
@@ -67,17 +67,17 @@ export const LESSON_SESSIONS = [
 export const MESSAGE_THREADS = [
   {
     id: 'thr-1',
-    name: 'Ustaath Hashim',
+    name: 'Admin Support',
     role: 'Admin',
     unread: 1,
     messages: [
-      { id: 'm1', from: 'them', text: 'Assalaamu alaykum. Please send your child\'s current sabaq level.', time: '2026-04-20T09:10:00+02:00' },
+      { id: 'm1', from: 'them', text: 'Assalaamu alaykum. Please send the current sabaq level.', time: '2026-04-20T09:10:00+02:00' },
       { id: 'm2', from: 'me', text: 'Wa alaykum salaam. Current sabaq is lesson 12.', time: '2026-04-20T09:13:00+02:00' },
     ],
   },
   {
     id: 'thr-2',
-    name: 'Azgar Tar',
+    name: 'Student Profile 1',
     role: 'Student',
     unread: 0,
     messages: [
@@ -86,7 +86,7 @@ export const MESSAGE_THREADS = [
   },
   {
     id: 'thr-3',
-    name: 'Muhammad Junaid Hoosen',
+    name: 'Student Profile 2',
     role: 'Student',
     unread: 1,
     messages: [
@@ -137,21 +137,20 @@ export const ROLE_CARDS = [
 ];
 
 export const ROLE_USERS = [
-  { name: 'Muhammad Junaid Hoosen', email: 'mjhoosen@alfalaah.org.za', role: 'Student', subscribed: false, joined: '15 Apr 2026' },
-  { name: 'raid dindar', email: 'raid.dindar@gmail.com', role: 'Student', subscribed: false, joined: '13 Apr 2026' },
-  { name: 'Azgar Tar', email: 'azgartar@gmail.com', role: 'Student', subscribed: true, joined: '2 Apr 2026' },
-  { name: 'Ustaath Hashim', email: 'hashimhussein074@gmail.com', role: 'Teacher', subscribed: true, joined: '2 Apr 2026' },
-  { name: 'Madrassa tahseenul Quraan', email: 'madrasatahseenuquraan@gmail.com', role: 'Admin', subscribed: true, joined: '2 Apr 2026' },
+  { name: 'Student Profile 1', email: 'student1@example.com', role: 'Student', subscribed: false, joined: '15 Apr 2026' },
+  { name: 'Student Profile 2', email: 'student2@example.com', role: 'Student', subscribed: false, joined: '13 Apr 2026' },
+  { name: 'Student Profile 3', email: 'student3@example.com', role: 'Student', subscribed: true, joined: '2 Apr 2026' },
+  { name: 'Teacher Profile 1', email: 'teacher1@example.com', role: 'Teacher', subscribed: true, joined: '2 Apr 2026' },
+  { name: 'Admin Profile', email: 'admin@example.com', role: 'Admin', subscribed: true, joined: '2 Apr 2026' },
 ];
 
 export const PAYMENT_TRANSACTIONS = [
-  { id: 'pay-1', sessionId: 'sess-101', recipient: 'Ustadh Hashim bin Hussain', gross: 500, status: 'pending' },
-  { id: 'pay-2', sessionId: 'sess-102', recipient: 'Muallima Aneesa', gross: 350, status: 'paid' },
-  { id: 'pay-3', sessionId: 'sess-103', recipient: 'Qari Abbas', gross: 450, status: 'paid' },
+  { id: 'pay-1', sessionId: 'sess-101', recipient: 'Teacher Profile 1', gross: 500, status: 'pending' },
+  { id: 'pay-2', sessionId: 'sess-102', recipient: 'Teacher Profile 2', gross: 350, status: 'paid' },
+  { id: 'pay-3', sessionId: 'sess-103', recipient: 'Teacher Profile 3', gross: 450, status: 'paid' },
 ];
 
 export const PLATFORM_SPLIT = {
   teacherPercent: 70,
   platformPercent: 30,
 };
-

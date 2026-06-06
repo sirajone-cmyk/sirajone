@@ -347,7 +347,7 @@ service cloud.firestore {
     }
 
     match /teachers/{userId} {
-      allow read: if signedIn();
+      allow read: if isAdminUser() || isSelf(userId) || (isApprovedUser() && resource.data.profileStatus == 'approved');
       allow create: if validTeacherPublicProfileCreate(userId) || isAdminUser();
       allow update: if isAdminUser()
         || (isSelf(userId) && onlyTeacherEditablePublicFieldsChanged());
@@ -365,7 +365,7 @@ service cloud.firestore {
     }
 
     match /counsellors/{userId} {
-      allow read: if signedIn();
+      allow read: if isAdminUser() || isSelf(userId) || (isApprovedUser() && resource.data.profileStatus == 'approved');
       allow create: if validCounsellorPublicProfileCreate(userId) || isAdminUser();
       allow update: if isAdminUser()
         || (isSelf(userId) && onlyCounsellorEditablePublicFieldsChanged());
@@ -476,7 +476,7 @@ service cloud.firestore {
     }
 
     match /contacts/{documentId} {
-      allow create: if true;
+      allow create: if signedIn();
       allow read, update, delete: if isAdminUser();
     }
 
@@ -490,5 +490,6 @@ service cloud.firestore {
     }
   }
 }
+
 
 

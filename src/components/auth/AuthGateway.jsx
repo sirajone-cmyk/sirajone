@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, BookOpen, Eye, EyeOff, HelpCircle, KeyRound, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useOnboarding } from '../onboarding/useOnboarding';
@@ -124,6 +124,7 @@ export function AuthGateway({ onAuthenticated }) {
     targetSubjects: [],
     // Counselling client fields
     counsellingNotes: '',
+    parentGuardianConsent: false,
   });
   const [counsellorForm, setCounsellorForm] = useState(createEmptyCounsellorApplication());
 
@@ -185,6 +186,11 @@ export function AuthGateway({ onAuthenticated }) {
       return false;
     }
 
+    if (registerType === REGISTER_TYPES.STUDENT && !registerForm.parentGuardianConsent) {
+      setError('Student registration requires parent or guardian consent before continuing.');
+      return false;
+    }
+
     if (registerType === REGISTER_TYPES.TEACHER) {
       if (!registerForm.institutionQualified.trim() || !registerForm.qualificationLevel.trim()) {
         setError('Add your institution and qualification level for the teacher application.');
@@ -236,6 +242,7 @@ export function AuthGateway({ onAuthenticated }) {
       personalityDescription: '',
       targetSubjects: [],
       counsellingNotes: '',
+      parentGuardianConsent: false,
     });
     setCounsellorForm(createEmptyCounsellorApplication());
   }
@@ -314,7 +321,7 @@ export function AuthGateway({ onAuthenticated }) {
         await registerCounsellingClient(email, registerForm.password, fullName, registerForm.counsellingNotes);
         setInfo('Your counselling request has been submitted. An administrator will review and approve your account shortly.');
       } else {
-        await registerStudent(email, registerForm.password, fullName);
+        await registerStudent(email, registerForm.password, fullName, { parentGuardianConsent: true });
         setInfo('Student account created successfully.');
       }
       resetRegisterForm();
@@ -436,6 +443,21 @@ export function AuthGateway({ onAuthenticated }) {
                     <PasswordInput label="Confirm password" name="confirm-new-password" value={registerForm.confirmPassword} onChange={(event) => updateRegisterField('confirmPassword', event.target.value)} placeholder="Confirm password" autoComplete="new-password" disabled={busy} visible={showConfirmPassword} onToggleVisible={() => setShowConfirmPassword((value) => !value)} />
                   </div>
 
+                  {registerType === REGISTER_TYPES.STUDENT && (
+                    <label className="flex items-start gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4 text-sm leading-6 text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={registerForm.parentGuardianConsent}
+                        onChange={(event) => updateRegisterField('parentGuardianConsent', event.target.checked)}
+                        disabled={busy}
+                        className="mt-1 h-4 w-4 rounded border-emerald-700 bg-transparent text-emerald-500 focus:ring-emerald-500"
+                      />
+                      <span>
+                        I confirm that a parent or guardian has given consent for this student account, recordings, and teacher review workflow.
+                      </span>
+                    </label>
+                  )}
+
                   {registerType === REGISTER_TYPES.TEACHER && (
                     <div className="max-h-[80vh] space-y-4 overflow-y-auto rounded-2xl border border-[rgba(34,197,94,0.18)] bg-[rgba(6,16,12,0.42)] px-1 pb-6 pt-4 sm:max-h-full sm:px-4">
                       <div className="grid gap-4 px-3 sm:grid-cols-2 sm:px-0">
@@ -522,7 +544,7 @@ export function AuthGateway({ onAuthenticated }) {
                   )}
 
                   <Button type="submit" className="mt-8 w-full justify-center" disabled={busy}>
-                    {busy ? 'Creating account...' : registerType === REGISTER_TYPES.TEACHER ? 'Submit Teacher Application' : registerType === REGISTER_TYPES.COUNSELLOR ? 'Submit Counsellor Application' : 'Create Student Account'}
+                    {busy ? 'Creating account...' : registerType === REGISTER_TYPES.TEACHER ? 'Submit Teacher Application' : registerType === REGISTER_TYPES.COUNSELLOR ? 'Submit Counsellor Application' : registerType === REGISTER_TYPES.COUNSELLING_CLIENT ? 'Submit Counselling Request' : 'Create Student Account'}
                     <ArrowRight size={16} />
                   </Button>
                 </div>
@@ -537,4 +559,6 @@ export function AuthGateway({ onAuthenticated }) {
     </div>
   );
 }
+
+
 
