@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import {
   Users,
@@ -46,6 +46,26 @@ const formatCurrency = (value) =>
 const readAmount = (payment) => Number(payment.amount || payment.amount_gross || payment.price_zar || 0);
 const isTeacherRole = (role) => role === 'Teacher';
 const isCounsellorRole = (role) => role === 'Counsellor' || role === 'Counselor';
+const hasCounsellorApplicationIntent = (user = {}) => {
+  const searchableIdentity = [user.email, user.full_name, user.display_name, user.name]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return (
+    isCounsellorRole(user.role) ||
+    isCounsellorRole(user.appliedRole) ||
+    user.registrationType === 'counsellor' ||
+    user.registrationIntent === 'counsellor' ||
+    (user.status === 'pending' && /counsello?r/.test(searchableIdentity))
+  );
+};
+const withCounsellorRole = (user = {}) => ({
+  ...user,
+  role: 'Counsellor',
+  appliedRole: 'Counsellor',
+  registrationType: 'counsellor',
+});
 
 const hasDisplayValue = (value) => {
   if (value === null || value === undefined) return false;
@@ -119,7 +139,7 @@ const buildSafeCounsellorProfile = (user, profileStatus = 'approved', existingPr
 });
 
 async function syncCounsellorPublicProfile(user, profileStatus = 'approved', existingProfile = null) {
-  if (!user?.id || !isCounsellorRole(user.role)) return;
+  if (!user?.id || !hasCounsellorApplicationIntent(user)) return;
 
   await setDoc(
     doc(db, 'counsellors', user.id),
@@ -411,7 +431,7 @@ function AdminEmptyState({ title, body, actionLabel }) {
 }
 
 function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, onApprove, onSuspend }) {
-  const counsellorUsers = users.filter((user) => isCounsellorRole(user.role));
+  const counsellorUsers = users.filter((user) => hasCounsellorApplicationIntent(user));
   const pendingApplications = counsellorUsers.filter((user) => user.status === 'pending');
   const approvedProfiles = counsellorProfiles.filter((profile) => profile.profileStatus === 'approved');
   const pendingRequests = counsellingRequests.filter((request) => request.status === 'pending');
@@ -465,7 +485,9 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
                       <div className="font-semibold text-white">{user.full_name || user.name || user.email || 'Counsellor Applicant'}</div>
                       <div className="text-xs text-slate-500">{user.email}</div>
                     </td>
-                    <td className="px-5 py-4 text-slate-300">{user.role}</td>
+                    <td className="px-5 py-4 text-slate-300">
+                      {isCounsellorRole(user.role) ? user.role : 'Counsellor (role repair pending)'}
+                    </td>
                     <td className="px-5 py-4">
                       <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle[user.status] || statusStyle.pending}`}>
                         {user.status || 'pending'}
@@ -899,14 +921,25 @@ export default function AdminDashboard() {
   }, [students]);
 
   const approve = async (user, existingProfile = null) => {
-    await updateDoc(doc(db, 'users', user.id), { status: 'approved' });
-    if (isTeacherRole(user.role)) {
-      await syncTeacherPublicProfile({ ...user, status: 'approved' }, 'approved', existingProfile);
+    const shouldRepairCounsellorRole = hasCounsellorApplicationIntent(user);
+    const approvedUser = shouldRepairCounsellorRole
+      ? withCounsellorRole({ ...user, status: 'approved' })
+      : { ...user, status: 'approved' };
+
+    await updateDoc(
+      doc(db, 'users', user.id),
+      shouldRepairCounsellorRole
+        ? { status: 'approved', role: 'Counsellor', appliedRole: 'Counsellor', registrationType: 'counsellor', updated_at: serverTimestamp() }
+        : { status: 'approved', updated_at: serverTimestamp() }
+    );
+
+    if (isTeacherRole(approvedUser.role)) {
+      await syncTeacherPublicProfile(approvedUser, 'approved', existingProfile);
     }
-    if (isCounsellorRole(user.role)) {
+    if (hasCounsellorApplicationIntent(approvedUser)) {
       const publicSnap = existingProfile ? null : await getDoc(doc(db, 'counsellors', user.id)).catch(() => null);
       const publicProfile = existingProfile || (publicSnap?.exists?.() ? publicSnap.data() : null);
-      await syncCounsellorPublicProfile({ ...user, status: 'approved' }, 'approved', publicProfile);
+      await syncCounsellorPublicProfile(approvedUser, 'approved', publicProfile);
     }
   };
 
@@ -916,14 +949,25 @@ export default function AdminDashboard() {
   };
 
   const suspend = async (user) => {
-    await updateDoc(doc(db, 'users', user.id), { status: 'suspended' });
-    if (isTeacherRole(user.role)) {
-      await syncTeacherPublicProfile({ ...user, status: 'suspended' }, 'suspended');
+    const shouldRepairCounsellorRole = hasCounsellorApplicationIntent(user);
+    const suspendedUser = shouldRepairCounsellorRole
+      ? withCounsellorRole({ ...user, status: 'suspended' })
+      : { ...user, status: 'suspended' };
+
+    await updateDoc(
+      doc(db, 'users', user.id),
+      shouldRepairCounsellorRole
+        ? { status: 'suspended', role: 'Counsellor', appliedRole: 'Counsellor', registrationType: 'counsellor', updated_at: serverTimestamp() }
+        : { status: 'suspended', updated_at: serverTimestamp() }
+    );
+
+    if (isTeacherRole(suspendedUser.role)) {
+      await syncTeacherPublicProfile(suspendedUser, 'suspended');
     }
-    if (isCounsellorRole(user.role)) {
+    if (hasCounsellorApplicationIntent(suspendedUser)) {
       const publicSnap = await getDoc(doc(db, 'counsellors', user.id)).catch(() => null);
       const publicProfile = publicSnap?.exists?.() ? publicSnap.data() : null;
-      await syncCounsellorPublicProfile({ ...user, status: 'suspended' }, 'suspended', publicProfile);
+      await syncCounsellorPublicProfile(suspendedUser, 'suspended', publicProfile);
     }
   };
 

@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import LetterDrawer from '../components/LetterDrawer';
+import useLetterAudio from '../hooks/useLetterAudio';
 import AudioPractice from '../components/AudioPractice';
 import { LETTERS } from '../data/tajweedData';
 import {
@@ -37,38 +38,38 @@ const theoryCards = [
 ];
 
 const sifaatColors = {
-  Jahr: 'bg-emerald-100 text-emerald-800',
-  Hams: 'bg-sky-100 text-sky-800',
-  Shiddah: 'bg-red-100 text-red-800',
-  Rikhwah: 'bg-orange-100 text-orange-800',
-  Tawassut: 'bg-yellow-100 text-yellow-800',
-  Tawassuṭ: 'bg-yellow-100 text-yellow-800',
-  Istifal: 'bg-purple-100 text-purple-800',
-  Istifāl: 'bg-purple-100 text-purple-800',
+  'Jahr': 'bg-emerald-100 text-emerald-800',
+  'Hams': 'bg-sky-100 text-sky-800',
+  'Shiddah': 'bg-red-100 text-red-800',
+  'Rikhwah': 'bg-orange-100 text-orange-800',
+  'Tawassut': 'bg-yellow-100 text-yellow-800',
+  'Tawassuṭ': 'bg-yellow-100 text-yellow-800',
+  'Istifal': 'bg-purple-100 text-purple-800',
+  'Istifāl': 'bg-purple-100 text-purple-800',
   "Isti'la": 'bg-pink-100 text-pink-800',
   'Istiʿlā': 'bg-pink-100 text-pink-800',
-  Infitah: 'bg-indigo-100 text-indigo-800',
-  Infitāḥ: 'bg-indigo-100 text-indigo-800',
-  Itbaq: 'bg-rose-100 text-rose-800',
-  Iṭbāq: 'bg-rose-100 text-rose-800',
-  Ithlaq: 'bg-teal-100 text-teal-800',
-  Ithlāq: 'bg-teal-100 text-teal-800',
-  Ismaat: 'bg-slate-100 text-slate-700',
-  Iṣmāt: 'bg-slate-100 text-slate-700',
-  Qalqalah: 'bg-amber-100 text-amber-800',
-  Safir: 'bg-cyan-100 text-cyan-800',
-  Ṣafīr: 'bg-cyan-100 text-cyan-800',
-  Ghunnah: 'bg-violet-100 text-violet-800',
-  Tafashshi: 'bg-lime-100 text-lime-800',
-  Takrir: 'bg-fuchsia-100 text-fuchsia-800',
-  Takrīr: 'bg-fuchsia-100 text-fuchsia-800',
-  Inhiraf: 'bg-green-100 text-green-800',
-  Inḥirāf: 'bg-green-100 text-green-800',
-  Lin: 'bg-blue-100 text-blue-800',
-  Līn: 'bg-blue-100 text-blue-800',
-  Istitalah: 'bg-red-100 text-red-800',
-  Isṭilāh: 'bg-red-100 text-red-800',
-  Isṭilāta: 'bg-red-100 text-red-800',
+  'Infitah': 'bg-indigo-100 text-indigo-800',
+  'Infitāḥ': 'bg-indigo-100 text-indigo-800',
+  'Itbaq': 'bg-rose-100 text-rose-800',
+  'Iṭbāq': 'bg-rose-100 text-rose-800',
+  'Ithlaq': 'bg-teal-100 text-teal-800',
+  'Ithlāq': 'bg-teal-100 text-teal-800',
+  'Ismaat': 'bg-slate-100 text-slate-700',
+  'Iṣmāt': 'bg-slate-100 text-slate-700',
+  'Qalqalah': 'bg-amber-100 text-amber-800',
+  'Safir': 'bg-cyan-100 text-cyan-800',
+  'Ṣafīr': 'bg-cyan-100 text-cyan-800',
+  'Ghunnah': 'bg-violet-100 text-violet-800',
+  'Tafashshi': 'bg-lime-100 text-lime-800',
+  'Takrir': 'bg-fuchsia-100 text-fuchsia-800',
+  'Takrīr': 'bg-fuchsia-100 text-fuchsia-800',
+  'Inhiraf': 'bg-green-100 text-green-800',
+  'Inḥirāf': 'bg-green-100 text-green-800',
+  'Lin': 'bg-blue-100 text-blue-800',
+  'Līn': 'bg-blue-100 text-blue-800',
+  'Istitalah': 'bg-red-100 text-red-800',
+  'Isṭilāh': 'bg-red-100 text-red-800',
+  'Isṭilāta': 'bg-red-100 text-red-800',
 };
 
 const glossary = [
@@ -101,35 +102,12 @@ function letterSearchText(letter) {
     .toLowerCase();
 }
 
-function useArabicSpeech() {
-  const [speaking, setSpeaking] = useState(null);
-
-  const speak = useCallback((text, id) => {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    if (speaking === id) {
-      setSpeaking(null);
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ar-SA';
-    utterance.rate = 0.65;
-    utterance.onstart = () => setSpeaking(id);
-    utterance.onend = () => setSpeaking(null);
-    utterance.onerror = () => setSpeaking(null);
-    window.speechSynthesis.speak(utterance);
-  }, [speaking]);
-
-  return { speak, speaking };
-}
-
 export default function LetterCatalog() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [filterSifah, setFilterSifah] = useState('');
   const [practiceMode, setPracticeMode] = useState(null);
-  const { speak, speaking } = useArabicSpeech();
+  const { playLetterAudio, isLoadingCurrent, isPlayingCurrent } = useLetterAudio();
 
   const allSifaat = useMemo(() => {
     return [...new Set(bookLetters.flatMap((letter) => letter.sifaat.map(sifahName)))].sort();
@@ -236,12 +214,16 @@ export default function LetterCatalog() {
               <div className="grid grid-cols-2 border-t border-white/8">
                 <button
                   type="button"
-                  onClick={() => speak(letter.arabic, letter.arabic)}
+                  onClick={() => playLetterAudio(letter)}
                   title="Listen"
-                  className={`flex items-center justify-center gap-1 py-2 text-xs transition-colors border-r border-white/8 ${speaking === letter.arabic ? 'bg-emerald-900/40 text-emerald-300' : 'text-slate-500 hover:bg-emerald-900/20 hover:text-emerald-300'}`}
+                  className={`flex items-center justify-center gap-1 py-2 text-xs transition-colors border-r border-white/8 ${isPlayingCurrent(letter) ? 'bg-emerald-900/40 text-emerald-300' : 'text-slate-500 hover:bg-emerald-900/20 hover:text-emerald-300'}`}
                 >
-                  <Volume2 className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline text-[10px]">Listen</span>
+                  {isLoadingCurrent(letter) ? (
+                    <span className="text-[10px]" aria-hidden="true">...</span>
+                  ) : (
+                    <Volume2 className="h-3.5 w-3.5" />
+                  )}
+                  <span className="hidden sm:inline text-[10px]">{isLoadingCurrent(letter) ? 'Loading' : 'Listen'}</span>
                 </button>
                 <button
                   type="button"
@@ -291,3 +273,4 @@ export default function LetterCatalog() {
     </div>
   );
 }
+

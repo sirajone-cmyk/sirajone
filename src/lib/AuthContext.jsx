@@ -39,9 +39,9 @@ export const AuthProvider = ({ children }) => {
           const userRef  = doc(db, 'users', firebaseUser.uid);
           let   userDoc  = await getDoc(userRef);
 
-          // ── Race-condition guard ───────────────────────────────────────────
+          // Race-condition guard
           // When a counsellor or teacher registers, onAuthStateChanged fires
-          // immediately after createUserWithEmailAndPassword resolves — before
+          // immediately after createUserWithEmailAndPassword resolves, before
           // the registration setDoc can complete. Detecting a first login and
           // waiting 3 s gives the write time to land before we fall back to
           // auto-creating a generic Student document.
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
           }
 
           if (!userDoc.exists()) {
-            // Genuinely missing — bootstrap owner, or recover from edge cases.
+            // Genuinely missing: bootstrap owner, or recover from edge cases.
             const isOwner = isOwnerEmail(firebaseUser.email || '');
             await setDoc(userRef, {
               full_name:  isOwner ? 'Ustaath Admin' : '',
@@ -134,24 +134,27 @@ export const AuthProvider = ({ children }) => {
       fullName,
       role: ROLES.STUDENT,
       status: USER_STATUS.APPROVED,
-      extraProfile: options.parentGuardianConsent === true
-        ? {
-            parentGuardianConsent: true,
-            parentGuardianConsentAt: serverTimestamp(),
-          }
-        : {},
+      extraProfile: {
+        registrationType: 'student',
+        ...(options.parentGuardianConsent === true
+          ? {
+              parentGuardianConsent: true,
+              parentGuardianConsentAt: serverTimestamp(),
+            }
+          : {}),
+      },
     });
   };
 
   /**
    * Register a counselling client (person seeking counselling sessions).
    * Role stored as ROLES.COUNSELLING_CLIENT.
-   * Status starts as PENDING — admin must approve before access is granted.
+   * Status starts as PENDING; admin must approve before access is granted.
    *
    * @param {string} email
    * @param {string} password
    * @param {string} fullName
-   * @param {string} [registrationNotes] – optional reason/note for counsellor
+   * @param {string} [registrationNotes] optional reason/note for counsellor
    */
   const registerCounsellingClient = async (email, password, fullName, registrationNotes = '') => {
     return createUserProfile({
@@ -160,9 +163,13 @@ export const AuthProvider = ({ children }) => {
       fullName,
       role: ROLES.COUNSELLING_CLIENT,
       status: USER_STATUS.PENDING,
-      extraProfile: registrationNotes.trim()
-        ? { registrationNotes: registrationNotes.trim() }
-        : {},
+      extraProfile: {
+        registrationType: 'counsellingClient',
+        appliedRole: ROLES.COUNSELLING_CLIENT,
+        ...(registrationNotes.trim()
+          ? { registrationNotes: registrationNotes.trim() }
+          : {}),
+      },
     });
   };
 
@@ -187,6 +194,8 @@ export const AuthProvider = ({ children }) => {
         full_name:  fullName,
         email,
         role:       ROLES.TEACHER,
+        appliedRole: ROLES.TEACHER,
+        registrationType: 'teacher',
         status:     USER_STATUS.PENDING,
         onboarding: createDefaultOnboardingState(),
         created_at: submittedAt,
@@ -239,6 +248,8 @@ export const AuthProvider = ({ children }) => {
         display_name: applicationPayload.publicProfile.displayName,
         email,
         role:         ROLES.COUNSELLOR,
+        appliedRole:  ROLES.COUNSELLOR,
+        registrationType: 'counsellor',
         status:       USER_STATUS.PENDING,
         onboarding:   createDefaultOnboardingState(),
         created_at:   submittedAt,
@@ -305,11 +316,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-
-
-
-
-
-
-

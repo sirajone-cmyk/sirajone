@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, CheckCircle2, GraduationCap, MapPin, Sparkles, X } from 'lucide-react';
+import { BookOpen, CheckCircle2, GraduationCap, MapPin, Sparkles, Volume2, X } from 'lucide-react';
+import useLetterAudio from '../hooks/useLetterAudio';
 
 function defaultColorForSifah() {
   return 'bg-white/10 text-slate-200';
@@ -11,6 +12,7 @@ function sifahName(item) {
 }
 
 export default function LetterDrawer({ letter, onClose, colorForSifah = defaultColorForSifah }) {
+  const { playLetterAudio, isLoadingCurrent, isPlayingCurrent } = useLetterAudio();
   useEffect(() => {
     const handler = (event) => event.key === 'Escape' && onClose();
     window.addEventListener('keydown', handler);
@@ -51,14 +53,26 @@ export default function LetterDrawer({ letter, onClose, colorForSifah = defaultC
                     <p className="mt-1 text-sm text-slate-400">Master Your Makhraj lesson note</p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
-                  aria-label="Close letter details"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => playLetterAudio(letter)}
+                    disabled={isLoadingCurrent(letter)}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition ${isPlayingCurrent(letter) ? 'bg-emerald-400/20 text-emerald-200' : 'bg-white/10 text-slate-200 hover:bg-emerald-400/15 hover:text-emerald-200'}`}
+                    aria-label={`Listen to ${letter.name}`}
+                  >
+                    {isLoadingCurrent(letter) ? <span aria-hidden="true">...</span> : <Volume2 className="h-4 w-4" />}
+                    <span className="hidden sm:inline">{isLoadingCurrent(letter) ? 'Loading' : 'Listen'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+                    aria-label="Close letter details"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
             </header>
 
@@ -159,3 +173,4 @@ export default function LetterDrawer({ letter, onClose, colorForSifah = defaultC
     </AnimatePresence>
   );
 }
+

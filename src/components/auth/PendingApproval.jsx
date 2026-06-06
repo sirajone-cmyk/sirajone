@@ -21,13 +21,37 @@ const PENDING_COPY = {
   },
   [ROLES.STUDENT]: {
     eyebrow: 'Account Pending',
-    body: 'Your student account is pending approval. Please wait for an administrator to activate your account.',
+    body: 'Your account is pending approval. Please wait for an administrator to activate your access.',
   },
+};
+
+const looksLikeCounsellorApplicant = (user = {}) => {
+  const haystack = [user.email, user.full_name, user.display_name, user.name]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return haystack.includes('counsellor') || haystack.includes('counselor');
+};
+
+const resolvePendingRole = (user) => {
+  if (user?.appliedRole) return user.appliedRole;
+  if (user?.registrationType === 'teacher') return ROLES.TEACHER;
+  if (user?.registrationType === 'counsellor') return ROLES.COUNSELLOR;
+  if (user?.registrationType === 'counsellingClient') return ROLES.COUNSELLING_CLIENT;
+
+  const searchableIdentity = [user?.email, user?.full_name, user?.display_name, user?.name]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  if (user?.status === 'pending' && /counsello?r/.test(searchableIdentity)) return ROLES.COUNSELLOR;
+
+  return user?.role;
 };
 
 export default function PendingApproval() {
   const { logout, user } = useAuth();
-  const copy = PENDING_COPY[user?.role] || {
+  const copy = PENDING_COPY[resolvePendingRole(user)] || {
     eyebrow: 'Application Received',
     body: 'Your account is pending review. Please wait for an administrator to activate your access.',
   };
