@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { Link } from 'react-router-dom';
 import { BookOpen, Camera, Users, PlayCircle, Send, HelpCircle } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useOnboarding } from '../onboarding/useOnboarding';
@@ -52,9 +53,12 @@ export function Footer({ className }) {
       <div className="border-t border-[#1E2D24]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-[rgba(134,239,172,0.35)]">© {new Date().getFullYear()} SirajOne · All rights reserved.</p>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[rgba(134,239,172,0.35)]">Built for the Ummah</span>
-            <span className="text-sm text-[#D4A843]" style={{ fontFamily: "'Amiri', serif" }} dir="rtl" lang="ar">· بُنِيَ لِلْأُمَّة</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <Link to="/privacy" className="text-xs text-[rgba(134,239,172,0.45)] hover:text-[#86EFAC] transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="text-xs text-[rgba(134,239,172,0.45)] hover:text-[#86EFAC] transition-colors">Terms of Service</Link>
+            <Link to="/counselling-disclaimer" className="text-xs text-[rgba(134,239,172,0.45)] hover:text-[#86EFAC] transition-colors">Counselling Disclaimer</Link>
+            <span className="text-xs text-[rgba(134,239,172,0.35)]">· Built for the Ummah</span>
+            <span className="text-sm text-[#D4A843]" style={{ fontFamily: "'Amiri', serif" }} dir="rtl" lang="ar">بُنِيَ لِلْأُمَّة</span>
           </div>
         </div>
       </div>

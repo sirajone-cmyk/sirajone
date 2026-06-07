@@ -12,6 +12,9 @@ import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { StudentNotificationToast } from '@/components/StudentNotificationToast';
 
 import Home from './pages/Home';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import CounsellingDisclaimer from './pages/CounsellingDisclaimer';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Programs from './pages/Programs';
@@ -123,7 +126,14 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <OnboardingProvider>
-            <AuthenticatedApp />
+            <Routes>
+              {/* Public legal pages — no auth required */}
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/counselling-disclaimer" element={<CounsellingDisclaimer />} />
+              {/* All other routes handled by the authenticated app */}
+              <Route path="/*" element={<AuthenticatedApp />} />
+            </Routes>
             {/* Global student reminder toasts — gated by role inside the component */}
             <StudentNotificationToast />
           </OnboardingProvider>

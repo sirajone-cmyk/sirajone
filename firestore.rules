@@ -288,7 +288,64 @@ service cloud.firestore {
         && (
           (data.audience == 'Teachers' && myProfileData().role == 'Teacher')
           || (data.audience == 'Students' && myProfileData().role == 'Student')
+          || (data.audience == 'Clients' && myProfileData().role == 'counsellingClient')
         );
+    }
+
+    // ─── Counselling ecosystem helpers ────────────────────────────────────────
+
+    function isCounsellorUser() {
+      return myProfileExists()
+        && myProfileData().status == 'approved'
+        && myProfileData().role in ['Counsellor', 'Counselor'];
+    }
+
+    function isCounsellingClientUser() {
+      return myProfileExists()
+        && myProfileData().status == 'approved'
+        && myProfileData().role == 'counsellingClient';
+    }
+
+    function validProgrammeRegistration() {
+      return isApprovedUser()
+        && request.resource.data.clientId == request.auth.uid
+        && request.resource.data.registrationType in ['enrolled', 'waitlist', 'interest']
+        && request.resource.data.status == 'pending';
+    }
+
+    function ownsProgrammeRegistration(data) {
+      return signedIn() && data.clientId == request.auth.uid;
+    }
+
+    function validEventReservation() {
+      return isApprovedUser()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'reserved';
+    }
+
+    function ownsEventReservation(data) {
+      return signedIn() && data.userId == request.auth.uid;
+    }
+
+    function validSessionNoteCreate() {
+      return isCounsellorUser()
+        && request.resource.data.counsellorId == request.auth.uid
+        && request.resource.data.clientId is string
+        && request.resource.data.sessionId is string;
+    }
+
+    function ownsSessionNote(data) {
+      return isCounsellorUser() && data.counsellorId == request.auth.uid;
+    }
+
+    function validClientAssessmentCreate() {
+      return isCounsellorUser()
+        && request.resource.data.counsellorId == request.auth.uid
+        && request.resource.data.clientId is string;
+    }
+
+    function ownsClientAssessment(data) {
+      return isCounsellorUser() && data.counsellorId == request.auth.uid;
     }
 
     function canReadConversationData(data) {
@@ -483,6 +540,87 @@ service cloud.firestore {
     match /settings/{documentId} {
       allow read: if true;
       allow create, update, delete: if isAdminUser();
+    }
+
+    // ─── Counselling Programmes ───────────────────────────────────────────────
+    match /counselling_programmes/{programmeId} {
+      allow read: if isApprovedUser();
+      allow create, update, delete: if isAdminUser();
+    }
+
+    // ─── Programme Registrations ─────────────────────────────────────────────
+    match /programme_registrations/{registrationId} {
+      allow read: if isAdminUser()
+        || isCounsellorUser()
+        || ownsProgrammeRegistration(resource.data);
+      allow create: if validProgrammeRegistration() || isAdminUser();
+      allow update: if isAdminUser()
+        || (ownsProgrammeRegistration(resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'updatedAt'])
+          && request.resource.data.status == 'cancelled');
+      allow delete: if isAdminUser();
+    }
+
+    // ─── Community Events ────────────────────────────────────────────────────
+    // Public read — community events are open to everyone
+    match /community_events/{eventId} {
+      allow read: if true;
+      allow create, update, delete: if isAdminUser();
+    }
+
+    // ─── Event Reservations ──────────────────────────────────────────────────
+    match /event_reservations/{reservationId} {
+      allow read: if isAdminUser() || ownsEventReservation(resource.data);
+      allow create: if validEventReservation() || isAdminUser();
+      allow update: if isAdminUser()
+        || (ownsEventReservation(resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'updatedAt'])
+          && request.resource.data.status == 'cancelled');
+      allow delete: if isAdminUser();
+    }
+
+    // ─── Client Assessments ──────────────────────────────────────────────────
+    // Clients NEVER read their own assessment notes — counsellor shares verbally
+    match /client_assessments/{assessmentId} {
+      allow read: if isAdminUser() || ownsClientAssessment(resource.data);
+      allow create: if validClientAssessmentCreate() || isAdminUser();
+      allow update: if isAdminUser() || ownsClientAssessment(resource.data);
+      allow delete: if isAdminUser();
+    }
+
+    // ─── Session Notes ───────────────────────────────────────────────────────
+    // Private counsellor notes — clients cannot read under any circumstance
+    match /session_notes/{noteId} {
+      allow read: if isAdminUser() || ownsSessionNote(resource.data);
+      allow create: if validSessionNoteCreate() || isAdminUser();
+      allow update: if isAdminUser() || ownsSessionNote(resource.data);
+      allow delete: if isAdminUser();
+    }
+
+    // ─── User Notifications ──────────────────────────────────────────────────
+    match /users/{userId}/notifications/{notificationId} {
+      allow read: if isSelf(userId) || isAdminUser();
+      allow create: if isAdminUser() || isCounsellorUser();
+      allow update: if isSelf(userId) || isAdminUser();
+      allow delete: if isAdminUser();
+    }
+
+    // ─── inbox_messages (learning platform — teacher→student) ────────────────
+    match /inbox_messages/{messageId} {
+      allow read: if isAdminUser()
+        || (isApprovedUser() && (
+          resource.data.recipientId == request.auth.uid
+          || resource.data.senderId == request.auth.uid
+        ));
+      allow create: if isAdminUser()
+        || (isApprovedUser() && request.resource.data.senderId == request.auth.uid);
+      allow update: if isAdminUser()
+        || (isApprovedUser() && resource.data.recipientId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['isRead', 'readAt']));
+      allow delete: if isAdminUser();
     }
 
     match /{document=**} {

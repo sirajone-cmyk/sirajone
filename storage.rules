@@ -2,6 +2,7 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+
     function signedIn() {
       return request.auth != null;
     }
@@ -26,16 +27,48 @@ service firebase.storage {
       return roleIs(['Admin', 'Co-Admin']);
     }
 
+    function isCounsellor() {
+      return roleIs(['Counsellor', 'Counselor']);
+    }
+
+    // Letter audio — public teaching content, no auth required
+    match /letters/audio/{filename} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // Student Tajweed submissions — student writes own folder; staff can read
     match /submissions/{studentId}/{allPaths=**} {
-      allow read: if signedIn() && (request.auth.uid == studentId || isStaff());
+      allow read:  if signedIn() && (request.auth.uid == studentId || isStaff());
       allow write: if signedIn() && (request.auth.uid == studentId || isStaff());
     }
 
+    // Library content — approved users read; admins write
     match /library/{allPaths=**} {
-      allow read: if isApproved();
+      allow read:  if isApproved();
       allow write: if isAdmin();
     }
 
+    // Counselling resources — restricted: admin or the owning counsellor only
+    // Clients do NOT access raw storage files; resources are served via Firestore refs
+    match /counselling/{counsellorId}/{allPaths=**} {
+      allow read:  if isAdmin() || (signedIn() && request.auth.uid == counsellorId);
+      allow write: if isAdmin() || (signedIn() && request.auth.uid == counsellorId);
+    }
+
+    // Programme assets — authenticated read; admin write only
+    match /programmes/{allPaths=**} {
+      allow read:  if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Community event banners — public read; admin write only
+    match /events/{allPaths=**} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // Default deny everything else
     match /{allPaths=**} {
       allow read, write: if false;
     }

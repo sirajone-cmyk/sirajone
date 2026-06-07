@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import {
   Users,
@@ -324,6 +324,134 @@ function TeacherReviewModal({ preview, loading, error, onClose, onApprove }) {
   );
 }
 
+function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) {
+  if (!preview) return null;
+
+  const { user, publicProfile, privateData } = preview;
+  const normalizedUser = withCounsellorRole(user || {});
+  const canApprove = normalizedUser?.status !== 'approved' || publicProfile?.profileStatus !== 'approved';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+      <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-white/10 bg-[#102018] shadow-2xl shadow-black/50">
+        <div className="sticky top-0 z-10 flex items-start justify-between border-b border-white/10 bg-[#102018]/95 px-5 py-4 backdrop-blur">
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-[0.22em] text-emerald-400">Counsellor Application Review</p>
+            <h2 className="text-2xl font-bold text-white">
+              {publicProfile?.displayName || publicProfile?.fullName || normalizedUser?.full_name || normalizedUser?.name || normalizedUser?.email || 'Counsellor Profile'}
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">Review public and private counsellor details before approving.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            title="Close profile review"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="space-y-6 p-5">
+          {loading && (
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-900/60 bg-emerald-950/30 p-4 text-emerald-200">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Loading counsellor profile details...
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-200">
+              {error}
+            </div>
+          )}
+
+          <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+            <h3 className="mb-4 text-lg font-bold text-white">Account Status</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <DetailItem label="Full Name" value={normalizedUser?.full_name || normalizedUser?.name || publicProfile?.fullName} />
+              <DetailItem label="Email" value={normalizedUser?.email || publicProfile?.email} />
+              <DetailItem label="Role" value={normalizedUser?.role || 'Counsellor'} />
+              <DetailItem label="Account Status" value={normalizedUser?.status || 'pending'} />
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-white">Public Counsellor Profile</h3>
+                <p className="text-sm text-slate-500">This is the safe profile students will see after approval.</p>
+              </div>
+              <span className={`rounded-full border px-3 py-1 text-xs font-bold capitalize ${statusStyle[publicProfile?.profileStatus] || statusStyle.pending}`}>
+                {publicProfile?.profileStatus || 'not created'}
+              </span>
+            </div>
+
+            {publicProfile ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                <DetailItem label="Display Name" value={publicProfile.displayName} />
+                <DetailItem label="Full Name" value={publicProfile.fullName} />
+                <DetailItem label="Email" value={publicProfile.email} />
+                <DetailItem label="Mobile Number" value={publicProfile.mobileNumber} />
+                <DetailItem label="Country" value={publicProfile.country} />
+                <DetailItem label="City" value={publicProfile.city} />
+                <DetailItem label="Languages Spoken" value={publicProfile.languagesSpoken} wide />
+                <DetailItem label="Counselling Categories" value={publicProfile.categories} wide />
+                <DetailItem label="Service Delivery" value={publicProfile.serviceDeliveryModes} wide />
+                <DetailItem label="Availability" value={publicProfile.availability} wide />
+                <DetailItem label="Bio" value={publicProfile.bio} wide />
+                <DetailItem label="Profile Photo Reference" value={publicProfile.profilePhoto} wide />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-amber-900/60 bg-amber-950/25 p-4 text-sm text-amber-200">
+                No public counsellor profile document exists yet. Approving this counsellor will create a safe public profile from the user record.
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+            <h3 className="mb-1 text-lg font-bold text-white">Private Verification Details</h3>
+            <p className="mb-4 text-sm text-slate-500">Only admins should use these details for verification before approval.</p>
+
+            {privateData ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                <DetailItem label="Highest Qualification" value={privateData.highestQualification} />
+                <DetailItem label="Institution" value={privateData.institution} />
+                <DetailItem label="Certifications" value={privateData.certifications} wide />
+                <DetailItem label="Years of Experience" value={privateData.yearsOfExperience} />
+                <DetailItem label="Registration Body" value={privateData.registrationBody} />
+                <DetailItem label="Professional Memberships" value={privateData.professionalMemberships} wide />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4 text-sm text-slate-400">
+                No private verification document was found for this counsellor account.
+              </div>
+            )}
+          </section>
+
+          <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+            >
+              Close
+            </button>
+            {canApprove && (
+              <button
+                type="button"
+                onClick={() => onApprove(normalizedUser, publicProfile)}
+                className="rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-600"
+              >
+                {normalizedUser?.status === 'approved' ? 'Publish Counsellor Profile' : 'Approve Counsellor'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 function FinancialTracker({ payments, enrollments }) {
   const metrics = useMemo(() => {
     const completePayments = payments.filter(payment => payment.payment_status === 'COMPLETE');
@@ -430,7 +558,7 @@ function AdminEmptyState({ title, body, actionLabel }) {
   );
 }
 
-function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, onApprove, onSuspend }) {
+function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, onViewProfile, onSuspend }) {
   const counsellorUsers = users.filter((user) => hasCounsellorApplicationIntent(user));
   const pendingApplications = counsellorUsers.filter((user) => user.status === 'pending');
   const approvedProfiles = counsellorProfiles.filter((profile) => profile.profileStatus === 'approved');
@@ -497,11 +625,11 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => onApprove(user)}
-                          className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800"
-                          title="Approve counsellor"
+                          onClick={() => onViewProfile(user)}
+                          className="rounded-lg bg-sky-900/50 p-1.5 text-sky-300 transition-colors hover:bg-sky-800"
+                          title="Review counsellor profile before approval"
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
@@ -610,14 +738,14 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
   );
 }
 
-// ── Allocation Panel ──────────────────────────────────────────────────────────
+// â”€â”€ Allocation Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * AllocationPanel
- * ─────────────────────────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Renders two sections:
- *   1. Summary Matrix  — every approved educator with their live active count.
- *   2. Placement Board — all pending_admin assignments with educator dropdown.
+ *   1. Summary Matrix  â€” every approved educator with their live active count.
+ *   2. Placement Board â€” all pending_admin assignments with educator dropdown.
  */
 function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
   const [pendingAssignments, setPendingAssignments] = useState([]);
@@ -708,7 +836,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
   return (
     <div className="space-y-8">
 
-      {/* ── Summary Matrix ── */}
+      {/* â”€â”€ Summary Matrix â”€â”€ */}
       <section>
         <div className="mb-4">
           <h2 className="text-xl font-bold text-white">Educator Capacity Matrix</h2>
@@ -748,7 +876,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
         )}
       </section>
 
-      {/* ── Placement Board ── */}
+      {/* â”€â”€ Placement Board â”€â”€ */}
       <section>
         <div className="mb-4">
           <h2 className="text-xl font-bold text-white">Placement Board</h2>
@@ -804,15 +932,15 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
                       </td>
                       <td className="px-5 py-4">
                         <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300 capitalize">
-                          {assignment.type || '—'}
+                          {assignment.type || 'â€”'}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-slate-400 text-xs max-w-[180px]">
-                        <p className="line-clamp-2">{assignment.note || '—'}</p>
+                        <p className="line-clamp-2">{assignment.note || 'â€”'}</p>
                       </td>
                       <td className="px-5 py-4">
                         {isConfirmed ? (
-                          <span className="text-xs text-emerald-400 font-semibold">✓ Assigned</span>
+                          <span className="text-xs text-emerald-400 font-semibold">âœ“ Assigned</span>
                         ) : (
                           <select
                             value={selectedId}
@@ -821,7 +949,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
                             }
                             className="rounded-xl border border-white/10 bg-[#0b1a12] px-3 py-2 text-xs text-white outline-none focus:border-emerald-600 min-w-[180px]"
                           >
-                            <option value="">— Select educator —</option>
+                            <option value="">â€” Select educator â€”</option>
                             {options.map((opt) => (
                               <option key={opt.id} value={opt.id}>
                                 {opt.name} ({activeCountFor(opt.id)} active)
@@ -858,7 +986,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function AdminDashboard() {
   const [students, setStudents] = useState([]);
@@ -872,6 +1000,9 @@ export default function AdminDashboard() {
   const [teacherPreview, setTeacherPreview] = useState(null);
   const [teacherPreviewLoading, setTeacherPreviewLoading] = useState(false);
   const [teacherPreviewError, setTeacherPreviewError] = useState('');
+  const [counsellorPreview, setCounsellorPreview] = useState(null);
+  const [counsellorPreviewLoading, setCounsellorPreviewLoading] = useState(false);
+  const [counsellorPreviewError, setCounsellorPreviewError] = useState('');
   const syncedTeacherIds = useRef(new Set());
 
   useEffect(() => {
@@ -948,6 +1079,11 @@ export default function AdminDashboard() {
     setTeacherPreview(null);
   };
 
+  const approveCounsellorFromPreview = async (user, existingProfile) => {
+    await approve(user, existingProfile);
+    setCounsellorPreview(null);
+  };
+
   const suspend = async (user) => {
     const shouldRepairCounsellorRole = hasCounsellorApplicationIntent(user);
     const suspendedUser = shouldRepairCounsellorRole
@@ -1002,6 +1138,31 @@ export default function AdminDashboard() {
       setTeacherPreviewLoading(false);
     }
   };
+  const viewCounsellorProfile = async (user) => {
+    const normalizedUser = withCounsellorRole(user);
+    setCounsellorPreview({ user: normalizedUser, publicProfile: null, privateData: null });
+    setCounsellorPreviewLoading(true);
+    setCounsellorPreviewError('');
+
+    try {
+      const [publicSnap, privateSnap] = await Promise.all([
+        getDoc(doc(db, 'counsellors', user.id)),
+        getDoc(doc(db, 'counsellors', user.id, 'private_data', 'verification')),
+      ]);
+
+      setCounsellorPreview({
+        user: normalizedUser,
+        publicProfile: publicSnap.exists() ? publicSnap.data() : null,
+        privateData: privateSnap.exists() ? privateSnap.data() : null,
+      });
+    } catch (error) {
+      console.error(error);
+      setCounsellorPreviewError('Unable to load counsellor profile details right now. Please check Firestore permissions and try again.');
+      setCounsellorPreview((current) => current || { user: normalizedUser, publicProfile: null, privateData: null });
+    } finally {
+      setCounsellorPreviewLoading(false);
+    }
+  };
 
   const stats = {
     total: students.length,
@@ -1021,6 +1182,13 @@ export default function AdminDashboard() {
         error={teacherPreviewError}
         onClose={() => setTeacherPreview(null)}
         onApprove={approveFromPreview}
+      />
+      <CounsellorReviewModal
+        preview={counsellorPreview}
+        loading={counsellorPreviewLoading}
+        error={counsellorPreviewError}
+        onClose={() => setCounsellorPreview(null)}
+        onApprove={approveCounsellorFromPreview}
       />
 
       <div className="mx-auto max-w-6xl px-4 py-10">
@@ -1053,7 +1221,7 @@ export default function AdminDashboard() {
             users={students}
             counsellorProfiles={counsellorProfiles}
             counsellingRequests={counsellingRequests}
-            onApprove={approve}
+            onViewProfile={viewCounsellorProfile}
             onSuspend={suspend}
           />
         ) : activeTab === 'allocation' ? (
@@ -1061,7 +1229,7 @@ export default function AdminDashboard() {
             teacherProfiles={(() => {
               // Build from the teacher collection stream via users list
               const teacherUsers = students.filter(u => isTeacherRole(u.role) && u.status === 'approved');
-              // Prefer counsellorProfiles pattern — create teacher profile objects from users
+              // Prefer counsellorProfiles pattern â€” create teacher profile objects from users
               return teacherUsers.map(u => ({
                 id:            u.id,
                 name:          u.full_name || u.name || u.email || 'Teacher',
@@ -1133,8 +1301,17 @@ export default function AdminDashboard() {
                                 <Eye className="h-4 w-4" />
                               </button>
                             )}
+                            {hasCounsellorApplicationIntent(s) && (
+                              <button
+                                onClick={() => viewCounsellorProfile(s)}
+                                className="rounded-lg bg-sky-900/50 p-1.5 text-sky-300 transition-colors hover:bg-sky-800"
+                                title="View counsellor profile"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                            )}
                             {s.status !== 'approved' && (
-                              <button onClick={() => approve(s)} className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800" title="Approve">
+                              <button onClick={() => hasCounsellorApplicationIntent(s) ? viewCounsellorProfile(s) : approve(s)} className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800" title={hasCounsellorApplicationIntent(s) ? "Review counsellor before approval" : "Approve"}>
                                 <CheckCircle className="h-4 w-4" />
                               </button>
                             )}
@@ -1162,7 +1339,7 @@ export default function AdminDashboard() {
               <div className="mt-6 flex items-center gap-3 rounded-2xl border border-amber-800 bg-amber-900/30 p-4">
                 <Clock className="h-5 w-5 flex-shrink-0 text-amber-400" />
                 <p className="text-sm text-amber-300">
-                  <strong>{stats.pending} user{stats.pending > 1 ? 's' : ''}</strong> awaiting approval. Click approve to activate.
+                  <strong>{stats.pending} user{stats.pending > 1 ? 's' : ''}</strong> awaiting approval. Review counsellor applications before activation.
                 </p>
               </div>
             )}
@@ -1172,5 +1349,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
 

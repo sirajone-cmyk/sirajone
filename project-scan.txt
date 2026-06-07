@@ -1,0 +1,68 @@
+﻿=== PROJECT SCAN 06/07/2026 13:35:37 ===
+
+--- PROJECT ---
+Path:       C:\Users\User\Documents\Codex\2026-04-19-files-mentioned-by-the-user-rahla
+npm name:   rahla
+Git:        YES - https://github.com/sirajone-cmyk/sirajone.git
+Firebase:   YES - project: 
+
+--- PROJECT ---
+Path:       C:\Users\User\Documents\Codex\sirajone-backfill
+npm name:   sirajone-backfill
+Git:        NO
+Firebase:   NO
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Desktop\rahla
+npm name:   rahla
+Git:        NO
+Firebase:   NO
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Documents\Claude\Projects\SirajOne\Rahla
+npm name:   rahla
+Git:        NO
+Firebase:   NO
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Documents\New project
+npm name:   hijaama-cupping-wellness-centre
+Git:        YES - https://github.com/sirajone-cmyk/Hijaama-New-project.git
+Firebase:   YES - project: hijaama-cupping-wellness
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Documents\New project\functions
+npm name:   hijaama-functions
+Git:        NO
+Firebase:   NO
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Documents\New project\OUR_LEGACY_APP
+npm name:   our-legacy-app
+Git:        YES - https://github.com/sirajone-cmyk/our-legacy-app.git
+Firebase:   YES - project: sirajone-786
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Documents\New project\OUR_LEGACY_APP\apps\api
+npm name:   @our-legacy/api
+Git:        NO
+Firebase:   NO
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Documents\New project\OUR_LEGACY_APP\apps\web
+npm name:   @our-legacy/web
+Git:        NO
+Firebase:   NO
+
+--- PROJECT ---
+Path:       C:\Users\User\OneDrive\Documents\New project\OUR_LEGACY_APP\packages\database
+npm name:   @our-legacy/database
+Git:        NO
+Firebase:   NO
+
+--- PROJECT ---
+Path:       C:\Projects\rahla\rahla
+npm name:   rahla
+Git:        NO
+Firebase:   NO
+

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { isCounsellorRole } from '@/lib/roles';
+import { isCounsellorRole, isCounsellingClientRole } from '@/lib/roles';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 const primaryLinks = [
@@ -66,14 +66,17 @@ export default function Navbar() {
 
   const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
   const isCounsellor = isCounsellorRole(user?.role);
+  const isCounsellingClient = isCounsellingClientRole(user?.role);
   const dashboardLink = useMemo(
     () =>
       isAdmin
         ? { to: '/admin', label: 'Admin Panel', icon: LayoutDashboard }
         : isCounsellor
           ? { to: '/counsellor', label: 'Counsellor', icon: HeartHandshake }
-          : { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    [isAdmin, isCounsellor]
+          : isCounsellingClient
+            ? { to: '/counselling-client', label: 'My Support', icon: HeartHandshake }
+            : { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    [isAdmin, isCounsellor, isCounsellingClient]
   );
 
   const messagePath = isAdmin ? '/admin/messages' : '/messages';

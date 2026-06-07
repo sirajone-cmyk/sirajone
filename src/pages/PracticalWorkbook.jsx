@@ -296,13 +296,27 @@ export default function PracticalWorkbook() {
                 const letterId = `${activeUnit.id}-letter-${index}`;
                 const exampleText = letter.examples?.join(' ') || letter.arabic;
                 const isSpeaking = speakingId === letterId;
+                const isPracticing = Boolean(selectedPractice && selectedPractice.arabic === letter.arabic);
                 return (
-                  <article key={letterId} className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.045] transition hover:border-emerald-300/30 hover:bg-emerald-400/10">
+                  <article
+                    key={letterId}
+                    className={`overflow-hidden rounded-3xl border transition ${
+                      isPracticing
+                        ? 'border-red-400/60 bg-red-500/10 ring-2 ring-red-400/25'
+                        : 'border-white/10 bg-white/[0.045] hover:border-emerald-300/30 hover:bg-emerald-400/10'
+                    }`}
+                  >
                     <div className="p-5">
                       <div className="mb-4 flex items-start justify-between gap-3">
                         <div>
                           <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Letter {index + 1}</p>
                           <p className="mt-1 text-sm font-semibold text-emerald-200">{letter.transliteration}</p>
+                          {isPracticing && (
+                            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-300 border border-red-400/30">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
+                              Focused Makhraj
+                            </span>
+                          )}
                         </div>
                         <button
                           type="button"
@@ -419,3 +433,23 @@ export default function PracticalWorkbook() {
 
 
 
+                    onCleared={() => setRecordingBlob(null)}
+                  />
+                </Recorder>
+              </div>
+
+              <TeacherCorrectionPanel />
+            </section>
+
+            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/10 p-5 sm:p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Source Note</p>
+              <p className="mt-2 text-sm leading-7 text-emerald-50/80">
+                {PRACTICAL_WORKBOOK_META.source} This page is not a PDF viewer; it is an editable, interactive workbook built for listening, recording, replay, and teacher-guided correction.
+              </p>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
