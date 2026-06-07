@@ -430,26 +430,3 @@ export default function PracticalWorkbook() {
     </div>
   );
 }
-
-
-
-                    onCleared={() => setRecordingBlob(null)}
-                  />
-                </Recorder>
-              </div>
-
-              <TeacherCorrectionPanel />
-            </section>
-
-            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/10 p-5 sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Source Note</p>
-              <p className="mt-2 text-sm leading-7 text-emerald-50/80">
-                {PRACTICAL_WORKBOOK_META.source} This page is not a PDF viewer; it is an editable, interactive workbook built for listening, recording, replay, and teacher-guided correction.
-              </p>
-            </section>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
