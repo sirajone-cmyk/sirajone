@@ -80,8 +80,23 @@ export default function Navbar() {
   );
 
   const messagePath = isAdmin ? '/admin/messages' : '/messages';
-  const desktopLinks = [...primaryLinks, dashboardLink];
-  const mobileLinks = [...primaryLinks, dashboardLink, ...hubLinks];
+
+  // Counselling clients and counsellors must not see student learning links
+  const isCounsellingUser = isCounsellingClient || isCounsellor;
+
+  const counsellingDesktopLinks = [
+    dashboardLink,
+    { to: '/counsellors', label: 'Counsellors', icon: HeartHandshake },
+    { to: '/contact',     label: 'Contact',     icon: Phone },
+  ];
+
+  const desktopLinks = isCounsellingUser
+    ? counsellingDesktopLinks
+    : [...primaryLinks, dashboardLink];
+
+  const mobileLinks = isCounsellingUser
+    ? [...counsellingDesktopLinks]
+    : [...primaryLinks, dashboardLink, ...hubLinks];
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0b1a12]/90 backdrop-blur-md">
@@ -125,13 +140,15 @@ export default function Navbar() {
             {unreadCount > 0 && <NotificationDot />}
           </Link>
 
-          <Link
-            to="/dashboard"
-            className="hidden items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-700 hover:text-white xl:flex"
-          >
-            <Compass className="h-4 w-4" />
-            Hub
-          </Link>
+          {!isCounsellingUser && (
+            <Link
+              to="/dashboard"
+              className="hidden items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-700 hover:text-white xl:flex"
+            >
+              <Compass className="h-4 w-4" />
+              Hub
+            </Link>
+          )}
 
           {isAdmin && (
             <Link to="/admin/finance" className={getLinkClass(pathname === '/admin/finance')}>

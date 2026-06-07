@@ -78,7 +78,17 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      {/* Role-aware home: counselling clients go straight to their portal */}
+      <Route
+        path="/"
+        element={
+          canAccessCounsellingClientDashboard
+            ? <Navigate to="/counselling-client" replace />
+            : isCounsellorRole(user?.role)
+              ? <Navigate to="/counsellor" replace />
+              : <Home />
+        }
+      />
       <Route path="/dashboard" element={protect(dashboardElement)} />
       <Route path="/letters" element={protect(<LetterCatalog />)} />
       <Route path="/practice-workbook" element={protect(<PracticalWorkbook />)} />
