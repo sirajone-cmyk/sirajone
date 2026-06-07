@@ -12,6 +12,7 @@ import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { StudentNotificationToast } from '@/components/StudentNotificationToast';
 
 import Home from './pages/Home';
+import CounsellingHome from './pages/CounsellingHome';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CounsellingDisclaimer from './pages/CounsellingDisclaimer';
@@ -78,12 +79,12 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      {/* Role-aware home: counselling clients go straight to their portal */}
+      {/* Role-aware home: counselling clients see CounsellingHome; counsellors go to portal */}
       <Route
         path="/"
         element={
-          canAccessCounsellingClientDashboard
-            ? <Navigate to="/counselling-client" replace />
+          isCounsellingClientRole(user?.role)
+            ? <CounsellingHome />
             : isCounsellorRole(user?.role)
               ? <Navigate to="/counsellor" replace />
               : <Home />

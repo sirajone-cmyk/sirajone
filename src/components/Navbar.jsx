@@ -85,9 +85,10 @@ export default function Navbar() {
   const isCounsellingUser = isCounsellingClient || isCounsellor;
 
   const counsellingDesktopLinks = [
+    { to: '/',                 label: 'Home',        icon: Home        },
     dashboardLink,
-    { to: '/counsellors', label: 'Counsellors', icon: HeartHandshake },
-    { to: '/contact',     label: 'Contact',     icon: Phone },
+    { to: '/counsellors',      label: 'Counsellors', icon: HeartHandshake },
+    { to: '/contact',          label: 'Contact',     icon: Phone       },
   ];
 
   const desktopLinks = isCounsellingUser
