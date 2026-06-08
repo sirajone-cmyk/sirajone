@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { X, ArrowRight, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import WhatsAppButton from './WhatsAppButton';
 
 /**
  * ServiceModal — reusable modal for counselling service cards.
@@ -136,7 +137,7 @@ export default function ServiceModal({ service, onClose }) {
             </div>
           )}
 
-          {/* CTA */}
+          {/* CTAs */}
           <Link
             to="/counselling-client"
             onClick={onClose}
@@ -145,6 +146,19 @@ export default function ServiceModal({ service, onClose }) {
             Request Support
             <ArrowRight size={15} />
           </Link>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/8" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">or</span>
+            <div className="h-px flex-1 bg-white/8" />
+          </div>
+
+          <WhatsAppButton
+            service={title}
+            label="Chat on WhatsApp"
+            variant="outline"
+            fullWidth
+          />
 
         </div>
       </div>

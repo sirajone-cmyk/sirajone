@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import ServiceModal from '../components/ServiceModal';
+import WhatsAppButton from '../components/WhatsAppButton';
 import { useAuth } from '../lib/AuthContext';
 import { PROGRAMMES } from '../data/counsellingProgrammes';
 
@@ -489,6 +490,11 @@ export default function CounsellingHome() {
               <MessageCircle size={16} />
               Request Private Counselling
             </Link>
+            <WhatsAppButton
+              label="Chat on WhatsApp"
+              variant="outline"
+              size="lg"
+            />
           </div>
 
           <div className="mt-12 flex flex-wrap gap-3">
@@ -711,6 +717,22 @@ export default function CounsellingHome() {
                 <p className="mt-1 text-sm text-slate-500">{desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* WhatsApp quick contact */}
+          <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.015] px-6 py-5 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <p className="font-bold text-white">Not ready to book? Start with a message.</p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                Send us a WhatsApp — we'll guide you to the right support at your own pace.
+              </p>
+            </div>
+            <WhatsAppButton
+              label="Chat on WhatsApp"
+              variant="primary"
+              size="md"
+              className="shrink-0"
+            />
           </div>
         </div>
       </section>
