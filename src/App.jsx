@@ -40,6 +40,27 @@ const queryClient = new QueryClient();
 
 import { AuthGateway } from './components/auth/AuthGateway';
 
+/**
+ * SmartHome — renders the correct home page without requiring auth.
+ * Unauthenticated visitors → public Home.
+ * Counselling clients     → CounsellingHome.
+ * Counsellors             → redirect to /counsellor portal.
+ * All other logged-in users → Home.
+ */
+const SmartHome = () => {
+  const { isLoadingAuth, user } = useAuth();
+  if (isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-[#0a1a0f]">
+        <div className="w-8 h-8 border-4 border-green-800 border-t-green-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (isCounsellingClientRole(user?.role)) return <CounsellingHome />;
+  if (isCounsellorRole(user?.role)) return <Navigate to="/counsellor" replace />;
+  return <Home />;
+};
+
 const AuthenticatedApp = () => {
   const { isAuthenticated, isLoadingAuth, user } = useAuth();
 
@@ -79,26 +100,11 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      {/* Role-aware home: counselling clients see CounsellingHome; counsellors go to portal */}
-      <Route
-        path="/"
-        element={
-          isCounsellingClientRole(user?.role)
-            ? <CounsellingHome />
-            : isCounsellorRole(user?.role)
-              ? <Navigate to="/counsellor" replace />
-              : <Home />
-        }
-      />
+      {/* Authenticated-only routes */}
       <Route path="/dashboard" element={protect(dashboardElement)} />
       <Route path="/letters" element={protect(<LetterCatalog />)} />
       <Route path="/practice-workbook" element={protect(<PracticalWorkbook />)} />
       <Route path="/part-two-workbook" element={protect(<PartTwoWorkbook />)} />
-      <Route path="/programs" element={<Programs />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/library" element={<Library />} />
-      <Route path="/teachers" element={<Teachers />} />
-      <Route path="/counsellors" element={<Counsellors />} />
       <Route path="/messages" element={protect(<Messages />)} />
       <Route path="/enroll" element={protect(<Enroll />)} />
       <Route path="/classroom/:subjectId" element={protect(<ClassroomPortal />)} />
@@ -138,11 +144,17 @@ function App() {
         <Router>
           <OnboardingProvider>
             <Routes>
-              {/* Public legal pages — no auth required */}
+              {/* ── Truly public pages — no auth required ───────────────── */}
+              <Route path="/" element={<SmartHome />} />
+              <Route path="/programs" element={<Programs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/library" element={<Library />} />
+              <Route path="/teachers" element={<Teachers />} />
+              <Route path="/counsellors" element={<Counsellors />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/counselling-disclaimer" element={<CounsellingDisclaimer />} />
-              {/* All other routes handled by the authenticated app */}
+              {/* ── Authenticated routes (dashboard, portal, etc.) ───────── */}
               <Route path="/*" element={<AuthenticatedApp />} />
             </Routes>
             {/* Global student reminder toasts — gated by role inside the component */}

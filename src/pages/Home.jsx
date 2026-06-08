@@ -171,7 +171,7 @@ export default function Home() {
 
             {/* Primary — forest green */}
             <Link
-              to="/dashboard"
+              to="/programs"
               className="group inline-flex items-center justify-center gap-3 font-semibold"
               style={{
                 minWidth: '220px',
