@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/Navbar';
 import {
   BookOpen, Mic, Star, ArrowRight, CheckCircle,
@@ -65,6 +66,14 @@ const testimonials = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white font-sans">
+      <Helmet>
+        <title>SirajOne | Islamic Learning — Qur'an, Tajwid & Makharij</title>
+        <meta name="description" content="Learn Qur'an recitation, Tajwid rules, and Makharij al-Huruf with SirajOne — a structured Islamic learning pathway for all ages." />
+        <meta property="og:title" content="SirajOne | Islamic Learning — Qur'an, Tajwid & Makharij" />
+        <meta property="og:description" content="Structured Islamic learning: Qa'idah, Tajwid, Ḥifẓ, and Murājaʿah. Faith. Knowledge. Action." />
+        <meta property="og:url" content="https://sirajone.co.za/" />
+        <link rel="canonical" href="https://sirajone.co.za/" />
+      </Helmet>
       <Navbar />
 
       {/* HERO — Premium Islamic manuscript hero */}

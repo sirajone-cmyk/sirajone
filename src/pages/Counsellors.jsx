@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { ArrowRight, Search, SlidersHorizontal, Languages, MapPin, HeartHandshake, X, Send, Loader2, Users } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -417,6 +418,14 @@ export default function Counsellors() {
 
   return (
     <div className="min-h-screen bg-[#07150d] text-white">
+      <Helmet>
+        <title>Islamic Counsellors | SirajOne — Faith-Based Support</title>
+        <meta name="description" content="Find a qualified Islamic counsellor at SirajOne — faith-based support for individuals, couples, families, and youth. Confidential and professional." />
+        <meta property="og:title" content="Islamic Counsellors | SirajOne" />
+        <meta property="og:description" content="Qualified Islamic counsellors offering confidential faith-based support for individuals, couples, and families." />
+        <meta property="og:url" content="https://sirajone.co.za/counsellors" />
+        <link rel="canonical" href="https://sirajone.co.za/counsellors" />
+      </Helmet>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
         <section className="text-center">

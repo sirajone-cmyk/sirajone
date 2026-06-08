@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   Heart, Star, Users, BookOpen, TrendingUp, HandHeart,
@@ -434,6 +435,14 @@ export default function CounsellingHome() {
 
   return (
     <div className="min-h-screen bg-[#080d1a] text-white">
+      <Helmet>
+        <title>Islamic Counselling | SirajOne — Faith-Based Support</title>
+        <meta name="description" content="SirajOne Counselling offers confidential, faith-based support — marriage, family, youth wellbeing, and Islamic personal development. Register today." />
+        <meta property="og:title" content="Islamic Counselling | SirajOne" />
+        <meta property="og:description" content="Confidential Islamic counselling — marriage, family, youth, and personal development. Faith-based support rooted in the Qur'an and Sunnah." />
+        <meta property="og:url" content="https://sirajone.co.za/" />
+        <link rel="canonical" href="https://sirajone.co.za/" />
+      </Helmet>
       <Navbar />
 
       {/* Service detail modal */}

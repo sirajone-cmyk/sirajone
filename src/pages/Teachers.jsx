@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/Navbar';
 import {
   ArrowRight,
@@ -362,6 +363,14 @@ export default function Teachers() {
 
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white">
+      <Helmet>
+        <title>Our Teachers | SirajOne — Qualified Islamic Educators</title>
+        <meta name="description" content="Meet SirajOne's qualified Islamic teachers — specialists in Qur'an recitation, Tajwid, and Makharij al-Huruf. Enrol with a teacher today." />
+        <meta property="og:title" content="Our Teachers | SirajOne" />
+        <meta property="og:description" content="Qualified Islamic educators specialising in Qur'an, Tajwid, and Makharij. Find your teacher at SirajOne." />
+        <meta property="og:url" content="https://sirajone.co.za/teachers" />
+        <link rel="canonical" href="https://sirajone.co.za/teachers" />
+      </Helmet>
       <Navbar />
 
       <div className="text-center py-14 px-4">
