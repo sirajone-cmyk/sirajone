@@ -63,6 +63,17 @@ service cloud.firestore {
         && request.resource.data.status == resource.data.status;
     }
 
+    // Users may only update these specific fields on their own profile.
+    // Prevents users writing arbitrary data (e.g. injecting custom claims).
+    function onlySelfEditableUserFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly([
+          'disclaimerAccepted',
+          'disclaimerAcceptedAt',
+          'updatedAt'
+        ]);
+    }
+
     function validStudentSignup() {
       return request.resource.data.role == 'Student'
         && request.resource.data.status == 'approved';
@@ -131,7 +142,12 @@ service cloud.firestore {
         && (request.resource.data.studentId == request.auth.uid || request.resource.data.clientId == request.auth.uid)
         && request.resource.data.status == 'pending'
         && request.resource.data.counsellorId is string
-        && request.resource.data.categories is list;
+        && request.resource.data.categories is list
+        && request.resource.data.keys().hasOnly([
+             'studentId', 'clientId', 'counsellorId', 'categories',
+             'status', 'createdAt', 'updatedAt', 'clientName', 'clientEmail',
+             'studentNote', 'clientNote', 'preferredContact'
+           ]);
     }
 
     function ownsCounsellingClientData(data) {
@@ -371,7 +387,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSelf(userId) || isAdminUser();
       allow create: if validSelfProfileCreate(userId) || isAdminUser();
-      allow update: if isSelf(userId) && roleAndStatusUnchanged();
+      allow update: if isSelf(userId) && roleAndStatusUnchanged() && onlySelfEditableUserFieldsChanged();
       allow update: if isAdminUser();
       allow delete: if isAdminUser();
     }
@@ -533,7 +549,10 @@ service cloud.firestore {
     }
 
     match /contacts/{documentId} {
-      allow create: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+             'name', 'email', 'phone', 'message', 'subject', 'userId', 'createdAt'
+           ]);
       allow read, update, delete: if isAdminUser();
     }
 

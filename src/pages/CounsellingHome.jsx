@@ -1,16 +1,20 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   Heart, Star, Users, BookOpen, TrendingUp, HandHeart,
   Shield, MessageCircle, Home, Phone, Monitor, MapPin,
   ChevronRight, ArrowRight, CheckCircle, Sparkles,
-  HeartHandshake, Leaf, Brain, Moon,
+  HeartHandshake, Leaf, Brain, Moon, AlertTriangle,
 } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import Navbar from '../components/Navbar';
 import ServiceModal from '../components/ServiceModal';
 import WhatsAppButton from '../components/WhatsAppButton';
+import DisclaimerGate from '../components/counselling/DisclaimerGate';
 import { useAuth } from '../lib/AuthContext';
+import { isCounsellingClientRole } from '../lib/roles';
 import { PROGRAMMES } from '../data/counsellingProgrammes';
 
 /* ─── Accent colour map (programme cards) ────────────────────────────────── */
@@ -415,10 +419,23 @@ function WeekCard({ mod, totalWeeks, isExpanded, onToggle }) {
 
 /* ─── Main component ──────────────────────────────────────────────────────── */
 export default function CounsellingHome() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [activeService, setActiveService] = useState(null);
   const [expandedProg, setExpandedProg] = useState(null);
   const [expandedWeek, setExpandedWeek] = useState(null);
+
+  // ── Disclaimer gate ──────────────────────────────────────────────────────
+  // Only authenticated counselling clients must accept. Public visitors skip.
+  const isCounsellingClient = isAuthenticated && isCounsellingClientRole(user?.role);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(null); // null=loading
+
+  useEffect(() => {
+    if (!isCounsellingClient) return;
+    getDoc(doc(db, 'users', user.uid))
+      .then(snap => setDisclaimerAccepted(snap.data()?.disclaimerAccepted === true))
+      .catch(() => setDisclaimerAccepted(false));
+  }, [isCounsellingClient, user?.uid]);
+
   const firstName = user?.full_name?.split(' ')[0] || null;
 
   const openService = useCallback((svc) => setActiveService(svc), []);
@@ -433,6 +450,11 @@ export default function CounsellingHome() {
     setExpandedWeek(expandedWeek === weekNum ? null : weekNum);
   };
 
+  // Show gate for counselling clients who haven't accepted yet
+  if (isCounsellingClient && disclaimerAccepted === false) {
+    return <DisclaimerGate uid={user.uid} onAccept={() => setDisclaimerAccepted(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#080d1a] text-white">
       <Helmet>
@@ -444,6 +466,21 @@ export default function CounsellingHome() {
         <link rel="canonical" href="https://sirajone.co.za/" />
       </Helmet>
       <Navbar />
+
+      {/* ══ CRISIS SUPPORT BANNER — always visible, non-dismissible ══════ */}
+      <div className="border-b border-red-500/20 bg-red-950/40 px-4 py-2.5">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-2.5 text-center sm:px-6 lg:px-8">
+          <AlertTriangle size={13} className="shrink-0 text-red-400" />
+          <p className="text-xs text-red-300 leading-5">
+            <strong>Crisis or immediate danger?</strong>{' '}
+            Do not use this service —{' '}
+            <a href="tel:10111" className="font-bold underline hover:text-red-200">Emergency: 10111</a>
+            {' '}·{' '}
+            <a href="tel:0800212223" className="font-bold underline hover:text-red-200">SADAG: 0800 21 22 23</a>
+            {' '}(24-hour, free)
+          </p>
+        </div>
+      </div>
 
       {/* Service detail modal */}
       {activeService && (
