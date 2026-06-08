@@ -636,24 +636,28 @@ export default function CounsellingHome() {
                   )}
 
                   <div className="mt-5 flex flex-wrap gap-2">
-                    <Link
-                      to="/counselling-client"
-                      className={`rounded-lg px-4 py-2 text-xs font-bold ${a.bg} ${a.text} ring-1 ${a.ring} transition hover:opacity-80`}
-                    >
-                      Register Interest
-                    </Link>
-                    <Link
-                      to="/counselling-client"
-                      className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10"
+                    <WhatsAppButton
+                      message={`As-salāmu ʿalaykum, I would like to register my interest in the ${prog.title} at SirajOne. Please could you provide more details?`}
+                      label="Register Interest"
+                      variant="outline"
+                      size="sm"
+                    />
+                    <a
+                      href={`https://wa.me/27676340225?text=${encodeURIComponent(`As-salāmu ʿalaykum, I would like to join the waiting list for the ${prog.title} at SirajOne.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-300 transition hover:bg-white/10"
                     >
                       Join Waiting List
-                    </Link>
-                    <Link
-                      to="/contact"
-                      className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10"
+                    </a>
+                    <a
+                      href={`https://wa.me/27676340225?text=${encodeURIComponent(`As-salāmu ʿalaykum, I would like to request more details about the ${prog.title} at SirajOne.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-300 transition hover:bg-white/10"
                     >
                       Request Details
-                    </Link>
+                    </a>
                   </div>
                 </div>
               );
