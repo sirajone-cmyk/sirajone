@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Toaster } from "react-hot-toast"
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -10,35 +10,43 @@ import SuspendedAccount from '@/components/auth/SuspendedAccount';
 import SecurityWrapper from '@/components/SecurityWrapper';
 import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { StudentNotificationToast } from '@/components/StudentNotificationToast';
+import { AuthGateway } from './components/auth/AuthGateway';
 
-import Home from './pages/Home';
-import CounsellingHome from './pages/CounsellingHome';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import CounsellingDisclaimer from './pages/CounsellingDisclaimer';
-import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import Programs from './pages/Programs';
-import Contact from './pages/Contact';
-import Library from './pages/Library';
-import Teachers from './pages/Teachers';
-import Counsellors from './pages/Counsellors';
-import CounsellorPortal from './pages/CounsellorPortal';
-import CounsellingClientDashboard from './pages/CounsellingClientDashboard';
-import Messages from './pages/Messages';
-import AdminMessages from './pages/AdminMessages';
-import RoleManagement from './pages/RoleManagement';
-import Enroll from './pages/Enroll';
-import AdminFinance from './pages/AdminFinance';
-import TeacherPortal from './pages/TeacherPortal';
-import LetterCatalog from './pages/LetterCatalog';
-import PracticalWorkbook from './pages/PracticalWorkbook';
-import PartTwoWorkbook from './pages/PartTwoWorkbook';
-import ClassroomPortal from './pages/ClassroomPortal';
+// ── Lazy-loaded page routes ────────────────────────────────────────────────
+// Each page loads only when first visited — keeps the initial bundle small.
+const Home                       = lazy(() => import('./pages/Home'));
+const CounsellingHome            = lazy(() => import('./pages/CounsellingHome'));
+const PrivacyPolicy              = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService             = lazy(() => import('./pages/TermsOfService'));
+const CounsellingDisclaimer      = lazy(() => import('./pages/CounsellingDisclaimer'));
+const Dashboard                  = lazy(() => import('./pages/Dashboard'));
+const AdminDashboard             = lazy(() => import('./pages/AdminDashboard'));
+const Programs                   = lazy(() => import('./pages/Programs'));
+const Contact                    = lazy(() => import('./pages/Contact'));
+const Library                    = lazy(() => import('./pages/Library'));
+const Teachers                   = lazy(() => import('./pages/Teachers'));
+const Counsellors                = lazy(() => import('./pages/Counsellors'));
+const CounsellorPortal           = lazy(() => import('./pages/CounsellorPortal'));
+const CounsellingClientDashboard = lazy(() => import('./pages/CounsellingClientDashboard'));
+const Messages                   = lazy(() => import('./pages/Messages'));
+const AdminMessages              = lazy(() => import('./pages/AdminMessages'));
+const RoleManagement             = lazy(() => import('./pages/RoleManagement'));
+const Enroll                     = lazy(() => import('./pages/Enroll'));
+const AdminFinance               = lazy(() => import('./pages/AdminFinance'));
+const TeacherPortal              = lazy(() => import('./pages/TeacherPortal'));
+const LetterCatalog              = lazy(() => import('./pages/LetterCatalog'));
+const PracticalWorkbook          = lazy(() => import('./pages/PracticalWorkbook'));
+const PartTwoWorkbook            = lazy(() => import('./pages/PartTwoWorkbook'));
+const ClassroomPortal            = lazy(() => import('./pages/ClassroomPortal'));
 
 const queryClient = new QueryClient();
 
-import { AuthGateway } from './components/auth/AuthGateway';
+// ── Shared page-level loading spinner ─────────────────────────────────────
+const PageSpinner = () => (
+  <div className="fixed inset-0 flex items-center justify-center bg-[#0a1a0f]">
+    <div className="w-8 h-8 border-4 border-green-800 border-t-green-400 rounded-full animate-spin" />
+  </div>
+);
 
 /**
  * SmartHome — renders the correct home page without requiring auth.
@@ -49,13 +57,7 @@ import { AuthGateway } from './components/auth/AuthGateway';
  */
 const SmartHome = () => {
   const { isLoadingAuth, user } = useAuth();
-  if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-[#0a1a0f]">
-        <div className="w-8 h-8 border-4 border-green-800 border-t-green-400 rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (isLoadingAuth) return <PageSpinner />;
   if (isCounsellingClientRole(user?.role)) return <CounsellingHome />;
   if (isCounsellorRole(user?.role)) return <Navigate to="/counsellor" replace />;
   return <Home />;
@@ -64,25 +66,12 @@ const SmartHome = () => {
 const AuthenticatedApp = () => {
   const { isAuthenticated, isLoadingAuth, user } = useAuth();
 
-  if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-[#0a1a0f]">
-        <div className="w-8 h-8 border-4 border-green-800 border-t-green-400 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  if (isLoadingAuth) return <PageSpinner />;
 
-  if (!isAuthenticated) {
-    return <AuthGateway />;
-  }
+  if (!isAuthenticated) return <AuthGateway />;
 
-  if (user?.status === USER_STATUS.PENDING) {
-    return <PendingApproval />;
-  }
-
-  if (user?.status === USER_STATUS.SUSPENDED) {
-    return <SuspendedAccount />;
-  }
+  if (user?.status === USER_STATUS.PENDING)   return <PendingApproval />;
+  if (user?.status === USER_STATUS.SUSPENDED) return <SuspendedAccount />;
 
   const isApproved = user?.status === USER_STATUS.APPROVED;
   const isAdmin = isApproved && (user?.role === ROLES.ADMIN || user?.role === ROLES.CO_ADMIN);
@@ -93,20 +82,21 @@ const AuthenticatedApp = () => {
   const dashboardElement = (() => {
     if (isApproved && user?.role === ROLES.TEACHER) return <TeacherPortal />;
     if (isApproved && isCounsellorRole(user?.role)) return <CounsellorPortal />;
-    if (canAccessCounsellingClientDashboard) return <CounsellingClientDashboard />;
+    if (canAccessCounsellingClientDashboard)        return <CounsellingClientDashboard />;
     return <Dashboard />;
   })();
+
   const protect = (element) => <SecurityWrapper>{element}</SecurityWrapper>;
 
   return (
     <Routes>
       {/* Authenticated-only routes */}
-      <Route path="/dashboard" element={protect(dashboardElement)} />
-      <Route path="/letters" element={protect(<LetterCatalog />)} />
+      <Route path="/dashboard"        element={protect(dashboardElement)} />
+      <Route path="/letters"          element={protect(<LetterCatalog />)} />
       <Route path="/practice-workbook" element={protect(<PracticalWorkbook />)} />
       <Route path="/part-two-workbook" element={protect(<PartTwoWorkbook />)} />
-      <Route path="/messages" element={protect(<Messages />)} />
-      <Route path="/enroll" element={protect(<Enroll />)} />
+      <Route path="/messages"         element={protect(<Messages />)} />
+      <Route path="/enroll"           element={protect(<Enroll />)} />
       <Route path="/classroom/:subjectId" element={protect(<ClassroomPortal />)} />
       <Route
         path="/teacher-portal"
@@ -124,10 +114,10 @@ const AuthenticatedApp = () => {
         path="/counselling-client"
         element={canAccessCounsellingClientDashboard || isAdmin ? protect(<CounsellingClientDashboard />) : <Navigate to="/dashboard" replace />}
       />
-      {isAdmin && <Route path="/admin" element={protect(<AdminDashboard />)} />}
+      {isAdmin && <Route path="/admin"          element={protect(<AdminDashboard />)} />}
       {isAdmin && <Route path="/admin/messages" element={protect(<AdminMessages />)} />}
-      {isAdmin && <Route path="/admin/roles" element={protect(<RoleManagement />)} />}
-      {isAdmin && <Route path="/admin/finance" element={protect(<AdminFinance />)} />}
+      {isAdmin && <Route path="/admin/roles"    element={protect(<RoleManagement />)} />}
+      {isAdmin && <Route path="/admin/finance"  element={protect(<AdminFinance />)} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -143,20 +133,22 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <OnboardingProvider>
-            <Routes>
-              {/* ── Truly public pages — no auth required ───────────────── */}
-              <Route path="/" element={<SmartHome />} />
-              <Route path="/programs" element={<Programs />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/teachers" element={<Teachers />} />
-              <Route path="/counsellors" element={<Counsellors />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/counselling-disclaimer" element={<CounsellingDisclaimer />} />
-              {/* ── Authenticated routes (dashboard, portal, etc.) ───────── */}
-              <Route path="/*" element={<AuthenticatedApp />} />
-            </Routes>
+            <Suspense fallback={<PageSpinner />}>
+              <Routes>
+                {/* ── Truly public pages — no auth required ─────────────── */}
+                <Route path="/"                      element={<SmartHome />} />
+                <Route path="/programs"              element={<Programs />} />
+                <Route path="/contact"               element={<Contact />} />
+                <Route path="/library"               element={<Library />} />
+                <Route path="/teachers"              element={<Teachers />} />
+                <Route path="/counsellors"           element={<Counsellors />} />
+                <Route path="/privacy"               element={<PrivacyPolicy />} />
+                <Route path="/terms"                 element={<TermsOfService />} />
+                <Route path="/counselling-disclaimer" element={<CounsellingDisclaimer />} />
+                {/* ── Authenticated routes ───────────────────────────────── */}
+                <Route path="/*" element={<AuthenticatedApp />} />
+              </Routes>
+            </Suspense>
             {/* Global student reminder toasts — gated by role inside the component */}
             <StudentNotificationToast />
           </OnboardingProvider>
@@ -168,9 +160,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-

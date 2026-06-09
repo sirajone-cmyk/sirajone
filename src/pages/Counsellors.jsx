@@ -1,5 +1,4 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { ArrowRight, Search, SlidersHorizontal, Languages, MapPin, HeartHandshake, X, Send, Loader2, Users } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -11,6 +10,8 @@ import { COUNSELLOR_DELIVERY_MODES, normalizeCounsellorName } from '@/lib/counse
 const inputClass = 'w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/70 focus:bg-white/[0.06]';
 
 function EmptyState({ title, body }) {
+  useEffect(() => { document.title = `Islamic Counsellors | SirajOne — Faith-Based Support`; }, []);
+
   return (
     <div className="rounded-3xl border border-dashed border-emerald-800/60 bg-white/[0.03] px-6 py-12 text-center">
       <HeartHandshake className="mx-auto mb-4 h-10 w-10 text-emerald-500/80" />
@@ -418,14 +419,6 @@ export default function Counsellors() {
 
   return (
     <div className="min-h-screen bg-[#07150d] text-white">
-      <Helmet>
-        <title>Islamic Counsellors | SirajOne — Faith-Based Support</title>
-        <meta name="description" content="Find a qualified Islamic counsellor at SirajOne — faith-based support for individuals, couples, families, and youth. Confidential and professional." />
-        <meta property="og:title" content="Islamic Counsellors | SirajOne" />
-        <meta property="og:description" content="Qualified Islamic counsellors offering confidential faith-based support for individuals, couples, and families." />
-        <meta property="og:url" content="https://sirajone.co.za/counsellors" />
-        <link rel="canonical" href="https://sirajone.co.za/counsellors" />
-      </Helmet>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
         <section className="text-center">

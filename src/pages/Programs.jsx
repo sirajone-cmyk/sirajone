@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
 import { BookOpen, Mic, Star, TrendingUp, ArrowRight, CheckCircle } from 'lucide-react';
@@ -55,16 +55,10 @@ const programs = [
 ];
 
 export default function Programs() {
+  useEffect(() => { document.title = `Programmes | SirajOne — Qur’an, Tajwid & Ḥifẓ`; }, []);
+
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white">
-      <Helmet>
-        <title>Programmes | SirajOne — Qur'an, Tajwid & Ḥifẓ</title>
-        <meta name="description" content="Explore SirajOne's Islamic learning programmes: Qa'idah, Tajwid, Ḥifẓ memorisation, and Murājaʿah revision — structured pathways for all levels." />
-        <meta property="og:title" content="Programmes | SirajOne" />
-        <meta property="og:description" content="Structured Islamic learning pathways: Qa'idah, Tajwid, Ḥifẓ, Murājaʿah. Enrol at SirajOne." />
-        <meta property="og:url" content="https://sirajone.co.za/programs" />
-        <link rel="canonical" href="https://sirajone.co.za/programs" />
-      </Helmet>
       <Navbar />
       <div className="text-center py-16 px-4">
         <span className="text-emerald-500 text-xs font-bold uppercase tracking-widest">Curriculum</span>

@@ -1,18 +1,12 @@
-﻿import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { MapPin, Phone, Mail, Globe, Clock, ArrowRight } from 'lucide-react';
 
 export default function Contact() {
+  useEffect(() => { document.title = `Contact Us | SirajOne`; }, []);
+
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white">
-      <Helmet>
-        <title>Contact Us | SirajOne</title>
-        <meta name="description" content="Get in touch with SirajOne — Islamic learning and counselling. Reach out for enrolment, support, or general enquiries." />
-        <meta property="og:title" content="Contact Us | SirajOne" />
-        <meta property="og:description" content="Reach out to SirajOne for Islamic learning enrolment, counselling enquiries, or general support." />
-        <meta property="og:url" content="https://sirajone.co.za/contact" />
-        <link rel="canonical" href="https://sirajone.co.za/contact" />
-      </Helmet>
       <Navbar />
       <div className="text-center py-16 px-4">
         <span className="text-emerald-500 text-xs font-bold uppercase tracking-widest">Get in Touch</span>

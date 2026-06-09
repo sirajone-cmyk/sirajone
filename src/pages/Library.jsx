@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/Navbar';
 import { useAuth } from '@/lib/AuthContext';
 import { BookOpen, ChevronLeft, ChevronRight, ExternalLink, Search, Plus, X, Loader } from 'lucide-react';
@@ -32,6 +31,8 @@ function UploadModal({ onClose, onSaved }) {
     onSaved();
     onClose();
   };
+
+  useEffect(() => { document.title = `Islamic Library | SirajOne — Stories, Du’as & Resources`; }, []);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -207,14 +208,6 @@ export default function Library() {
 
   return (
     <div className="min-h-screen bg-[#0b1a12] text-white">
-      <Helmet>
-        <title>Islamic Library | SirajOne — Stories, Du'as & Resources</title>
-        <meta name="description" content="Browse SirajOne's Islamic digital library — prophetic stories, du'a collections, and learning resources for students and families." />
-        <meta property="og:title" content="Islamic Library | SirajOne" />
-        <meta property="og:description" content="Prophetic stories, du'a collections, and Islamic learning resources. Free access at SirajOne." />
-        <meta property="og:url" content="https://sirajone.co.za/library" />
-        <link rel="canonical" href="https://sirajone.co.za/library" />
-      </Helmet>
       <Navbar />
       {showUpload && isAdmin && <UploadModal onClose={() => setShowUpload(false)} onSaved={load} />}
       {selectedStory && <StoryReader book={selectedStory} onClose={() => setSelectedStory(null)} />}

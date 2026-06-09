@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   Heart, Star, Users, BookOpen, TrendingUp, HandHeart,
@@ -258,6 +257,8 @@ function WeekCard({ mod, totalWeeks, isExpanded, onToggle }) {
   const isLocked = mod.status === 'locked';
   const isComingSoon = mod.status === 'coming-soon';
 
+  useEffect(() => { document.title = `Islamic Counselling | SirajOne — Faith-Based Support`; }, []);
+
   return (
     <div
       className="relative overflow-hidden rounded-xl border border-white/6 bg-[#090e1d] transition-colors hover:border-white/10"
@@ -457,14 +458,6 @@ export default function CounsellingHome() {
 
   return (
     <div className="min-h-screen bg-[#080d1a] text-white">
-      <Helmet>
-        <title>Islamic Counselling | SirajOne — Faith-Based Support</title>
-        <meta name="description" content="SirajOne Counselling offers confidential, faith-based support — marriage, family, youth wellbeing, and Islamic personal development. Register today." />
-        <meta property="og:title" content="Islamic Counselling | SirajOne" />
-        <meta property="og:description" content="Confidential Islamic counselling — marriage, family, youth, and personal development. Faith-based support rooted in the Qur'an and Sunnah." />
-        <meta property="og:url" content="https://sirajone.co.za/" />
-        <link rel="canonical" href="https://sirajone.co.za/" />
-      </Helmet>
       <Navbar />
 
       {/* ══ CRISIS SUPPORT BANNER — always visible, non-dismissible ══════ */}
