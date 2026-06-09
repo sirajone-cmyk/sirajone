@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import Navbar from '@/components/Navbar';
 
 // ─── Category definitions ─────────────────────────────────────────────────────
 
@@ -241,7 +242,9 @@ export default function CounsellingLibrary() {
   }, [resources, activeCategory, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#0b1a12] px-4 py-8 sm:px-6">
+    <div className="min-h-screen bg-[#0b1a12]">
+      <Navbar />
+      <div className="px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-5xl">
 
         {/* Page header */}
@@ -307,6 +310,7 @@ export default function CounsellingLibrary() {
           All resources are vetted by the SirajOne counselling team.
           For personal support, visit the Support tab in Daily Spiritual.
         </p>
+      </div>
       </div>
     </div>
   );

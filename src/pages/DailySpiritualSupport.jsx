@@ -30,6 +30,7 @@ import { collection, query, orderBy, limit, where, onSnapshot } from 'firebase/f
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/AuthContext';
 import { isCounsellorRole, isCounsellingClientRole } from '@/lib/roles';
+import Navbar from '@/components/Navbar';
 
 import SalahTracker from '@/components/spiritual/SalahTracker';
 import DhikrTracker from '@/components/spiritual/DhikrTracker';
@@ -245,7 +246,9 @@ export default function DailySpiritualSupport() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1a12] px-4 py-8 sm:px-6">
+    <div className="min-h-screen bg-[#0b1a12]">
+      <Navbar />
+      <div className="px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-2xl">
 
         {/* Page header */}
@@ -284,6 +287,7 @@ export default function DailySpiritualSupport() {
         <p className="mt-8 text-center text-xs text-slate-600">
           Your ibadah is private. No counsellor or administrator can view your personal tracker.
         </p>
+      </div>
       </div>
     </div>
   );
