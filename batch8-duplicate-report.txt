@@ -1,0 +1,21 @@
+﻿=== BATCH 8 - DUPLICATE NASHEED FOLDERS ===
+Date: 06/07/2026 20:06:09
+
+ONE canonical copy has been saved to:
+  C:\Users\User\Documents\02 - MTQ RESOURCES\Audio\Nasheeds
+  C:\Users\User\Documents\09 - ARCHIVE\Desktop Backup\Nasheeds
+
+The following folders contain DUPLICATES of the same files.
+Review them and delete manually once you are satisfied:
+
+  EXISTS   | 16 files | 70 MB | C:\Users\User\OneDrive\Desktop\DESKTOP BACKUP\CUT FILES\Nasheed
+  EXISTS   | 437 files | 12807.4 MB | C:\Users\User\OneDrive\Desktop\DESKTOP BACKUP\CUT FILES\huawii stuff\download
+  EXISTS   | 438 files | 12836.3 MB | C:\Users\User\OneDrive\Desktop\DESKTOP BACKUP\huawii stuff\download
+  EXISTS   | 1 files | 15.9 MB | C:\Users\User\OneDrive\Desktop\DESKTOP BACKUP\CUT FILES\huawii stuff\Huawei\CloudDrive\.cache
+
+Total duplicate folders: 4
+
+ACTION REQUIRED (manual):
+  Once you confirm 02 - MTQ RESOURCES\Audio\Nasheeds looks correct,
+  you can right-click and delete the duplicate folders listed above.
+  DO NOT delete anything yet - verify first.

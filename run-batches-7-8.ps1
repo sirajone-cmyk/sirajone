@@ -1,22 +1,22 @@
 # ============================================================
-# BATCHES 7 & 8 — Read-only COPY + Archive report
+# BATCHES 7 & 8 - Read-only COPY + Archive report
 # Originals are NOT moved or deleted
 # ============================================================
 
 $base = "$env:USERPROFILE\Documents"
 
 # ============================================================
-# BATCH 7 — Copy Media Assets (Logos + Marketing Images)
+# BATCH 7 - Copy Media Assets (Logos + Marketing Images)
 # ============================================================
 Write-Host ""
 Write-Host "=============================="
-Write-Host "BATCH 7 — Copying Media Assets..."
+Write-Host "BATCH 7 - Copying Media Assets..."
 Write-Host "=============================="
 
 $dest7 = "$base\07 - MEDIA ASSETS"
 $b7count = 0
 
-# Logos — search Documents, OneDrive, Desktop
+# Logos - search Documents, OneDrive, Desktop
 $searchRoots7 = @(
     "$env:USERPROFILE\OneDrive",
     "$env:USERPROFILE\Documents",
@@ -66,14 +66,14 @@ foreach ($root in $searchRoots7) {
     }
 }
 
-Write-Host "BATCH 7 COMPLETE — $b7count media assets copied to 07 - MEDIA ASSETS"
+Write-Host "BATCH 7 COMPLETE - $b7count media assets copied to 07 - MEDIA ASSETS"
 Write-Host ""
 
 # ============================================================
-# BATCH 8 — Archive Nasheeds (one canonical copy + duplicate report)
+# BATCH 8 - Archive Nasheeds (one canonical copy + duplicate report)
 # ============================================================
 Write-Host "=============================="
-Write-Host "BATCH 8 — Archiving Nasheeds..."
+Write-Host "BATCH 8 - Archiving Nasheeds..."
 Write-Host "=============================="
 
 $dest8Nasheed  = "$base\09 - ARCHIVE\Desktop Backup\Nasheeds"
@@ -96,7 +96,7 @@ if (Test-Path $nasheedRoot) {
         $b8count++
     }
 } else {
-    Write-Host "  NOTE: DESKTOP BACKUP\Nasheed folder not found — checking CUT FILES\Nasheed..."
+    Write-Host "  NOTE: DESKTOP BACKUP\Nasheed folder not found - checking CUT FILES\Nasheed..."
     $nasheedAlt = "$env:USERPROFILE\OneDrive\Desktop\DESKTOP BACKUP\CUT FILES\Nasheed"
     if (Test-Path $nasheedAlt) {
         $nasheeds = Get-ChildItem $nasheedAlt -File -ErrorAction SilentlyContinue
@@ -111,7 +111,7 @@ if (Test-Path $nasheedRoot) {
 
 # === Duplicate folder report ===
 $dupReport = @()
-$dupReport += "=== BATCH 8 — DUPLICATE NASHEED FOLDERS ==="
+$dupReport += "=== BATCH 8 - DUPLICATE NASHEED FOLDERS ==="
 $dupReport += "Date: $(Get-Date)"
 $dupReport += ""
 $dupReport += "ONE canonical copy has been saved to:"
@@ -145,13 +145,13 @@ $dupReport += ""
 $dupReport += "ACTION REQUIRED (manual):"
 $dupReport += "  Once you confirm 02 - MTQ RESOURCES\Audio\Nasheeds looks correct,"
 $dupReport += "  you can right-click and delete the duplicate folders listed above."
-$dupReport += "  DO NOT delete anything yet — verify first."
+$dupReport += "  DO NOT delete anything yet - verify first."
 
 $logPath = "$env:USERPROFILE\Documents\Codex\2026-04-19-files-mentioned-by-the-user-rahla\batch8-duplicate-report.txt"
 $dupReport | Out-File -FilePath $logPath -Encoding utf8
 
 Write-Host ""
-Write-Host "BATCH 8 COMPLETE — $b8count nasheeds archived"
+Write-Host "BATCH 8 COMPLETE - $b8count nasheeds archived"
 Write-Host "Duplicate report saved: $logPath"
 Write-Host ""
 

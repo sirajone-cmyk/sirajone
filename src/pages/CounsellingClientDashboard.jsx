@@ -359,6 +359,38 @@ export default function CounsellingClientDashboard() {
           </div>
         </section>
 
+        {/* ══ DAILY CONNECTION CARD ══════════════════════════════════════ */}
+        <section>
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-400/25 bg-gradient-to-br from-[#071310] via-[#081a10] to-[#050f0a] p-6 sm:p-8">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
+            <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-emerald-400/6 blur-3xl" />
+            <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-lg">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Daily Practice</p>
+                <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">
+                  Daily Connection to Allah
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Track your daily salah, dhikr, Quran recitation, and morning &amp; evening adhkar — privately, gently, with no judgment. Your ibadah is between you and Allah.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-emerald-400/70">
+                  <span>✦ Salah tracker</span>
+                  <span>✦ Dhikr counters</span>
+                  <span>✦ Quran log</span>
+                  <span>✦ Morning &amp; evening adhkar</span>
+                  <span>✦ Live sessions</span>
+                </div>
+              </div>
+              <a
+                href="/daily-spiritual"
+                className="flex-shrink-0 rounded-2xl bg-emerald-600 px-6 py-3 text-center text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-900/40 transition hover:bg-emerald-500"
+              >
+                Open Daily Spiritual
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* ══ SECTION 3 — Pre-Marital Programme (always visible) ══════════ */}
         <section>
           <div className="relative overflow-hidden rounded-3xl border border-amber-400/20 bg-gradient-to-br from-[#1a1200] via-[#0f0d1a] to-[#080d1a] p-6 sm:p-10 shadow-2xl shadow-black/30">

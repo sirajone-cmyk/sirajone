@@ -322,6 +322,16 @@ service cloud.firestore {
         && myProfileData().role == 'counsellingClient';
     }
 
+    // Any approved counselling user (client OR counsellor)
+    function isCounsellingUserRole() {
+      return isCounsellorUser() || isCounsellingClientUser();
+    }
+
+    // Library resources are shared with ALL counselling users (not per-client)
+    function isLibraryResource(data) {
+      return data.keys().hasAll(['isLibraryResource']) && data.isLibraryResource == true;
+    }
+
     function validProgrammeRegistration() {
       return isApprovedUser()
         && request.resource.data.clientId == request.auth.uid
@@ -390,6 +400,53 @@ service cloud.firestore {
       allow update: if isSelf(userId) && roleAndStatusUnchanged() && onlySelfEditableUserFieldsChanged();
       allow update: if isAdminUser();
       allow delete: if isAdminUser();
+
+      // ─── Private ibadah logs ─────────────────────────────────────────────
+      // Strictly private: only the owner can read or write.
+      // Counsellors, admin, and all other roles are explicitly excluded.
+      // Write validation prevents injection of arbitrary fields.
+
+      match /salahLogs/{dateKey} {
+        allow read: if isSelf(userId);
+        allow write: if isSelf(userId)
+          && request.resource.data.keys().hasOnly([
+            'date', 'fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'updatedAt'
+          ]);
+      }
+
+      match /dhikrLogs/{dateKey} {
+        allow read: if isSelf(userId);
+        allow write: if isSelf(userId)
+          && request.resource.data.keys().hasOnly([
+            'date', 'istighfar', 'durood', 'tahleel', 'updatedAt'
+          ]);
+      }
+
+      match /quranLogs/{dateKey} {
+        allow read: if isSelf(userId);
+        allow write: if isSelf(userId)
+          && request.resource.data.keys().hasOnly([
+            'date', 'pages', 'minutes', 'juz', 'notes', 'updatedAt'
+          ]);
+      }
+
+      match /adhkarCompletions/{dateKey} {
+        allow read: if isSelf(userId);
+        allow write: if isSelf(userId)
+          && request.resource.data.keys().hasOnly([
+            'date', 'morning', 'evening', 'morningCompleted', 'eveningCompleted', 'updatedAt'
+          ]);
+      }
+
+      match /ibadahStats/{statId} {
+        allow read: if isSelf(userId);
+        allow write: if isSelf(userId)
+          && request.resource.data.keys().hasOnly([
+            'totalSalahDays', 'totalDhikrSessions', 'totalQuranPages',
+            'totalQuranMinutes', 'totalMorningAdhkar', 'totalEveningAdhkar',
+            'lastActive', 'updatedAt'
+          ]);
+      }
     }
 
     match /library/{documentId} {
@@ -543,9 +600,52 @@ service cloud.firestore {
     }
 
     match /counsellingResources/{documentId} {
-      allow read: if isAdminUser() || ownsCounsellingClientData(resource.data);
+      // Library resources (isLibraryResource: true) are readable by any counselling user.
+      // Per-client resources are only readable by the counsellor and their client.
+      allow read: if isAdminUser()
+        || (isCounsellingUserRole() && isLibraryResource(resource.data))
+        || ownsCounsellingClientData(resource.data);
       allow create: if isAdminUser() || validCounsellingResourceCreate();
       allow update, delete: if isAdminUser() || (isApprovedUser() && resource.data.counsellorId == request.auth.uid);
+    }
+
+    // ─── Live Dhikr/Dua Sessions ─────────────────────────────────────────────
+    // Readable by any approved counselling user (client or counsellor).
+    // Only counsellors or admin can create/edit. Strict field validation on write.
+    match /liveSessions/{sessionId} {
+      allow read: if isCounsellingUserRole();
+      allow create: if (isCounsellorUser() || isAdminUser())
+        && request.resource.data.keys().hasOnly([
+          'title', 'description', 'scheduledAt', 'hostName', 'hostUid',
+          'participantCount', 'isLive', 'meetingLink', 'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAdminUser()
+        || (isCounsellorUser() && resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdBy == resource.data.createdBy);
+      allow delete: if isAdminUser()
+        || (isCounsellorUser() && resource.data.createdBy == request.auth.uid);
+    }
+
+    // ─── Counselling Announcements ───────────────────────────────────────────
+    // Ta'leem and programme updates. Readable by all counselling users.
+    // Only counsellors or admin can publish. Strict field validation on write.
+    match /counsellingAnnouncements/{announcementId} {
+      allow read: if isCounsellingUserRole();
+      allow create: if (isCounsellorUser() || isAdminUser())
+        && request.resource.data.keys().hasOnly([
+          'title', 'body', 'category', 'publishedAt', 'authorName',
+          'pinned', 'link', 'linkLabel', 'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.body is string
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAdminUser()
+        || (isCounsellorUser() && resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdBy == resource.data.createdBy);
+      allow delete: if isAdminUser()
+        || (isCounsellorUser() && resource.data.createdBy == request.auth.uid);
     }
 
     match /contacts/{documentId} {
@@ -650,3 +750,46 @@ service cloud.firestore {
 
 
 
+      allow create: if validClientAssessmentCreate() || isAdminUser();
+      allow update: if isAdminUser() || ownsClientAssessment(resource.data);
+      allow delete: if isAdminUser();
+    }
+
+    // ─── Session Notes ───────────────────────────────────────────────────────
+    // Private counsellor notes — clients cannot read under any circumstance
+    match /session_notes/{noteId} {
+      allow read: if isAdminUser() || ownsSessionNote(resource.data);
+      allow create: if validSessionNoteCreate() || isAdminUser();
+      allow update: if isAdminUser() || ownsSessionNote(resource.data);
+      allow delete: if isAdminUser();
+    }
+
+    // ─── User Notifications ──────────────────────────────────────────────────
+    match /users/{userId}/notifications/{notificationId} {
+      allow read: if isSelf(userId) || isAdminUser();
+      allow create: if isAdminUser() || isCounsellorUser();
+      allow update: if isSelf(userId) || isAdminUser();
+      allow delete: if isAdminUser();
+    }
+
+    // ─── inbox_messages (learning platform — teacher→student) ────────────────
+    match /inbox_messages/{messageId} {
+      allow read: if isAdminUser()
+        || (isApprovedUser() && (
+          resource.data.recipientId == request.auth.uid
+          || resource.data.senderId == request.auth.uid
+        ));
+      allow create: if isAdminUser()
+        || (isApprovedUser() && request.resource.data.senderId == request.auth.uid);
+      allow update: if isAdminUser()
+        || (isApprovedUser() && resource.data.recipientId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['isRead', 'readAt']));
+      allow delete: if isAdminUser();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

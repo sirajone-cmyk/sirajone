@@ -14,6 +14,7 @@ import {
   PenTool,
   Compass,
   HeartHandshake,
+  Heart,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
@@ -85,10 +86,12 @@ export default function Navbar() {
   const isCounsellingUser = isCounsellingClient || isCounsellor;
 
   const counsellingDesktopLinks = [
-    { to: '/',                 label: 'Home',        icon: Home        },
+    { to: '/',                    label: 'Home',      icon: Home           },
     dashboardLink,
-    { to: '/counsellors',      label: 'Counsellors', icon: HeartHandshake },
-    { to: '/contact',          label: 'Contact',     icon: Phone       },
+    { to: '/daily-spiritual',     label: 'Daily',     icon: Heart          },
+    { to: '/counselling-library', label: 'Library',   icon: Library        },
+    { to: '/counsellors',         label: 'Counsellors', icon: HeartHandshake },
+    { to: '/contact',             label: 'Contact',   icon: Phone          },
   ];
 
   const desktopLinks = isCounsellingUser

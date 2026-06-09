@@ -655,6 +655,21 @@ export default function CounsellorPortal() {
                         <button type="button" onClick={clearFollowUp} className="text-xs font-black text-amber-300 hover:text-amber-200">Mark Done</button>
                       </div>
                     )}
+
+                    {/* ── Your Daily Ibadah (counsellor personal, private) ── */}
+                    <div className="rounded-2xl border border-emerald-400/20 bg-[#071310] p-4">
+                      <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">Your Daily Practice</p>
+                      <h4 className="text-sm font-bold text-white">Your Daily Ibadah</h4>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Track your personal salah, dhikr, Quran recitation and adhkar — private to you only.
+                      </p>
+                      <a
+                        href="/daily-spiritual"
+                        className="mt-3 inline-block rounded-lg bg-emerald-700/30 border border-emerald-500/25 px-4 py-2 text-xs font-black uppercase tracking-wide text-emerald-300 transition hover:bg-emerald-700/50"
+                      >
+                        Open Daily Spiritual
+                      </a>
+                    </div>
                   </div>
                 )}
 

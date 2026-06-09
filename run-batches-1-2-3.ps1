@@ -1,16 +1,16 @@
 # ============================================================
-# BATCHES 1, 2, 3 — Read-only COPY operations + folder creation
+# BATCHES 1, 2, 3 - Read-only COPY operations + folder creation
 # Originals are NOT moved or deleted
 # ============================================================
 
 $base = "$env:USERPROFILE\Documents"
 
 # ============================================================
-# BATCH 1 — Create folder structure
+# BATCH 1 - Create folder structure
 # ============================================================
 Write-Host ""
 Write-Host "=============================="
-Write-Host "BATCH 1 — Creating folders..."
+Write-Host "BATCH 1 - Creating folders..."
 Write-Host "=============================="
 
 $folders = @(
@@ -71,14 +71,14 @@ foreach ($f in $folders) {
     New-Item -ItemType Directory -Force -Path "$base\$f" | Out-Null
     $created++
 }
-Write-Host "BATCH 1 COMPLETE — $created folders created"
+Write-Host "BATCH 1 COMPLETE - $created folders created"
 Write-Host ""
 
 # ============================================================
-# BATCH 2 — Copy MTQ Resources
+# BATCH 2 - Copy MTQ Resources
 # ============================================================
 Write-Host "=============================="
-Write-Host "BATCH 2 — Copying MTQ resources..."
+Write-Host "BATCH 2 - Copying MTQ resources..."
 Write-Host "=============================="
 
 $mtqBase = "$base\02 - MTQ RESOURCES"
@@ -107,7 +107,7 @@ foreach ($f in $zoom) {
     $b2count++
 }
 
-# Quran recitation MP3s — from root DESKTOP BACKUP only (avoid duplicates from subfolders)
+# Quran recitation MP3s - from root DESKTOP BACKUP only (avoid duplicates from subfolders)
 $quranAudio = Get-ChildItem "$env:USERPROFILE\OneDrive\Desktop\DESKTOP BACKUP" -MaxDepth 1 -Filter "*.mp3" -File -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -match "Surah|Quran|Recitation|Baqarah|Qamar|Naba|Naziat|Najm|Sobhi|Hussary" }
 foreach ($f in $quranAudio) {
@@ -115,21 +115,21 @@ foreach ($f in $quranAudio) {
     $b2count++
 }
 
-# Letter audio (Rahla app — renamed copies)
+# Letter audio (Rahla app - renamed copies)
 $letterAudio = Get-ChildItem "$env:USERPROFILE\Documents\Codex\2026-04-19-files-mentioned-by-the-user-rahla\letters-audio-renamed" -File -ErrorAction SilentlyContinue
 foreach ($f in $letterAudio) {
     Copy-Item $f.FullName -Destination "$mtqBase\Audio\Letter Audio\" -Force -ErrorAction SilentlyContinue
     $b2count++
 }
 
-Write-Host "BATCH 2 COMPLETE — $b2count files copied to 02 - MTQ RESOURCES"
+Write-Host "BATCH 2 COMPLETE - $b2count files copied to 02 - MTQ RESOURCES"
 Write-Host ""
 
 # ============================================================
-# BATCH 3 — Copy Teaching Resources
+# BATCH 3 - Copy Teaching Resources
 # ============================================================
 Write-Host "=============================="
-Write-Host "BATCH 3 — Copying teaching resources..."
+Write-Host "BATCH 3 - Copying teaching resources..."
 Write-Host "=============================="
 
 $b3count = 0
@@ -158,7 +158,7 @@ foreach ($f in $studentFiles) {
     $b3count++
 }
 
-Write-Host "BATCH 3 COMPLETE — $b3count files copied to 03 - TEACHING RESOURCES"
+Write-Host "BATCH 3 COMPLETE - $b3count files copied to 03 - TEACHING RESOURCES"
 Write-Host ""
 
 # ============================================================

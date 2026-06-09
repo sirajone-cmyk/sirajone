@@ -28,6 +28,8 @@ const Teachers                   = lazy(() => import('./pages/Teachers'));
 const Counsellors                = lazy(() => import('./pages/Counsellors'));
 const CounsellorPortal           = lazy(() => import('./pages/CounsellorPortal'));
 const CounsellingClientDashboard = lazy(() => import('./pages/CounsellingClientDashboard'));
+const DailySpiritualSupport      = lazy(() => import('./pages/DailySpiritualSupport'));
+const CounsellingLibrary         = lazy(() => import('./pages/CounsellingLibrary'));
 const Messages                   = lazy(() => import('./pages/Messages'));
 const AdminMessages              = lazy(() => import('./pages/AdminMessages'));
 const RoleManagement             = lazy(() => import('./pages/RoleManagement'));
@@ -78,6 +80,7 @@ const AuthenticatedApp = () => {
   const canAccessTeacherPortal = isAdmin || (isApproved && user?.role === ROLES.TEACHER);
   const canAccessCounsellorPortal = isAdmin || (isApproved && isCounsellorRole(user?.role));
   const canAccessCounsellingClientDashboard = isApproved && isCounsellingClientRole(user?.role);
+  const isCounsellingUser = isApproved && (isCounsellorRole(user?.role) || isCounsellingClientRole(user?.role));
 
   const dashboardElement = (() => {
     if (isApproved && user?.role === ROLES.TEACHER) return <TeacherPortal />;
@@ -113,6 +116,14 @@ const AuthenticatedApp = () => {
       <Route
         path="/counselling-client"
         element={canAccessCounsellingClientDashboard || isAdmin ? protect(<CounsellingClientDashboard />) : <Navigate to="/dashboard" replace />}
+      />
+      <Route
+        path="/daily-spiritual"
+        element={isCounsellingUser || isAdmin ? protect(<DailySpiritualSupport />) : <Navigate to="/dashboard" replace />}
+      />
+      <Route
+        path="/counselling-library"
+        element={isCounsellingUser || isAdmin ? protect(<CounsellingLibrary />) : <Navigate to="/dashboard" replace />}
       />
       {isAdmin && <Route path="/admin"          element={protect(<AdminDashboard />)} />}
       {isAdmin && <Route path="/admin/messages" element={protect(<AdminMessages />)} />}

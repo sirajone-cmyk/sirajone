@@ -1,16 +1,16 @@
 # ============================================================
-# BATCHES 4, 5, 6 — Read-only COPY operations
+# BATCHES 4, 5, 6 - Read-only COPY operations
 # Originals are NOT moved or deleted
 # ============================================================
 
 $base = "$env:USERPROFILE\Documents"
 
 # ============================================================
-# BATCH 4 — Copy Hijaama Resources
+# BATCH 4 - Copy Hijaama Resources
 # ============================================================
 Write-Host ""
 Write-Host "=============================="
-Write-Host "BATCH 4 — Copying Hijaama resources..."
+Write-Host "BATCH 4 - Copying Hijaama resources..."
 Write-Host "=============================="
 
 $dest4 = "$base\04 - HIJAAMA"
@@ -33,20 +33,20 @@ foreach ($f in $hijaama) {
     $b4count++
 }
 
-Write-Host "BATCH 4 COMPLETE — $b4count files copied to 04 - HIJAAMA"
+Write-Host "BATCH 4 COMPLETE - $b4count files copied to 04 - HIJAAMA"
 Write-Host ""
 
 # ============================================================
-# BATCH 5 — Copy Business Admin Files
+# BATCH 5 - Copy Business Admin Files
 # ============================================================
 Write-Host "=============================="
-Write-Host "BATCH 5 — Copying Business Admin files..."
+Write-Host "BATCH 5 - Copying Business Admin files..."
 Write-Host "=============================="
 
 $dest5 = "$base\05 - BUSINESS ADMIN"
 $b5count = 0
 
-# Finance — Fresha fee activity files
+# Finance - Fresha fee activity files
 $financeFiles = Get-ChildItem "$env:USERPROFILE\OneDrive\Desktop\DESKTOP BACKUP" -Recurse -File -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -match "fresha|fee_activity" }
 foreach ($f in $financeFiles) {
@@ -95,14 +95,14 @@ foreach ($f in $marketingFiles) {
     $b5count++
 }
 
-Write-Host "BATCH 5 COMPLETE — $b5count files copied to 05 - BUSINESS ADMIN"
+Write-Host "BATCH 5 COMPLETE - $b5count files copied to 05 - BUSINESS ADMIN"
 Write-Host ""
 
 # ============================================================
-# BATCH 6 — Copy Term Marksheets sorted by year/term
+# BATCH 6 - Copy Term Marksheets sorted by year/term
 # ============================================================
 Write-Host "=============================="
-Write-Host "BATCH 6 — Sorting and copying Term Marksheets..."
+Write-Host "BATCH 6 - Sorting and copying Term Marksheets..."
 Write-Host "=============================="
 
 $dest6base = "$base\01 - MADRASA TAHSEEN UL QURAN\Academic Records"
@@ -148,7 +148,7 @@ $logPath = "$env:USERPROFILE\Documents\Codex\2026-04-19-files-mentioned-by-the-u
 $b6log | Out-File -FilePath $logPath -Encoding utf8
 Write-Host ""
 Write-Host "Sort log saved: $logPath"
-Write-Host "BATCH 6 COMPLETE — $b6count marksheets copied and sorted"
+Write-Host "BATCH 6 COMPLETE - $b6count marksheets copied and sorted"
 Write-Host ""
 
 # ============================================================
