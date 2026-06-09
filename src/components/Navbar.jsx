@@ -94,12 +94,19 @@ export default function Navbar() {
     { to: '/contact',             label: 'Contact',   icon: Phone          },
   ];
 
+  // Counsellors don't need to browse the public counsellors directory
+  const counsellorDesktopLinks = counsellingDesktopLinks.filter(
+    l => l.to !== '/counsellors'
+  );
+
+  const activeLinks = isCounsellor ? counsellorDesktopLinks : counsellingDesktopLinks;
+
   const desktopLinks = isCounsellingUser
-    ? counsellingDesktopLinks
+    ? activeLinks
     : [...primaryLinks, dashboardLink];
 
   const mobileLinks = isCounsellingUser
-    ? [...counsellingDesktopLinks]
+    ? [...activeLinks]
     : [...primaryLinks, dashboardLink, ...hubLinks];
 
   return (
