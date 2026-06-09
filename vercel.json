@@ -32,12 +32,5 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [{ "type": "host", "value": "www.sirajone.co.za" }],
-      "destination": "https://sirajone.co.za/$1",
-      "permanent": true
-    }
-  ]
+  "redirects": []
 }
