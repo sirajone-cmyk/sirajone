@@ -1,4 +1,4 @@
-﻿import { Link, useLocation } from 'react-router-dom';
+﻿import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
   BookOpen,
@@ -61,8 +61,14 @@ function NotificationDot() {
 
 export default function Navbar() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/', { replace: true });
+  };
   const { count: unreadCount } = useUnreadMessages(user?.uid);
 
   const isAdmin = user?.role === 'Admin' || user?.role === 'Co-Admin';
@@ -94,10 +100,15 @@ export default function Navbar() {
     { to: '/contact',             label: 'Contact',   icon: Phone          },
   ];
 
-  // Counsellors don't need to browse the public counsellors directory
-  const counsellorDesktopLinks = counsellingDesktopLinks.filter(
-    l => l.to !== '/counsellors'
-  );
+  // Counsellors: remove public counsellors directory, add counsellor-specific pages
+  const counsellorDesktopLinks = [
+    { to: '/',                        label: 'Home',      icon: Home           },
+    dashboardLink,
+    { to: '/daily-spiritual',         label: 'Daily',     icon: Heart          },
+    { to: '/counsellor-resources',    label: 'Resources', icon: BookOpen       },
+    { to: '/counsellor-library',      label: 'Library',   icon: Library        },
+    { to: '/contact',                 label: 'Contact',   icon: Phone          },
+  ];
 
   const activeLinks = isCounsellor ? counsellorDesktopLinks : counsellingDesktopLinks;
 
@@ -170,7 +181,7 @@ export default function Navbar() {
 
           <button
             type="button"
-            onClick={logout}
+            onClick={handleLogout}
             className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap text-slate-400 transition-colors hover:bg-white/8 hover:text-red-400"
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
@@ -233,8 +244,8 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => {
-              logout();
               setOpen(false);
+              handleLogout();
             }}
             className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-2.5 text-sm font-semibold text-red-300 hover:bg-red-400/15"
           >

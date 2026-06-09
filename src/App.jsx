@@ -30,6 +30,8 @@ const CounsellorPortal           = lazy(() => import('./pages/CounsellorPortal')
 const CounsellingClientDashboard = lazy(() => import('./pages/CounsellingClientDashboard'));
 const DailySpiritualSupport      = lazy(() => import('./pages/DailySpiritualSupport'));
 const CounsellingLibrary         = lazy(() => import('./pages/CounsellingLibrary'));
+const CounsellorResourceCentre   = lazy(() => import('./pages/CounsellorResourceCentre'));
+const CounsellorLibrary          = lazy(() => import('./pages/CounsellorLibrary'));
 const Messages                   = lazy(() => import('./pages/Messages'));
 const AdminMessages              = lazy(() => import('./pages/AdminMessages'));
 const RoleManagement             = lazy(() => import('./pages/RoleManagement'));
@@ -112,6 +114,14 @@ const AuthenticatedApp = () => {
       <Route
         path="/counsellor"
         element={canAccessCounsellorPortal ? protect(<CounsellorPortal />) : <Navigate to="/dashboard" replace />}
+      />
+      <Route
+        path="/counsellor-resources"
+        element={canAccessCounsellorPortal ? protect(<CounsellorResourceCentre />) : <Navigate to="/dashboard" replace />}
+      />
+      <Route
+        path="/counsellor-library"
+        element={canAccessCounsellorPortal ? protect(<CounsellorLibrary />) : <Navigate to="/dashboard" replace />}
       />
       <Route
         path="/counselling-client"

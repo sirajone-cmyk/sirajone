@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   addDoc, collection, doc, getDoc, onSnapshot,
   query, serverTimestamp, updateDoc, where,
@@ -7,21 +8,21 @@ import {
   AlertTriangle, Bell, BookOpen, Calendar, CalendarCheck,
   CheckCircle2, ChevronRight, ClipboardList, Clock, ExternalLink,
   FileText, Inbox, MessageCircle, Plus, Send, Shield,
-  Users, X, Zap,
+  Users, X, Heart, Star, Lock, Compass,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/lib/AuthContext';
 import { db } from '@/lib/firebase';
 import { ROLES } from '@/lib/roles';
 
-/* ─── Constants ─────────────────────────────────────────────── */
+/* ─── Constants ──────────────────────────────────────────────── */
 const SESSION_TYPES = ['Online', 'In-Person', 'Phone', 'WhatsApp', 'Group Session'];
 const RESOURCE_TYPES = ['Article', 'Video', 'PDF', 'Audio', 'Du\'a', 'Qur\'an', 'Other'];
 const NOTE_CATEGORIES = ['Session', 'Assessment', 'Crisis', 'Progress', 'Referral', 'Closure'];
 const FOLLOW_UP_TYPES = ['Check-in Call', 'Document Request', 'Referral', 'Crisis Review', 'General'];
 const CLIENT_TABS = ['Overview', 'Sessions', 'Notes', 'Messages', 'Resources', 'Follow-Ups'];
 
-/* ─── Helpers ────────────────────────────────────────────────── */
+/* ─── Helpers ─────────────────────────────────────────────────── */
 function toDate(v) {
   if (!v) return null;
   if (typeof v.toDate === 'function') return v.toDate();
@@ -49,6 +50,11 @@ function isToday(v) {
   if (!d) return false;
   const now = new Date();
   return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+}
+
+/** Sanitize counsellor display name — strips "counsellor" prefix from corrupted registrations */
+function sanitizeCounsellorName(raw = '') {
+  return raw.replace(/^counsellor\s*/i, '').trim();
 }
 
 /* ─── Sub-components ─────────────────────────────────────────── */
@@ -160,6 +166,34 @@ function PrimaryBtn({ children, disabled, onClick, tone = 'sky', className = '' 
   );
 }
 
+/* ─── Trust Pillars ──────────────────────────────────────────── */
+const TRUST_PILLARS = [
+  {
+    icon: Shield,
+    arabic: 'الأمانة',
+    label: 'Amanah',
+    desc: 'Every case entrusted to you is a sacred responsibility.',
+  },
+  {
+    icon: Lock,
+    arabic: 'السرية',
+    label: 'Confidentiality',
+    desc: 'What is shared in trust remains in trust.',
+  },
+  {
+    icon: Star,
+    arabic: 'التوجيه الإسلامي',
+    label: 'Islamic Guidance',
+    desc: 'Rooted in Quran, Sunnah and the wisdom of the scholars.',
+  },
+  {
+    icon: Heart,
+    arabic: 'مصلحة العميل',
+    label: 'Client Welfare',
+    desc: 'The wellbeing of the client is the measure of every decision.',
+  },
+];
+
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function CounsellorPortal() {
   const { user } = useAuth();
@@ -181,7 +215,7 @@ export default function CounsellorPortal() {
   const [busy, setBusy] = useState(false);
 
   /* modals */
-  const [modal, setModal] = useState(null); // 'session' | 'note' | 'resource' | 'broadcast' | 'followup' | 'close'
+  const [modal, setModal] = useState(null);
 
   /* forms */
   const [sessionForm, setSessionForm] = useState({ date: '', type: 'Online', notes: '', duration: '60' });
@@ -295,8 +329,13 @@ export default function CounsellorPortal() {
   const followUpsDue = clients.filter((c) => c.followUpPending).length;
   const totalUnread = clients.reduce((sum, c) => sum + c.unreadMessages, 0);
   const totalSessions = sessions.length;
+  const upcomingSessions = sessions.filter((s) => s.status === 'upcoming');
 
-  const counsellorName = profile?.displayName || profile?.fullName || user?.full_name || user?.email || 'Counsellor';
+  /* ── Sanitized counsellor name ── */
+  const counsellorName = sanitizeCounsellorName(
+    profile?.displayName || profile?.fullName || user?.full_name || user?.email || ''
+  ) || 'Counsellor';
+  const counsellorFirstName = counsellorName.split(' ')[0] || 'Ustādh';
 
   /* ── Actions ── */
   async function acceptRequest(requestId) {
@@ -467,34 +506,269 @@ export default function CounsellorPortal() {
     <div className="min-h-screen bg-[#08121a] text-white">
       <Navbar />
 
-      <main className="mx-auto max-w-[96rem] px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[96rem] px-4 py-8 sm:px-6 lg:px-8 space-y-6">
 
-        {/* ── Hero ── */}
-        <header className="rounded-3xl border border-sky-400/15 bg-[#0d1b29] px-8 py-6 shadow-xl shadow-black/30">
-          <p className="text-xs font-black uppercase tracking-[0.35em] text-sky-400">Counsellor Workspace</p>
-          <h1 className="mt-3 font-serif text-4xl font-black text-white sm:text-5xl">
-            As-salāmu ʿalaykum, {profile?.displayName || profile?.fullName || 'Ustādh'}
+        {/* ══════════════════════════════════════════════════════════
+            PART 1 — HERO
+        ══════════════════════════════════════════════════════════ */}
+        <header className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-[#071310] via-[#0b1a12] to-[#08121a] px-8 py-10 shadow-xl shadow-black/40">
+
+          {/* Subtle geometric accent */}
+          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-emerald-500/5 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-8 left-1/3 h-48 w-48 rounded-full bg-sky-500/5 blur-2xl" />
+
+          {/* Badge */}
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/8 px-4 py-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="text-[11px] font-black uppercase tracking-[0.35em] text-emerald-300">
+              SirajOne Counsellor Support
+            </span>
+          </div>
+
+          {/* Greeting */}
+          <p className="text-sm font-semibold text-slate-400">
+            As-salāmu ʿalaykum,{' '}
+            <span className="font-black text-white">{counsellorFirstName}</span>
+          </p>
+
+          {/* Main heading */}
+          <h1 className="mt-2 font-serif text-4xl font-black leading-tight text-white sm:text-5xl">
+            Guiding with Wisdom,<br className="hidden sm:block" />
+            <span className="text-emerald-300"> Compassion,</span> and Trust
           </h1>
-          <p className="mt-2 font-serif text-lg text-sky-300/70 italic">
-            وَمَنْ أَحْسَنُ قَوْلًا مِّمَّن دَعَا إِلَى اللَّهِ وَعَمِلَ صَالِحًا
-          </p>
-          <p className="mt-4 text-sm text-slate-400">
-            {profile?.specialisation || profile?.qualification || 'Your case management centre — private, confidential, and secure.'}
-          </p>
+
+          {/* Quranic reminder */}
+          <div className="mt-5 max-w-xl rounded-2xl border border-emerald-400/15 bg-emerald-400/5 px-5 py-4">
+            <p className="text-right font-serif text-lg leading-8 text-emerald-200">
+              وَمَنْ أَحْسَنُ قَوْلًا مِّمَّن دَعَا إِلَى اللَّهِ وَعَمِلَ صَالِحًا
+            </p>
+            <p className="mt-1.5 text-xs italic text-slate-400">
+              "And who is better in speech than one who invites to Allah and does righteous deeds."
+              <span className="ml-1 not-italic text-slate-500">— Surah Fussilat 41:33</span>
+            </p>
+          </div>
+
+          {/* Action buttons */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              to="#requests"
+              onClick={() => document.getElementById('client-management')?.scrollIntoView({ behavior: 'smooth' })}
+              className="flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-2.5 text-sm font-bold text-amber-200 transition hover:bg-amber-400/20"
+            >
+              <Inbox className="h-4 w-4" />
+              View Client Requests
+              {newRequests > 0 && (
+                <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-black text-[#0a0800]">
+                  {newRequests}
+                </span>
+              )}
+            </Link>
+            <Link
+              to="#active"
+              onClick={() => document.getElementById('client-management')?.scrollIntoView({ behavior: 'smooth' })}
+              className="flex items-center gap-2 rounded-xl border border-sky-400/30 bg-sky-400/10 px-5 py-2.5 text-sm font-bold text-sky-200 transition hover:bg-sky-400/20"
+            >
+              <Users className="h-4 w-4" />
+              Active Cases
+              <span className="rounded-full bg-sky-500/30 px-2 py-0.5 text-[11px] font-black text-sky-200">
+                {activeClients}
+              </span>
+            </Link>
+            <Link
+              to="/counsellor-resources"
+              className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-5 py-2.5 text-sm font-bold text-emerald-200 transition hover:bg-emerald-400/20"
+            >
+              <BookOpen className="h-4 w-4" />
+              Counsellor Resources
+            </Link>
+          </div>
+
+          {/* Trust pillars */}
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {TRUST_PILLARS.map(({ icon: Icon, arabic, label, desc }) => (
+              <div
+                key={label}
+                className="rounded-xl border border-white/8 bg-white/[0.03] p-3 transition hover:border-emerald-400/20 hover:bg-emerald-400/5"
+              >
+                <Icon className="h-4 w-4 text-emerald-400" />
+                <p className="mt-2 text-right text-xs font-semibold text-emerald-300/70">{arabic}</p>
+                <p className="mt-0.5 text-xs font-black text-white">{label}</p>
+                <p className="mt-1 text-[11px] leading-4 text-slate-500">{desc}</p>
+              </div>
+            ))}
+          </div>
         </header>
 
-        {/* ── Stat cards ── */}
-        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-          <StatCard title="Active Clients" value={activeClients} icon={Users} tone="sky" />
-          <StatCard title="New Requests" value={newRequests} icon={Inbox} tone="amber" pulse={newRequests > 0} />
-          <StatCard title="Sessions Today" value={sessionsToday} icon={CalendarCheck} tone="emerald" />
-          <StatCard title="Follow-Ups Due" value={followUpsDue} icon={AlertTriangle} tone="amber" pulse={followUpsDue > 0} />
-          <StatCard title="Unread Messages" value={totalUnread} icon={MessageCircle} tone="sky" pulse={totalUnread > 0} />
-          <StatCard title="Total Sessions" value={totalSessions} icon={BookOpen} tone="slate" />
+        {/* ══════════════════════════════════════════════════════════
+            PART 2 — DASHBOARD
+        ══════════════════════════════════════════════════════════ */}
+
+        {/* ── Section 1: Today's Responsibilities ── */}
+        <section>
+          <div className="mb-3 flex items-center gap-3">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Today's Responsibilities</h2>
+            <div className="h-px flex-1 bg-white/5" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+
+            {/* New Requests */}
+            <div className={`rounded-2xl border p-4 transition ${
+              newRequests > 0
+                ? 'border-amber-400/30 bg-amber-400/8'
+                : 'border-white/8 bg-white/[0.03]'
+            }`}>
+              <div className="flex items-center justify-between">
+                <Inbox className={`h-5 w-5 ${newRequests > 0 ? 'text-amber-300' : 'text-slate-600'}`} />
+                {newRequests > 0 && <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />}
+              </div>
+              <p className="mt-3 text-3xl font-black text-white">{newRequests}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">New Requests</p>
+              {newRequests > 0 && (
+                <p className="mt-2 text-[11px] text-amber-300">Awaiting your review</p>
+              )}
+            </div>
+
+            {/* Follow-Ups Due */}
+            <div className={`rounded-2xl border p-4 transition ${
+              followUpsDue > 0
+                ? 'border-rose-400/30 bg-rose-400/8'
+                : 'border-white/8 bg-white/[0.03]'
+            }`}>
+              <div className="flex items-center justify-between">
+                <AlertTriangle className={`h-5 w-5 ${followUpsDue > 0 ? 'text-rose-300' : 'text-slate-600'}`} />
+                {followUpsDue > 0 && <span className="h-2 w-2 animate-pulse rounded-full bg-rose-400" />}
+              </div>
+              <p className="mt-3 text-3xl font-black text-white">{followUpsDue}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Follow-Ups Due</p>
+              {followUpsDue > 0 && (
+                <p className="mt-2 text-[11px] text-rose-300">Clients needing follow-up</p>
+              )}
+            </div>
+
+            {/* Unanswered Messages */}
+            <div className={`rounded-2xl border p-4 transition ${
+              totalUnread > 0
+                ? 'border-sky-400/30 bg-sky-400/8'
+                : 'border-white/8 bg-white/[0.03]'
+            }`}>
+              <div className="flex items-center justify-between">
+                <MessageCircle className={`h-5 w-5 ${totalUnread > 0 ? 'text-sky-300' : 'text-slate-600'}`} />
+                {totalUnread > 0 && <span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" />}
+              </div>
+              <p className="mt-3 text-3xl font-black text-white">{totalUnread}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Unanswered Messages</p>
+              {totalUnread > 0 && (
+                <p className="mt-2 text-[11px] text-sky-300">Clients waiting for reply</p>
+              )}
+            </div>
+
+            {/* Scheduled Sessions Today */}
+            <div className={`rounded-2xl border p-4 transition ${
+              sessionsToday > 0
+                ? 'border-emerald-400/30 bg-emerald-400/8'
+                : 'border-white/8 bg-white/[0.03]'
+            }`}>
+              <div className="flex items-center justify-between">
+                <CalendarCheck className={`h-5 w-5 ${sessionsToday > 0 ? 'text-emerald-300' : 'text-slate-600'}`} />
+              </div>
+              <p className="mt-3 text-3xl font-black text-white">{sessionsToday}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Sessions Today</p>
+              {sessionsToday > 0 && (
+                <p className="mt-2 text-[11px] text-emerald-300">Sessions logged today</p>
+              )}
+            </div>
+
+            {/* Safeguarding — always visible */}
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+              <Shield className="h-5 w-5 text-slate-600" />
+              <p className="mt-3 text-xs font-black uppercase tracking-wider text-slate-500">Safeguarding</p>
+              <p className="mt-1 text-[11px] leading-4 text-slate-600">
+                Any concern about a client's safety must be escalated immediately. Do not delay.
+              </p>
+              <a
+                href="mailto:safeguarding@sirajone.co.za"
+                className="mt-2 inline-block text-[11px] font-semibold text-rose-400 hover:text-rose-300"
+              >
+                Contact Lead →
+              </a>
+            </div>
+          </div>
         </section>
 
-        {/* ── 3-column layout ── */}
-        <section className="mt-6 grid gap-4 xl:grid-cols-[300px_1fr_280px]">
+        {/* ── Section 2: Quick Actions ── */}
+        <section>
+          <div className="mb-3 flex items-center gap-3">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Quick Actions</h2>
+            <div className="h-px flex-1 bg-white/5" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {[
+              { label: 'Schedule Session', icon: Calendar, act: () => setModal('session'), tone: 'sky', disabled: !selectedClient },
+              { label: 'Write Case Note', icon: FileText, act: () => setModal('note'), tone: 'sky', disabled: !selectedClient },
+              { label: 'Share Resource', icon: BookOpen, act: () => setModal('resource'), tone: 'sky', disabled: !selectedClient },
+              { label: 'Flag Follow-Up', icon: AlertTriangle, act: () => setModal('followup'), tone: 'amber', disabled: !selectedClient },
+              { label: 'Send Announcement', icon: Bell, act: () => setModal('broadcast'), tone: 'emerald', disabled: false },
+              { label: 'Resource Centre', icon: Compass, act: null, link: '/counsellor-resources', tone: 'slate', disabled: false },
+            ].map(({ label, icon: Icon, act, link, tone, disabled }) => {
+              const cls = {
+                sky: 'border-sky-400/20 bg-sky-400/5 text-sky-300 hover:bg-sky-400/12',
+                amber: 'border-amber-400/20 bg-amber-400/5 text-amber-300 hover:bg-amber-400/12',
+                emerald: 'border-emerald-400/20 bg-emerald-400/5 text-emerald-300 hover:bg-emerald-400/12',
+                slate: 'border-white/10 bg-white/[0.04] text-slate-300 hover:border-white/20',
+              }[tone];
+              if (link) {
+                return (
+                  <Link
+                    key={label}
+                    to={link}
+                    className={`flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-xs font-bold text-center transition ${cls}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {label}
+                  </Link>
+                );
+              }
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  disabled={disabled}
+                  onClick={act}
+                  className={`flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-xs font-bold text-center transition disabled:opacity-30 ${cls}`}
+                >
+                  <Icon className="h-5 w-5" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {!selectedClient && (
+            <p className="mt-2 text-[11px] text-slate-600">
+              Select a client below to enable case actions.
+            </p>
+          )}
+        </section>
+
+        {/* ── Section 3: Statistics ── */}
+        <section>
+          <div className="mb-3 flex items-center gap-3">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Overview & Statistics</h2>
+            <div className="h-px flex-1 bg-white/5" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+            <StatCard title="Active Clients" value={activeClients} icon={Users} tone="sky" />
+            <StatCard title="New Requests" value={newRequests} icon={Inbox} tone="amber" pulse={newRequests > 0} />
+            <StatCard title="Sessions Today" value={sessionsToday} icon={CalendarCheck} tone="emerald" />
+            <StatCard title="Follow-Ups Due" value={followUpsDue} icon={AlertTriangle} tone="amber" pulse={followUpsDue > 0} />
+            <StatCard title="Unread Messages" value={totalUnread} icon={MessageCircle} tone="sky" pulse={totalUnread > 0} />
+            <StatCard title="Total Sessions" value={totalSessions} icon={BookOpen} tone="slate" />
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════
+            CLIENT MANAGEMENT — 3-column layout (preserved)
+        ══════════════════════════════════════════════════════════ */}
+        <section id="client-management" className="grid gap-4 xl:grid-cols-[300px_1fr_280px]">
 
           {/* ── LEFT: Client Roster ── */}
           <aside className="space-y-4">
@@ -562,6 +836,14 @@ export default function CounsellorPortal() {
                   <EmptyState title="No active clients" text="Accept a request above to begin." />
                 )}
               </div>
+            </div>
+
+            {/* Amanah reminder */}
+            <div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/5 p-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Reminder</p>
+              <p className="mt-1.5 text-xs leading-5 text-slate-400 italic">
+                "Every soul entrusted to you is an amanah. Guard their privacy as you would guard your own."
+              </p>
             </div>
           </aside>
 
@@ -655,8 +937,6 @@ export default function CounsellorPortal() {
                         <button type="button" onClick={clearFollowUp} className="text-xs font-black text-amber-300 hover:text-amber-200">Mark Done</button>
                       </div>
                     )}
-
-                    {/* ── Your Daily Ibadah (counsellor personal, private) ── */}
                     <div className="rounded-2xl border border-emerald-400/20 bg-[#071310] p-4">
                       <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">Your Daily Practice</p>
                       <h4 className="text-sm font-bold text-white">Your Daily Ibadah</h4>
@@ -813,45 +1093,27 @@ export default function CounsellorPortal() {
             )}
           </div>
 
-          {/* ── RIGHT: Quick Actions ── */}
+          {/* ── RIGHT: Upcoming + Confidentiality ── */}
           <aside className="space-y-4">
+
+            {/* Upcoming sessions */}
             <div className="rounded-2xl border border-white/10 bg-[#0d1b29] p-4">
-              <p className="mb-3 text-xs font-black uppercase tracking-widest text-slate-400">Case Actions</p>
-              <p className="mb-3 text-xs text-slate-500 truncate">
-                {selectedClient ? selectedClient.name : 'Select a client'}
-              </p>
-              <div className="space-y-2">
-                {[
-                  { label: 'Schedule Session', icon: Calendar, act: () => setModal('session'), tone: 'sky' },
-                  { label: 'Write Case Note', icon: FileText, act: () => setModal('note'), tone: 'sky' },
-                  { label: 'Share Resource', icon: BookOpen, act: () => setModal('resource'), tone: 'sky' },
-                  { label: 'Flag Follow-Up', icon: AlertTriangle, act: () => setModal('followup'), tone: 'amber' },
-                ].map(({ label, icon: Icon, act, tone }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    disabled={!selectedClient}
-                    onClick={act}
-                    className={`flex w-full items-center gap-2.5 rounded-xl border px-4 py-2.5 text-sm font-bold transition disabled:opacity-30 ${
-                      tone === 'amber'
-                        ? 'border-amber-400/20 bg-amber-400/5 text-amber-300 hover:bg-amber-400/10'
-                        : 'border-white/10 text-slate-200 hover:border-sky-400/30 hover:text-sky-300'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {label}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  disabled={!selectedClient?.requestId || selectedClient?.requestStatus === 'closed'}
-                  onClick={() => setModal('close')}
-                  className="flex w-full items-center gap-2.5 rounded-xl border border-rose-400/20 bg-rose-400/5 px-4 py-2.5 text-sm font-bold text-rose-300 transition hover:bg-rose-400/10 disabled:opacity-30"
-                >
-                  <X className="h-4 w-4 shrink-0" />
-                  Close Case
-                </button>
-              </div>
+              <p className="mb-3 text-xs font-black uppercase tracking-widest text-slate-400">Upcoming Sessions</p>
+              {upcomingSessions.slice(0, 4).length ? (
+                <div className="space-y-2">
+                  {upcomingSessions.slice(0, 4).map((s) => (
+                    <div key={s.id} className="flex items-center gap-2 rounded-xl border border-white/5 bg-[#08121a] p-3">
+                      <CalendarCheck className="h-4 w-4 shrink-0 text-emerald-400" />
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-white">{s.clientName || 'Client'}</p>
+                        <p className="text-[11px] text-slate-500">{fmt(s.sessionDate, { time: true })}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500">No upcoming sessions scheduled.</p>
+              )}
             </div>
 
             {/* Broadcast */}
@@ -867,27 +1129,57 @@ export default function CounsellorPortal() {
               </button>
             </div>
 
-            {/* Upcoming sessions */}
+            {/* Confidentiality notice */}
+            <div className="rounded-2xl border border-rose-400/15 bg-rose-400/5 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Lock className="h-4 w-4 text-rose-400" />
+                <p className="text-xs font-black uppercase tracking-wider text-rose-400">Confidentiality</p>
+              </div>
+              <p className="text-[11px] leading-5 text-slate-400">
+                All client information is an amanah. Nothing discussed in sessions may be shared without
+                explicit consent — except where safeguarding requires it.
+              </p>
+            </div>
+
+            {/* Resource links */}
             <div className="rounded-2xl border border-white/10 bg-[#0d1b29] p-4">
-              <p className="mb-3 text-xs font-black uppercase tracking-widest text-slate-400">Upcoming Sessions</p>
-              {sessions.filter((s) => s.status === 'upcoming').slice(0, 4).length ? (
-                <div className="space-y-2">
-                  {sessions.filter((s) => s.status === 'upcoming').slice(0, 4).map((s) => (
-                    <div key={s.id} className="flex items-center gap-2 rounded-xl border border-white/5 bg-[#08121a] p-3">
-                      <CalendarCheck className="h-4 w-4 shrink-0 text-emerald-400" />
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-white">{s.clientName || 'Client'}</p>
-                        <p className="text-[11px] text-slate-500">{fmt(s.sessionDate, { time: true })}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-slate-500">No upcoming sessions scheduled.</p>
-              )}
+              <p className="mb-3 text-xs font-black uppercase tracking-widest text-slate-400">Resources</p>
+              <div className="space-y-2">
+                <Link
+                  to="/counsellor-resources"
+                  className="flex items-center justify-between rounded-xl border border-emerald-400/15 bg-emerald-400/5 px-3 py-2.5 text-xs font-bold text-emerald-300 hover:bg-emerald-400/10"
+                >
+                  <span className="flex items-center gap-2">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Resource Centre
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+                <Link
+                  to="/counsellor-library"
+                  className="flex items-center justify-between rounded-xl border border-sky-400/15 bg-sky-400/5 px-3 py-2.5 text-xs font-bold text-sky-300 hover:bg-sky-400/10"
+                >
+                  <span className="flex items-center gap-2">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Counsellor Library
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+                <a
+                  href="/daily-spiritual"
+                  className="flex items-center justify-between rounded-xl border border-white/10 px-3 py-2.5 text-xs font-bold text-slate-400 hover:border-white/20 hover:text-white"
+                >
+                  <span className="flex items-center gap-2">
+                    <Heart className="h-3.5 w-3.5" />
+                    Daily Spiritual
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
             </div>
           </aside>
         </section>
+
       </main>
 
       {/* ── Modal: Schedule Session ── */}
