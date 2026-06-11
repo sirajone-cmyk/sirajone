@@ -107,7 +107,7 @@ export default function LetterCatalog() {
   const [selected, setSelected] = useState(null);
   const [filterSifah, setFilterSifah] = useState('');
   const [practiceMode, setPracticeMode] = useState(null);
-  const { playLetterAudio, isLoadingCurrent, isPlayingCurrent } = useLetterAudio();
+  const { playLetterAudio, isLoadingCurrent, isPlayingCurrent, isErrorCurrent } = useLetterAudio();
 
   const allSifaat = useMemo(() => {
     return [...new Set(bookLetters.flatMap((letter) => letter.sifaat.map(sifahName)))].sort();
@@ -215,15 +215,36 @@ export default function LetterCatalog() {
                 <button
                   type="button"
                   onClick={() => playLetterAudio(letter)}
-                  title="Listen"
-                  className={`flex items-center justify-center gap-1 py-2 text-xs transition-colors border-r border-white/8 ${isPlayingCurrent(letter) ? 'bg-emerald-900/40 text-emerald-300' : 'text-slate-500 hover:bg-emerald-900/20 hover:text-emerald-300'}`}
+                  disabled={isLoadingCurrent(letter)}
+                  title={
+                    isErrorCurrent(letter) ? 'Audio unavailable' :
+                    isPlayingCurrent(letter) ? 'Playing' :
+                    isLoadingCurrent(letter) ? 'Loading…' : 'Listen'
+                  }
+                  className={`flex items-center justify-center gap-1 py-2 text-xs transition-colors border-r border-white/8 ${
+                    isErrorCurrent(letter)
+                      ? 'text-red-400/60 cursor-not-allowed'
+                      : isPlayingCurrent(letter)
+                        ? 'bg-emerald-900/40 text-emerald-300'
+                        : 'text-slate-500 hover:bg-emerald-900/20 hover:text-emerald-300'
+                  }`}
                 >
                   {isLoadingCurrent(letter) ? (
-                    <span className="text-[10px]" aria-hidden="true">...</span>
+                    <span className="flex h-3.5 w-3.5 items-center justify-center">
+                      <span className="block h-2.5 w-2.5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+                    </span>
                   ) : (
-                    <Volume2 className="h-3.5 w-3.5" />
+                    <Volume2 className={`h-3.5 w-3.5 ${isErrorCurrent(letter) ? 'opacity-40' : ''}`} />
                   )}
-                  <span className="hidden sm:inline text-[10px]">{isLoadingCurrent(letter) ? 'Loading' : 'Listen'}</span>
+                  <span className="hidden sm:inline text-[10px]">
+                    {isLoadingCurrent(letter)
+                      ? 'Loading…'
+                      : isErrorCurrent(letter)
+                        ? 'Unavailable'
+                        : isPlayingCurrent(letter)
+                          ? 'Playing'
+                          : 'Listen'}
+                  </span>
                 </button>
                 <button
                   type="button"

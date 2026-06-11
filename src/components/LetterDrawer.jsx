@@ -12,7 +12,7 @@ function sifahName(item) {
 }
 
 export default function LetterDrawer({ letter, onClose, colorForSifah = defaultColorForSifah }) {
-  const { playLetterAudio, isLoadingCurrent, isPlayingCurrent } = useLetterAudio();
+  const { playLetterAudio, isLoadingCurrent, isPlayingCurrent, isErrorCurrent } = useLetterAudio();
   useEffect(() => {
     const handler = (event) => event.key === 'Escape' && onClose();
     window.addEventListener('keydown', handler);
@@ -58,11 +58,33 @@ export default function LetterDrawer({ letter, onClose, colorForSifah = defaultC
                     type="button"
                     onClick={() => playLetterAudio(letter)}
                     disabled={isLoadingCurrent(letter)}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition ${isPlayingCurrent(letter) ? 'bg-emerald-400/20 text-emerald-200' : 'bg-white/10 text-slate-200 hover:bg-emerald-400/15 hover:text-emerald-200'}`}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition ${
+                      isErrorCurrent(letter)
+                        ? 'bg-red-400/10 text-red-400 cursor-not-allowed'
+                        : isPlayingCurrent(letter)
+                          ? 'bg-emerald-400/20 text-emerald-200'
+                          : 'bg-white/10 text-slate-200 hover:bg-emerald-400/15 hover:text-emerald-200'
+                    }`}
                     aria-label={`Listen to ${letter.name}`}
                   >
-                    {isLoadingCurrent(letter) ? <span aria-hidden="true">...</span> : <Volume2 className="h-4 w-4" />}
-                    <span className="hidden sm:inline">{isLoadingCurrent(letter) ? 'Loading' : 'Listen'}</span>
+                    {isLoadingCurrent(letter) ? (
+                      <span className="h-4 w-4 flex items-center justify-center">
+                        <span className="block h-3 w-3 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+                      </span>
+                    ) : isErrorCurrent(letter) ? (
+                      <Volume2 className="h-4 w-4 opacity-40" />
+                    ) : (
+                      <Volume2 className="h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {isLoadingCurrent(letter)
+                        ? 'Loading…'
+                        : isErrorCurrent(letter)
+                          ? 'Unavailable'
+                          : isPlayingCurrent(letter)
+                            ? 'Playing'
+                            : 'Listen'}
+                    </span>
                   </button>
                   <button
                     type="button"
