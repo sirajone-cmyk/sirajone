@@ -10,6 +10,7 @@ import {
   serverTimestamp, updateDoc, doc, where,
 } from 'firebase/firestore';
 import Navbar from '@/components/Navbar';
+import ServiceModal from '@/components/ServiceModal';
 import { useAuth } from '@/lib/AuthContext';
 import { db } from '@/lib/firebase';
 
@@ -47,18 +48,162 @@ const JOURNEY_STAGES = [
 ];
 
 const SERVICES = [
-  { title: 'Marriage Guidance',         icon: Heart,       cat: 'Relationship' },
-  { title: 'Pre-Marital Guidance',         icon: Star,        cat: 'Relationship' },
-  { title: 'Family Support',           icon: Home,        cat: 'Family'       },
-  { title: 'Parenting Support',            icon: Users,       cat: 'Family'       },
-  { title: 'Youth Mentorship',             icon: TrendingUp,  cat: 'Youth'        },
-  { title: 'Youth Mentorship',             icon: Star,        cat: 'Youth'        },
-  { title: 'Student Support',              icon: BookOpen,    cat: 'Youth'        },
-  { title: 'Adult Guidance',            icon: Heart,       cat: 'Adult'        },
-  { title: 'Spiritual Support',    icon: HandHeart,   cat: 'Spiritual'    },
-  { title: 'Personal Development',         icon: TrendingUp,  cat: 'Growth'       },
-  { title: 'Emotional Wellbeing Support',  icon: Heart,       cat: 'Wellbeing'    },
-  { title: 'Lifestyle & Wellbeing Support',icon: Star,        cat: 'Wellbeing'    },
+  {
+    title: 'Marriage Guidance', icon: Heart, cat: 'Relationship',
+    desc: 'Support for married couples through Islamic principles.',
+    fullDesc: 'Structured Islamic guidance for married couples experiencing challenges, conflict, communication breakdown, or seeking to strengthen their relationship through the Qurān and Sunnah.',
+    suitableFor: 'Married couples facing communication difficulties, conflict, trust issues, or wanting to deepen their bond through an Islamic lens.',
+    benefits: [
+      'One-on-one sessions with an approved Islamic guidance provider',
+      'Communication frameworks grounded in the Sunnah',
+      'Conflict resolution using Islamic principles of reconciliation',
+      'Confidential, respectful, and non-judgmental environment',
+    ],
+    sessionFormat: 'Couples or individual', duration: '45 – 60 min',
+  },
+  {
+    title: 'Pre-Marital Guidance', icon: Star, cat: 'Relationship',
+    desc: 'Preparation for the sacred covenant of marriage.',
+    fullDesc: 'Comprehensive preparation for those approaching marriage — covering rights, responsibilities, communication, finances, and Islamic family life, with separate cohorts for brothers and sisters.',
+    suitableFor: 'Brothers and sisters engaged or seriously considering marriage who want to build a strong foundation rooted in Islamic values.',
+    benefits: [
+      'Six structured modules covering all aspects of Islamic marriage',
+      'Separate sessions for brothers and sisters',
+      'Practical frameworks for communication and conflict resolution',
+      'Islamic financial and family planning guidance',
+    ],
+    sessionFormat: 'Group or individual', duration: '6-week programme',
+  },
+  {
+    title: 'Family Support', icon: Home, cat: 'Family',
+    desc: 'Strengthening family bonds through Islamic values.',
+    fullDesc: 'Guidance for families navigating conflict, breakdown of communication, or challenges between family members — approached through an Islamic framework of mercy, justice, and wisdom.',
+    suitableFor: 'Families experiencing internal conflict, parent-child tension, sibling disputes, or who want to strengthen family dynamics.',
+    benefits: [
+      'Mediated family sessions with an Islamic guidance provider',
+      'Frameworks for respectful communication between family members',
+      'Guidance on rights and responsibilities within the family unit',
+      'Referral to community resources where appropriate',
+    ],
+    sessionFormat: 'Family or individual', duration: '45 – 60 min',
+  },
+  {
+    title: 'Parenting Support', icon: Users, cat: 'Family',
+    desc: 'Raising children with love, wisdom, and taqwā.',
+    fullDesc: 'Practical guidance for parents on raising children with strong Islamic character — covering discipline, emotional development, screen time, peer pressure, and tarbiyah in the modern world.',
+    suitableFor: 'Parents of children of all ages seeking Islamic guidance on raising balanced, grounded, and spiritually connected children.',
+    benefits: [
+      'Evidence-informed parenting guidance through an Islamic lens',
+      'Practical tools for discipline, communication, and emotional nurturing',
+      'Age-appropriate Islamic tarbiyah strategies',
+      'Ongoing support as your family grows and changes',
+    ],
+    sessionFormat: 'Individual or couples', duration: '45 – 60 min',
+  },
+  {
+    title: 'Youth Mentorship', icon: TrendingUp, cat: 'Youth',
+    desc: 'Supporting young Muslims to grow with purpose.',
+    fullDesc: 'Mentorship for young Muslims navigating identity, peer pressure, relationships, and life direction — guided by Islamic values and delivered by caring, qualified support providers.',
+    suitableFor: 'Young Muslims aged 14–25 facing challenges of identity, faith, relationships, or life direction in the modern world.',
+    benefits: [
+      'One-on-one mentorship with an approved Islamic guidance provider',
+      'Safe, confidential space to discuss personal challenges',
+      'Islamic perspective on modern pressures and life decisions',
+      'Goal-setting and personal development grounded in Sunnah',
+    ],
+    sessionFormat: 'Individual', duration: '30 – 45 min',
+  },
+  {
+    title: 'Youth Development', icon: Star, cat: 'Youth',
+    desc: 'Building character and confidence in young Muslims.',
+    fullDesc: 'Structured development programmes for youth focused on character building, leadership, Islamic identity, and community engagement — helping young Muslims thrive with confidence.',
+    suitableFor: 'Young Muslims seeking to develop leadership skills, Islamic character, and a stronger sense of purpose and identity.',
+    benefits: [
+      'Character development rooted in prophetic examples',
+      'Group programmes and individual mentorship',
+      'Community engagement and service learning',
+      'Building resilience, responsibility, and Islamic self-confidence',
+    ],
+    sessionFormat: 'Group or individual', duration: '45 – 60 min',
+  },
+  {
+    title: 'Student Support', icon: BookOpen, cat: 'Youth',
+    desc: 'Guidance for students facing academic and personal pressures.',
+    fullDesc: 'Tailored support for Muslim students managing academic stress, family expectations, career choices, and the challenge of maintaining Islamic identity in academic environments.',
+    suitableFor: 'School, college, and university students facing academic pressure, anxiety, identity challenges, or difficulty balancing deen and dunya.',
+    benefits: [
+      'Islamic perspective on academic stress and life planning',
+      'Support for navigating university life as a Muslim',
+      'Guidance on career choices aligned with Islamic values',
+      'Strategies for maintaining worship and spiritual health while studying',
+    ],
+    sessionFormat: 'Individual', duration: '30 – 45 min',
+  },
+  {
+    title: 'Adult Guidance', icon: Heart, cat: 'Adult',
+    desc: "Support for adults navigating life's challenges.",
+    fullDesc: "Guidance for adult Muslims facing personal challenges, life transitions, grief, loss, or the search for meaning and direction — approached with compassion and Islamic wisdom.",
+    suitableFor: 'Adults at any life stage who are seeking clarity, support, healing, or direction through an Islamic guidance framework.',
+    benefits: [
+      'Compassionate, confidential one-on-one guidance',
+      'Islamic framework for understanding grief, loss, and hardship',
+      'Support through major life transitions',
+      'Tools for self-reflection, muḥāsabah, and personal growth',
+    ],
+    sessionFormat: 'Individual', duration: '45 – 60 min',
+  },
+  {
+    title: 'Spiritual Support', icon: HandHeart, cat: 'Spiritual',
+    desc: 'Reconnecting hearts to Allah through guided support.',
+    fullDesc: 'Support for Muslims experiencing spiritual disconnect, waswās, doubts, loss of motivation in worship, or seeking to deepen their relationship with Allah through structured guidance.',
+    suitableFor: 'Muslims feeling spiritually disconnected, struggling with worship, experiencing religious doubt, or wanting to strengthen their relationship with Allah.',
+    benefits: [
+      'Guided exploration of spiritual challenges in a safe space',
+      'Islamic tools for strengthening imān, tawakkul, and gratitude',
+      'Support for overcoming waswās and spiritual anxiety',
+      'Practical daily spiritual routines and accountability',
+    ],
+    sessionFormat: 'Individual', duration: '45 – 60 min',
+  },
+  {
+    title: 'Personal Development', icon: TrendingUp, cat: 'Growth',
+    desc: 'Growing into the best version of yourself.',
+    fullDesc: 'Structured personal development support for Muslims seeking to build productive habits, achieve goals, overcome procrastination, and grow in character through an Islamic framework.',
+    suitableFor: 'Muslims seeking to improve productivity, build good habits, overcome self-sabotage, or develop their character aligned with prophetic teachings.',
+    benefits: [
+      'Goal-setting frameworks aligned with Islamic values',
+      'Accountability and progress tracking',
+      'Tools for overcoming procrastination and building momentum',
+      'Character development rooted in the Sunnah',
+    ],
+    sessionFormat: 'Individual', duration: '45 – 60 min',
+  },
+  {
+    title: 'Emotional Wellbeing Support', icon: Heart, cat: 'Wellbeing',
+    desc: 'Tending to the heart is an act of worship.',
+    fullDesc: 'Support for Muslims experiencing anxiety, low mood, emotional overwhelm, or difficulty managing difficult feelings — delivered through an Islamic framework that honours both the nafs and the rūḥ.',
+    suitableFor: 'Muslims experiencing emotional difficulties, anxiety, low mood, grief, or overwhelm who want support rooted in Islamic understanding.',
+    benefits: [
+      'Compassionate, judgment-free space to process emotions',
+      'Islamic understanding of the heart, nafs, and emotional health',
+      'Practical tools for emotional regulation from Qurān and Sunnah',
+      'Referral to professional services where required',
+    ],
+    sessionFormat: 'Individual', duration: '45 – 60 min',
+  },
+  {
+    title: 'Lifestyle & Wellbeing Support', icon: Star, cat: 'Wellbeing',
+    desc: 'Building a balanced, purposeful Muslim lifestyle.',
+    fullDesc: 'Holistic support for Muslims wanting to build a balanced lifestyle — covering sleep, nutrition, exercise, screen habits, and daily routines — all aligned with Islamic principles of caring for the amānah of the body.',
+    suitableFor: 'Muslims wanting to build healthier habits, improve work-life balance, manage burnout, or align their daily lifestyle with Islamic wellbeing principles.',
+    benefits: [
+      'Islamic perspective on the body as a trust (amānah)',
+      'Practical guidance on sleep, nutrition, and physical activity',
+      'Tools for managing digital habits and screen time',
+      'Building sustainable routines that support ibadah and wellbeing',
+    ],
+    sessionFormat: 'Individual', duration: '45 – 60 min',
+  },
 ];
 
 const PREMARITAL_MODULES = [
@@ -140,6 +285,7 @@ export default function CounsellingClientDashboard() {
   const [myReg,      setMyReg]      = useState(null);
   const [regBusy,    setRegBusy]    = useState(false);
   const [activeSection, setActiveSection] = useState('journey');
+  const [selectedService, setSelectedService] = useState(null);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -253,6 +399,9 @@ export default function CounsellingClientDashboard() {
   return (
     <div className="min-h-screen bg-[#080d1a] text-white">
       <Navbar />
+      {selectedService && (
+        <ServiceModal service={selectedService} onClose={() => setSelectedService(null)} />
+      )}
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <header className="border-b border-white/5 bg-gradient-to-br from-[#0d1533] via-[#080d1a] to-[#080d1a]">
@@ -340,22 +489,26 @@ export default function CounsellingClientDashboard() {
         <section>
           <SectionHeader eyebrow="What we offer" title="Guidance Services" sub="Choose the support that best fits your situation. Every service is grounded in Qur'an, Sunnah, and professional care." />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {SERVICES.map(({ title, icon: Icon, cat }) => (
-              <button
-                key={title}
-                type="button"
-                className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 text-left transition hover:border-teal-400/30 hover:bg-teal-400/5"
-              >
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-500/10 transition group-hover:bg-teal-500/20">
-                  <Icon className="h-5 w-5 text-teal-300" />
-                </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">{cat}</p>
-                <h3 className="mt-1 text-sm font-bold leading-5 text-white">{title}</h3>
-                <div className="mt-3 flex items-center gap-1 text-[11px] font-bold text-teal-400 opacity-0 transition group-hover:opacity-100">
-                  Learn more <ChevronRight className="h-3 w-3" />
-                </div>
-              </button>
-            ))}
+            {SERVICES.map((service) => {
+              const Icon = service.icon;
+              return (
+                <button
+                  key={`${service.cat}-${service.title}`}
+                  type="button"
+                  onClick={() => setSelectedService(service)}
+                  className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 text-left transition hover:border-teal-400/30 hover:bg-teal-400/5"
+                >
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-500/10 transition group-hover:bg-teal-500/20">
+                    <Icon className="h-5 w-5 text-teal-300" />
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">{service.cat}</p>
+                  <h3 className="mt-1 text-sm font-bold leading-5 text-white">{service.title}</h3>
+                  <div className="mt-3 flex items-center gap-1 text-[11px] font-bold text-teal-400 opacity-0 transition group-hover:opacity-100">
+                    Learn more <ChevronRight className="h-3 w-3" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </section>
 

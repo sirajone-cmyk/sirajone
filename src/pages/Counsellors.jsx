@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { COUNSELLOR_CATEGORIES } from '@/lib/roles';
 import { COUNSELLOR_DELIVERY_MODES, normalizeCounsellorName } from '@/lib/counsellorSchema';
 
-const inputClass = 'w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/70 focus:bg-white/[0.06]';
+const inputClass = 'w-full rounded-2xl border border-white/10 bg-[#102018] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/70 focus:bg-[#0d1a14]';
 
 const GUIDANCE_DISCLAIMER = 'SirajOne provides Islamic guidance, mentorship, spiritual support, and educational services. SirajOne does not provide emergency services, psychiatric treatment, psychological diagnosis, psychotherapy, or medical care.';
 
@@ -353,10 +353,10 @@ function RequestModal({ counsellor, onClose }) {
                 value={form.preferredContact}
                 onChange={(event) => setForm((prev) => ({ ...prev, preferredContact: event.target.value }))}
               >
-                <option>WhatsApp</option>
-                <option>Phone</option>
-                <option>Email</option>
-                <option>Online Session</option>
+                <option className="bg-[#102018] text-white">WhatsApp</option>
+                <option className="bg-[#102018] text-white">Phone</option>
+                <option className="bg-[#102018] text-white">Email</option>
+                <option className="bg-[#102018] text-white">Online Session</option>
               </select>
             </div>
 
@@ -489,20 +489,20 @@ export default function Counsellors() {
               <input className={`${inputClass} pl-11`} value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search providers, guidance areas, languages..." />
             </div>
             <select className={inputClass} value={category} onChange={(event) => setCategory(event.target.value)}>
-              <option value="all">All Categories</option>
-              {COUNSELLOR_CATEGORIES.map((item) => <option key={item} value={item}>{item}</option>)}
+              <option value="all" className="bg-[#102018] text-white">All Categories</option>
+              {COUNSELLOR_CATEGORIES.map((item) => <option key={item} value={item} className="bg-[#102018] text-white">{item}</option>)}
             </select>
             <select className={inputClass} value={delivery} onChange={(event) => setDelivery(event.target.value)}>
-              <option value="all">All Delivery</option>
-              {COUNSELLOR_DELIVERY_MODES.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
+              <option value="all" className="bg-[#102018] text-white">All Delivery</option>
+              {COUNSELLOR_DELIVERY_MODES.map((item) => <option key={item.key} value={item.key} className="bg-[#102018] text-white">{item.label}</option>)}
             </select>
             <select className={inputClass} value={language} onChange={(event) => setLanguage(event.target.value)}>
-              <option value="">All Languages</option>
-              {languages.map((item) => <option key={item} value={item}>{item}</option>)}
+              <option value="" className="bg-[#102018] text-white">All Languages</option>
+              {languages.map((item) => <option key={item} value={item} className="bg-[#102018] text-white">{item}</option>)}
             </select>
             <select className={inputClass} value={sort} onChange={(event) => setSort(event.target.value)}>
-              <option value="name">Sort Name</option>
-              <option value="city">Sort City</option>
+              <option value="name" className="bg-[#102018] text-white">Sort Name</option>
+              <option value="city" className="bg-[#102018] text-white">Sort City</option>
             </select>
           </div>
           <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
