@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import LetterDrawer from '../components/LetterDrawer';
 import useLetterAudio from '../hooks/useLetterAudio';
 import AudioPractice from '../components/AudioPractice';
 import { LETTERS } from '../data/tajweedData';
+import { LETTER_AUDIO_FOLDER, getLetterAudioFilename } from '../data/letterAudioMap';
 import {
   BookOpen,
   Filter,
@@ -108,6 +109,49 @@ export default function LetterCatalog() {
   const [filterSifah, setFilterSifah] = useState('');
   const [practiceMode, setPracticeMode] = useState(null);
   const { playLetterAudio, isLoadingCurrent, isPlayingCurrent, isErrorCurrent } = useLetterAudio();
+
+  // ── DEV: log all expected Firebase Storage paths on mount ─────────────────
+  // Open DevTools → Console and look for [AudioPaths] entries.
+  // This shows you exactly which files must exist in Firebase Storage.
+  // If any letter shows "NO MAPPING", update letterAudioMap.js.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    /* eslint-disable no-console */
+    console.group('[AudioPaths] Expected Firebase Storage paths for Letter Guide');
+    console.log('Bucket: sirajone-786.firebasestorage.app');
+    console.log('Required folder: ' + LETTER_AUDIO_FOLDER + '/');
+    console.log('─────────────────────────────────────────────────────────');
+    let missing = 0;
+    bookLetters.forEach((letter) => {
+      const filename = getLetterAudioFilename(letter);
+      if (!filename) {
+        console.error(`  Letter ${letter.num} ${letter.arabic} (${letter.name}): ✗ NO MAPPING FOUND`);
+        missing += 1;
+      } else {
+        const base   = filename.replace(/\.(m4a|mp3|ogg|wav)$/i, '');
+        const ext    = (filename.match(/\.(m4a|mp3|ogg|wav)$/i)?.[1] ?? 'm4a').toLowerCase();
+        const altExt = ext === 'mp3' ? 'm4a' : 'mp3';
+        console.log(
+          `  Letter ${String(letter.num).padStart(2, '0')} ${letter.arabic} (${letter.name})\n` +
+          `    Primary : ${LETTER_AUDIO_FOLDER}/${base}.${ext}\n` +
+          `    Fallback: ${LETTER_AUDIO_FOLDER}/${base}.${altExt}`,
+        );
+      }
+    });
+    if (missing === 0) {
+      console.log('─────────────────────────────────────────────────────────');
+      console.log('✓ All ' + bookLetters.length + ' letters have filename mappings.');
+      console.log('Now verify these files actually exist in Firebase Storage.');
+      console.log('If audio still fails: check Content-Type in Storage metadata.');
+      console.log('  .m4a must be audio/mp4  (not application/octet-stream)');
+      console.log('  .mp3 must be audio/mpeg (not application/octet-stream)');
+    } else {
+      console.error('✗ ' + missing + ' letter(s) have no filename mapping — update letterAudioMap.js');
+    }
+    console.groupEnd();
+    /* eslint-enable no-console */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const allSifaat = useMemo(() => {
     return [...new Set(bookLetters.flatMap((letter) => letter.sifaat.map(sifahName)))].sort();
