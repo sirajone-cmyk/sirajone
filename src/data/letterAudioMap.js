@@ -1,4 +1,4 @@
-export const LETTER_AUDIO_FOLDER = 'letters audio/letters';
+export const LETTER_AUDIO_FOLDER = 'letters/audio';
 
 export const LETTER_AUDIO_MAP = {
   hamzah: 'hamzah.m4a',
