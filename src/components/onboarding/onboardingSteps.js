@@ -9,7 +9,7 @@ export const PREVIEW_TOUR_STEPS = [
   {
     id: 'preview-welcome',
     title: 'Welcome to SirajOne',
-    body: 'SirajOne brings learning, practice, teacher review, counselling support, and digital resources into one guided Islamic education platform.',
+    body: 'SirajOne brings learning, practice, teacher review, Islamic guidance support, and digital resources into one guided Islamic education platform.',
   },
   {
     id: 'preview-path',
@@ -19,12 +19,12 @@ export const PREVIEW_TOUR_STEPS = [
   {
     id: 'preview-approval',
     title: 'Safe Roles and Approval',
-    body: 'Students can begin learning, while teachers and counsellors enter an approval journey before accessing their professional dashboards.',
+    body: 'Students can begin learning, while teachers and support providers enter an approval journey before accessing their professional dashboards.',
   },
   {
     id: 'preview-help',
     title: 'Support Inside the App',
-    body: 'Messaging, teacher review, counselling requests, and account guidance reduce the need for manual WhatsApp explanations.',
+    body: 'Messaging, teacher review, guidance requests, and account guidance reduce the need for manual WhatsApp explanations.',
     feedback: true,
   },
 ];
@@ -87,14 +87,14 @@ export const ROLE_TOUR_STEPS = {
   [ROLES.COUNSELLOR]: [
     {
       id: 'counsellor-welcome',
-      title: 'Welcome to SirajOne Counselling Support',
+      title: 'Welcome to SirajOne Islamic Guidance & Support Support',
       body: 'Your public profile only appears after approval, with naming and visibility rules kept consistent for safety and trust.',
       target: 'a[href="/counsellor"]',
     },
     {
       id: 'counsellor-cases',
       title: 'Handling Student Support Cases',
-      body: 'Counselling requests and scheduling tools help you organise support cases with a calm, professional workflow.',
+      body: 'Guidance requests and scheduling tools help you organise support cases with a calm, professional workflow.',
       target: '[data-tour="counselling-requests"], a[href="/counsellor"]',
     },
     {
@@ -122,13 +122,13 @@ export const ROLE_TOUR_STEPS = {
     {
       id: 'admin-approvals',
       title: 'Approval Workflows',
-      body: 'Teacher and counsellor applications should be reviewed carefully before account activation.',
+      body: 'Teacher and support provider applications should be reviewed carefully before account activation.',
       target: 'a[href="/admin"]',
     },
     {
       id: 'admin-support',
       title: 'Support and Messaging',
-      body: 'Messages and support tools help the team respond to students, teachers, and counsellors from inside the platform.',
+      body: 'Messages and support tools help the team respond to students, teachers, and support providers from inside the platform.',
       target: 'a[href="/messages"]',
       feedback: true,
     },

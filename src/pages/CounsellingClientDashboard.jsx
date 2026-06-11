@@ -41,23 +41,23 @@ function newestFirst(a, b) {
 const JOURNEY_STAGES = [
   { id: 1, label: 'Request Support',        icon: HandHeart,   desc: 'Submit your initial support request',           status: 'pending'  },
   { id: 2, label: 'Initial Assessment',     icon: BookOpen,    desc: 'A brief consultation to understand your needs', status: 'assessed' },
-  { id: 3, label: 'Counselling Sessions',   icon: Calendar,    desc: 'Regular one-on-one or group sessions',          status: 'active'   },
+  { id: 3, label: 'Guidance Sessions',   icon: Calendar,    desc: 'Regular one-on-one or group sessions',          status: 'active'   },
   { id: 4, label: 'Ongoing Growth',         icon: TrendingUp,  desc: 'Follow-up, reflection and continued support',   status: 'on_hold'  },
   { id: 5, label: 'Community & Development',icon: Users,       desc: 'Programmes, gatherings and workshops',          status: 'complete' },
 ];
 
 const SERVICES = [
-  { title: 'Marriage Counselling',         icon: Heart,       cat: 'Relationship' },
+  { title: 'Marriage Guidance',         icon: Heart,       cat: 'Relationship' },
   { title: 'Pre-Marital Guidance',         icon: Star,        cat: 'Relationship' },
-  { title: 'Family Counselling',           icon: Home,        cat: 'Family'       },
+  { title: 'Family Support',           icon: Home,        cat: 'Family'       },
   { title: 'Parenting Support',            icon: Users,       cat: 'Family'       },
-  { title: 'Teen Counselling',             icon: TrendingUp,  cat: 'Youth'        },
+  { title: 'Youth Mentorship',             icon: TrendingUp,  cat: 'Youth'        },
   { title: 'Youth Mentorship',             icon: Star,        cat: 'Youth'        },
   { title: 'Student Support',              icon: BookOpen,    cat: 'Youth'        },
-  { title: 'Adult Counselling',            icon: Heart,       cat: 'Adult'        },
-  { title: 'Islamic Spiritual Support',    icon: HandHeart,   cat: 'Spiritual'    },
+  { title: 'Adult Guidance',            icon: Heart,       cat: 'Adult'        },
+  { title: 'Spiritual Support',    icon: HandHeart,   cat: 'Spiritual'    },
   { title: 'Personal Development',         icon: TrendingUp,  cat: 'Growth'       },
-  { title: 'Grief & Bereavement Support',  icon: Heart,       cat: 'Wellbeing'    },
+  { title: 'Emotional Wellbeing Support',  icon: Heart,       cat: 'Wellbeing'    },
   { title: 'Lifestyle & Wellbeing Support',icon: Star,        cat: 'Wellbeing'    },
 ];
 
@@ -71,15 +71,15 @@ const PREMARITAL_MODULES = [
 ];
 
 const SUPPORT_OPTIONS = [
-  { label: 'Online Counselling', icon: Monitor, desc: 'Video-based private sessions from anywhere.' },
-  { label: 'Voice Sessions',     icon: Phone,   desc: 'Telephone counselling — no video required.' },
-  { label: 'In-Person Sessions', icon: MapPin,  desc: 'Face-to-face at our counselling centre.'   },
+  { label: 'Online Guidance', icon: Monitor, desc: 'Video-based private sessions from anywhere.' },
+  { label: 'Voice Sessions',     icon: Phone,   desc: 'Telephone guidance — no video required.' },
+  { label: 'In-Person Guidance', icon: MapPin,  desc: 'Face-to-face at our guidance centre.'   },
   { label: 'Group Workshops',    icon: Users,   desc: 'Community group sessions with guided support.' },
 ];
 
 const PILLARS = [
   { title: 'Qur\'an & Sunnah',      desc: 'Our foundation is divine guidance — every approach is rooted in revelation.' },
-  { title: 'Islamic Psychology',    desc: 'Understanding the nafs, the heart, and the soul through an Islamic lens.' },
+  { title: 'Islamic Guidance',    desc: 'Understanding the nafs, the heart, and the soul through an Islamic lens.' },
   { title: 'Emotional Wellbeing',   desc: 'Tending to the heart is an act of worship — we take it seriously.' },
   { title: 'Character Development', desc: '"I was sent to perfect noble character." — Our Prophet ﷺ.' },
   { title: 'Family Strengthening',  desc: 'Your family is your first community — we help build it with love and wisdom.' },
@@ -146,7 +146,7 @@ export default function CounsellingClientDashboard() {
     const uid = user.uid;
     const unsubs = [];
 
-    /* counselling data scoped to this client */
+    /* guidance data scoped to this seeker */
     const clientQuery = (col) => query(collection(db, col), where('clientId', '==', uid));
     unsubs.push(onSnapshot(clientQuery('counsellingRequests'), (s) => setRequests(s.docs.map((d) => ({ id: d.id, ...d.data() })).sort(newestFirst))));
     unsubs.push(onSnapshot(clientQuery('counsellingSessions'), (s) => setSessions(s.docs.map((d) => ({ id: d.id, ...d.data() })).sort(newestFirst))));
@@ -258,7 +258,7 @@ export default function CounsellingClientDashboard() {
       <header className="border-b border-white/5 bg-gradient-to-br from-[#0d1533] via-[#080d1a] to-[#080d1a]">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-teal-400/30 to-transparent" />
-          <p className="text-xs font-black uppercase tracking-[0.32em] text-teal-300">SirajOne Counselling</p>
+          <p className="text-xs font-black uppercase tracking-[0.32em] text-teal-300">SirajOne Islamic Guidance & Support</p>
           <h1 className="mt-3 text-3xl font-black text-white sm:text-5xl">
             As-salāmu ʿalaykum,{' '}
             <span className="text-teal-300">{user?.full_name?.split(' ')[0] || 'dear seeker'}</span>
@@ -296,9 +296,9 @@ export default function CounsellingClientDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-16">
 
-        {/* ══ SECTION 1 — Support Journey (always visible) ════════════════ */}
+        {/* ══ SECTION 1 — Guidance Journey (always visible) ════════════════ */}
         <section>
-          <SectionHeader eyebrow="Your path" title="Support Journey" sub="Each step of your journey with SirajOne — from first contact to ongoing growth." />
+          <SectionHeader eyebrow="Your path" title="Guidance Journey" sub="Each step of your guidance journey with SirajOne — from first contact to ongoing growth." />
           <div className="grid gap-3 sm:grid-cols-5">
             {JOURNEY_STAGES.map((stage, idx) => {
               const Icon = stage.icon;
@@ -336,9 +336,9 @@ export default function CounsellingClientDashboard() {
           </div>
         </section>
 
-        {/* ══ SECTION 2 — Counselling Services (always visible) ════════════ */}
+        {/* ══ SECTION 2 — Guidance Services (always visible) ════════════ */}
         <section>
-          <SectionHeader eyebrow="What we offer" title="Counselling Services" sub="Choose the support that best fits your situation. Every service is grounded in Qur'an, Sunnah, and professional care." />
+          <SectionHeader eyebrow="What we offer" title="Guidance Services" sub="Choose the support that best fits your situation. Every service is grounded in Qur'an, Sunnah, and professional care." />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {SERVICES.map(({ title, icon: Icon, cat }) => (
               <button
@@ -462,7 +462,7 @@ export default function CounsellingClientDashboard() {
 
         {/* ══ SECTION 5 — Islamic Foundation (always visible) ═════════════ */}
         <section>
-          <SectionHeader eyebrow="Our approach" title="Built on Islamic Foundation" sub="Everything we do is grounded in divine guidance, not just clinical theory." />
+          <SectionHeader eyebrow="Our approach" title="Built on Islamic Foundation" sub="Everything we do is grounded in divine guidance, not generic wellness language." />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {PILLARS.map(({ title, desc }, i) => (
               <div key={title} className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
@@ -479,7 +479,7 @@ export default function CounsellingClientDashboard() {
         {/* ══ SECTION 6 — My Sessions ══════════════════════════════════════ */}
         {(activeSection === 'journey' || activeSection === 'sessions') && (
           <section id="sessions">
-            <SectionHeader eyebrow="Your schedule" title="My Sessions" sub="All your upcoming and past counselling sessions in one place." />
+            <SectionHeader eyebrow="Your schedule" title="My Sessions" sub="All your upcoming and past guidance sessions in one place." />
 
             {/* Upcoming */}
             <h3 className="mb-3 text-sm font-bold uppercase tracking-widest text-teal-300">Upcoming</h3>
@@ -517,7 +517,7 @@ export default function CounsellingClientDashboard() {
                     <article key={s.id} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.02] px-5 py-4">
                       <div>
                         <p className="text-sm font-bold text-white">{fmtDate(s.sessionDate)}</p>
-                        <p className="mt-0.5 text-xs text-slate-600">{s.sessionType || 'Counselling Session'}</p>
+                        <p className="mt-0.5 text-xs text-slate-600">{s.sessionType || 'Guidance Session'}</p>
                       </div>
                       <Badge label="Completed" tone="slate" />
                     </article>
@@ -593,7 +593,7 @@ export default function CounsellingClientDashboard() {
                       </div>
                       <Badge label={r.resourceType || 'resource'} tone="slate" />
                       <h3 className="mt-2 font-bold text-white">{r.title || 'Shared Resource'}</h3>
-                      <p className="mt-1 flex-1 text-xs leading-6 text-slate-500">{r.description || r.note || 'A resource has been shared by your counsellor.'}</p>
+                      <p className="mt-1 flex-1 text-xs leading-6 text-slate-500">{r.description || r.note || 'A resource has been shared by your support provider.'}</p>
                       {r.url && (
                         <a
                           href={r.url}
@@ -610,7 +610,7 @@ export default function CounsellingClientDashboard() {
                 })}
               </div>
             ) : (
-              <EmptySlate icon={FileText} title="No resources yet" text="Worksheets, reflections, and helpful links from your counsellor will appear here." />
+              <EmptySlate icon={FileText} title="No resources yet" text="Worksheets, reflections, and helpful links from your support provider will appear here." />
             )}
           </section>
         )}
@@ -621,7 +621,7 @@ export default function CounsellingClientDashboard() {
             <SectionHeader
               eyebrow="Community & development"
               title="Gatherings & Programmes"
-              sub="Educational events, workshops, and community gatherings — open to clients and the wider community."
+              sub="Educational events, workshops, and community gatherings — open to guidance seekers and the wider community."
             />
             {events.length ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

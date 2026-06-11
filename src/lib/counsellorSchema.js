@@ -5,7 +5,7 @@ export const COUNSELLOR_DELIVERY_MODES = Object.freeze([
   { key: 'inPerson', label: 'In-Person' },
   { key: 'phone', label: 'Phone' },
   { key: 'whatsApp', label: 'WhatsApp' },
-  { key: 'groupSessions', label: 'Group Sessions' },
+  { key: 'groupSessions', label: 'Group Guidance' },
 ]);
 
 export const COUNSELLOR_AVAILABILITY_KEYS = Object.freeze([
@@ -26,11 +26,11 @@ export function normalizeCounsellorName(value = '', { allowTitle = true } = {}) 
     .replace(/\bPierre\b/gi, 'Peer');
 
   if (/^aisha peer$/i.test(cleaned)) {
-    return allowTitle ? 'Counsellor Aisha Peer' : 'Aisha Peer';
+    return allowTitle ? 'Support Provider Aisha Peer' : 'Aisha Peer';
   }
 
-  if (/^counsellor\s+aisha\s+peer$/i.test(cleaned)) {
-    return 'Counsellor Aisha Peer';
+  if (/^(counsellor|support provider)\s+aisha\s+peer$/i.test(cleaned)) {
+    return allowTitle ? 'Support Provider Aisha Peer' : 'Aisha Peer';
   }
 
   return cleaned;
@@ -129,4 +129,5 @@ export function buildCounsellorApplicationPayload(application = {}) {
     },
   };
 }
+
 

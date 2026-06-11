@@ -189,8 +189,8 @@ const TRUST_PILLARS = [
   {
     icon: Heart,
     arabic: 'مصلحة العميل',
-    label: 'Client Welfare',
-    desc: 'The wellbeing of the client is the measure of every decision.',
+    label: 'Guidance Seeker Care',
+    desc: 'The wellbeing and dignity of the guidance seeker shape every decision.',
   },
 ];
 
@@ -221,7 +221,7 @@ export default function CounsellorPortal() {
   const [sessionForm, setSessionForm] = useState({ date: '', type: 'Online', notes: '', duration: '60' });
   const [noteForm, setNoteForm] = useState({ content: '', category: 'Session', mood: '' });
   const [resourceForm, setResourceForm] = useState({ title: '', url: '', note: '', type: 'Article' });
-  const [broadcastForm, setBroadcastForm] = useState({ title: '', body: '', audience: 'Clients' });
+  const [broadcastForm, setBroadcastForm] = useState({ title: '', body: '', audience: 'Guidance Seekers' });
   const [followUpForm, setFollowUpForm] = useState({ note: '', type: 'Check-in Call', dueDate: '' });
   const [messageText, setMessageText] = useState('');
 
@@ -259,7 +259,7 @@ export default function CounsellorPortal() {
       if (!id) return null;
       if (!map.has(id)) map.set(id, {
         id,
-        name: 'Counselling Client',
+        name: 'Guidance Seeker',
         email: '',
         requestId: null,
         requestStatus: 'active',
@@ -270,7 +270,7 @@ export default function CounsellorPortal() {
         isPending: false,
       });
       const c = map.get(id);
-      if (patch.name && patch.name !== 'Counselling Client') c.name = patch.name;
+      if (patch.name && patch.name !== 'Guidance Seeker') c.name = patch.name;
       if (patch.email) c.email = patch.email;
       if (patch.requestId) c.requestId = patch.requestId;
       if (patch.requestStatus) c.requestStatus = patch.requestStatus;
@@ -334,7 +334,7 @@ export default function CounsellorPortal() {
   /* ── Sanitized counsellor name ── */
   const counsellorName = sanitizeCounsellorName(
     profile?.displayName || profile?.fullName || user?.full_name || user?.email || ''
-  ) || 'Counsellor';
+  ) || 'Support Provider';
   const counsellorFirstName = counsellorName.split(' ')[0] || 'Ustādh';
 
   /* ── Actions ── */
@@ -454,7 +454,7 @@ export default function CounsellorPortal() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-      setBroadcastForm({ title: '', body: '', audience: 'Clients' });
+      setBroadcastForm({ title: '', body: '', audience: 'Guidance Seekers' });
       setModal(null);
     } finally { setBusy(false); }
   }
@@ -521,7 +521,7 @@ export default function CounsellorPortal() {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/8 px-4 py-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             <span className="text-[11px] font-black uppercase tracking-[0.35em] text-emerald-300">
-              SirajOne Counsellor Support
+              SirajOne Support Provider Support
             </span>
           </div>
 
@@ -556,7 +556,7 @@ export default function CounsellorPortal() {
               className="flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-2.5 text-sm font-bold text-amber-200 transition hover:bg-amber-400/20"
             >
               <Inbox className="h-4 w-4" />
-              View Client Requests
+              View Guidance Requests
               {newRequests > 0 && (
                 <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-black text-[#0a0800]">
                   {newRequests}
@@ -579,7 +579,7 @@ export default function CounsellorPortal() {
               className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-5 py-2.5 text-sm font-bold text-emerald-200 transition hover:bg-emerald-400/20"
             >
               <BookOpen className="h-4 w-4" />
-              Counsellor Resources
+              Support Provider Resources
             </Link>
           </div>
 
@@ -641,7 +641,7 @@ export default function CounsellorPortal() {
               <p className="mt-3 text-3xl font-black text-white">{followUpsDue}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Follow-Ups Due</p>
               {followUpsDue > 0 && (
-                <p className="mt-2 text-[11px] text-rose-300">Clients needing follow-up</p>
+                <p className="mt-2 text-[11px] text-rose-300">Guidance Seekers needing follow-up</p>
               )}
             </div>
 
@@ -658,7 +658,7 @@ export default function CounsellorPortal() {
               <p className="mt-3 text-3xl font-black text-white">{totalUnread}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Unanswered Messages</p>
               {totalUnread > 0 && (
-                <p className="mt-2 text-[11px] text-sky-300">Clients waiting for reply</p>
+                <p className="mt-2 text-[11px] text-sky-300">Guidance Seekers waiting for reply</p>
               )}
             </div>
 
@@ -683,7 +683,7 @@ export default function CounsellorPortal() {
               <Shield className="h-5 w-5 text-slate-600" />
               <p className="mt-3 text-xs font-black uppercase tracking-wider text-slate-500">Safeguarding</p>
               <p className="mt-1 text-[11px] leading-4 text-slate-600">
-                Any concern about a client's safety must be escalated immediately. Do not delay.
+                Any concern about a guidance seeker's safety must be escalated immediately. Do not delay.
               </p>
               <a
                 href="mailto:safeguarding@sirajone.co.za"
@@ -744,7 +744,7 @@ export default function CounsellorPortal() {
           </div>
           {!selectedClient && (
             <p className="mt-2 text-[11px] text-slate-600">
-              Select a client below to enable case actions.
+              Select a guidance seeker below to enable support actions.
             </p>
           )}
         </section>
@@ -756,7 +756,7 @@ export default function CounsellorPortal() {
             <div className="h-px flex-1 bg-white/5" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-            <StatCard title="Active Clients" value={activeClients} icon={Users} tone="sky" />
+            <StatCard title="Active Guidance Seekers" value={activeClients} icon={Users} tone="sky" />
             <StatCard title="New Requests" value={newRequests} icon={Inbox} tone="amber" pulse={newRequests > 0} />
             <StatCard title="Sessions Today" value={sessionsToday} icon={CalendarCheck} tone="emerald" />
             <StatCard title="Follow-Ups Due" value={followUpsDue} icon={AlertTriangle} tone="amber" pulse={followUpsDue > 0} />
@@ -770,7 +770,7 @@ export default function CounsellorPortal() {
         ══════════════════════════════════════════════════════════ */}
         <section id="client-management" className="grid gap-4 xl:grid-cols-[300px_1fr_280px]">
 
-          {/* ── LEFT: Client Roster ── */}
+          {/* ── LEFT: Guidance seeker roster ── */}
           <aside className="space-y-4">
 
             {/* Pending requests */}
@@ -788,7 +788,7 @@ export default function CounsellorPortal() {
                         onClick={() => acceptRequest(c.requestId)}
                         className="mt-2 w-full rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-black text-[#0a0800] disabled:opacity-40"
                       >
-                        Accept Client
+                        Accept Guidance Seeker
                       </button>
                     </div>
                   ))}
@@ -799,7 +799,7 @@ export default function CounsellorPortal() {
             {/* Active clients */}
             <div className="rounded-2xl border border-white/10 bg-[#0d1b29] p-4">
               <p className="mb-3 text-xs font-black uppercase tracking-widest text-slate-400">
-                Active Clients ({clients.filter((c) => !c.isPending).length})
+                Active Guidance Seekers ({clients.filter((c) => !c.isPending).length})
               </p>
               <div className="space-y-2">
                 {clients.filter((c) => !c.isPending).length ? clients.filter((c) => !c.isPending).map((c) => {
@@ -833,7 +833,7 @@ export default function CounsellorPortal() {
                     </button>
                   );
                 }) : (
-                  <EmptyState title="No active clients" text="Accept a request above to begin." />
+                  <EmptyState title="No active guidance seekers" text="Accept a request above to begin." />
                 )}
               </div>
             </div>
@@ -847,20 +847,20 @@ export default function CounsellorPortal() {
             </div>
           </aside>
 
-          {/* ── CENTRE: Client panel ── */}
+          {/* ── CENTRE: Guidance seeker panel ── */}
           <div className="min-w-0">
             {!selectedClient ? (
               <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-white/10 bg-[#0d1b29] p-12">
                 <div className="text-center">
                   <Users className="mx-auto h-10 w-10 text-slate-700" />
-                  <p className="mt-4 font-serif text-2xl font-black text-white">Select a client</p>
-                  <p className="mt-2 text-sm text-slate-500">Choose a client from the roster to view their case.</p>
+                  <p className="mt-4 font-serif text-2xl font-black text-white">Select a guidance seeker</p>
+                  <p className="mt-2 text-sm text-slate-500">Choose a guidance seeker from the roster to view their support record.</p>
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
 
-                {/* Client header */}
+                {/* Guidance seeker header */}
                 <div className="rounded-2xl border border-white/10 bg-[#0d1b29] p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -932,7 +932,7 @@ export default function CounsellorPortal() {
                       <div className="flex items-start justify-between gap-4 rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4 shrink-0 text-amber-300" />
-                          <p className="text-sm font-bold text-amber-200">Follow-up is due for this client.</p>
+                          <p className="text-sm font-bold text-amber-200">Follow-up is due for this guidance seeker.</p>
                         </div>
                         <button type="button" onClick={clearFollowUp} className="text-xs font-black text-amber-300 hover:text-amber-200">Mark Done</button>
                       </div>
@@ -970,7 +970,7 @@ export default function CounsellorPortal() {
                         </div>
                         {s.notes && <p className="mt-3 text-sm leading-6 text-slate-300">{s.notes}</p>}
                       </div>
-                    )) : <EmptyState title="No sessions yet" text="Schedule the first session for this client." />}
+                    )) : <EmptyState title="No sessions yet" text="Schedule the first guidance session for this guidance seeker." />}
                   </div>
                 )}
 
@@ -983,7 +983,7 @@ export default function CounsellorPortal() {
                       </button>
                       <div className="flex items-center gap-1.5 rounded-xl border border-rose-400/20 bg-rose-400/5 px-3 py-1.5">
                         <Shield className="h-3.5 w-3.5 text-rose-400" />
-                        <p className="text-xs font-black text-rose-400">Counsellor Only</p>
+                        <p className="text-xs font-black text-rose-400">Support Provider Only</p>
                       </div>
                     </div>
                     {clientNotes.length ? clientNotes.map((n) => (
@@ -997,7 +997,7 @@ export default function CounsellorPortal() {
                         </div>
                         <p className="mt-3 text-sm leading-6 text-slate-200">{n.content}</p>
                       </div>
-                    )) : <EmptyState icon={FileText} title="No case notes" text="Your private session notes appear here. Clients cannot see these." />}
+                    )) : <EmptyState icon={FileText} title="No case notes" text="Your private session notes appear here. Guidance Seekers cannot see these." />}
                   </div>
                 )}
 
@@ -1017,7 +1017,7 @@ export default function CounsellorPortal() {
                             </div>
                           </div>
                         );
-                      }) : <EmptyState icon={MessageCircle} title="No messages" text="Start a conversation with this client." />}
+                      }) : <EmptyState icon={MessageCircle} title="No messages" text="Start a conversation with this guidance seeker." />}
                     </div>
                     <div className="flex gap-2">
                       <textarea
@@ -1055,7 +1055,7 @@ export default function CounsellorPortal() {
                           )}
                         </div>
                       </div>
-                    )) : <EmptyState icon={BookOpen} title="No resources shared" text="Share articles, du'a, or Qur'anic guidance with this client." />}
+                    )) : <EmptyState icon={BookOpen} title="No resources shared" text="Share articles, du'a, or Qur'anic guidance with this guidance seeker." />}
                   </div>
                 )}
 
@@ -1084,7 +1084,7 @@ export default function CounsellorPortal() {
                         )}
                       </div>
                     ) : (
-                      <EmptyState icon={CheckCircle2} title="No follow-ups due" text="All follow-ups for this client are clear." />
+                      <EmptyState icon={CheckCircle2} title="No follow-ups due" text="All follow-ups for this guidance seeker are clear." />
                     )}
                   </div>
                 )}
@@ -1105,7 +1105,7 @@ export default function CounsellorPortal() {
                     <div key={s.id} className="flex items-center gap-2 rounded-xl border border-white/5 bg-[#08121a] p-3">
                       <CalendarCheck className="h-4 w-4 shrink-0 text-emerald-400" />
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-white">{s.clientName || 'Client'}</p>
+                        <p className="truncate text-xs font-bold text-white">{s.clientName || 'Guidance Seeker'}</p>
                         <p className="text-[11px] text-slate-500">{fmt(s.sessionDate, { time: true })}</p>
                       </div>
                     </div>
@@ -1136,7 +1136,7 @@ export default function CounsellorPortal() {
                 <p className="text-xs font-black uppercase tracking-wider text-rose-400">Confidentiality</p>
               </div>
               <p className="text-[11px] leading-5 text-slate-400">
-                All client information is an amanah. Nothing discussed in sessions may be shared without
+                All guidance seeker information is an amanah. Nothing discussed in sessions may be shared without
                 explicit consent — except where safeguarding requires it.
               </p>
             </div>
@@ -1161,7 +1161,7 @@ export default function CounsellorPortal() {
                 >
                   <span className="flex items-center gap-2">
                     <BookOpen className="h-3.5 w-3.5" />
-                    Counsellor Library
+                    Support Provider Library
                   </span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
@@ -1186,7 +1186,7 @@ export default function CounsellorPortal() {
       {modal === 'session' && (
         <Modal title="Schedule Session" onClose={() => setModal(null)}>
           <div className="space-y-4">
-            <p className="text-xs text-slate-500">Client: <strong className="text-white">{selectedClient?.name}</strong></p>
+            <p className="text-xs text-slate-500">Guidance Seeker: <strong className="text-white">{selectedClient?.name}</strong></p>
             <Input label="Date & Time" type="datetime-local" value={sessionForm.date} onChange={(e) => setSessionForm((v) => ({ ...v, date: e.target.value }))} />
             <Select label="Session Type" options={SESSION_TYPES} value={sessionForm.type} onChange={(e) => setSessionForm((v) => ({ ...v, type: e.target.value }))} />
             <Input label="Duration (minutes)" type="number" value={sessionForm.duration} onChange={(e) => setSessionForm((v) => ({ ...v, duration: e.target.value }))} />
@@ -1202,11 +1202,11 @@ export default function CounsellorPortal() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 rounded-xl border border-rose-400/20 bg-rose-400/5 p-3">
               <Shield className="h-4 w-4 shrink-0 text-rose-400" />
-              <p className="text-xs text-rose-300">These notes are private. Clients cannot see them.</p>
+              <p className="text-xs text-rose-300">These notes are private. Guidance Seekers cannot see them.</p>
             </div>
-            <p className="text-xs text-slate-500">Client: <strong className="text-white">{selectedClient?.name}</strong></p>
+            <p className="text-xs text-slate-500">Guidance Seeker: <strong className="text-white">{selectedClient?.name}</strong></p>
             <Select label="Category" options={NOTE_CATEGORIES} value={noteForm.category} onChange={(e) => setNoteForm((v) => ({ ...v, category: e.target.value }))} />
-            <Input label="Client Mood / Presenting State (optional)" value={noteForm.mood} onChange={(e) => setNoteForm((v) => ({ ...v, mood: e.target.value }))} placeholder="e.g. Anxious, Calm, Distressed" />
+            <Input label="Guidance Seeker State (optional)" value={noteForm.mood} onChange={(e) => setNoteForm((v) => ({ ...v, mood: e.target.value }))} placeholder="e.g. Worried, Calm, Needs follow-up" />
             <Textarea label="Note Content" rows={6} value={noteForm.content} onChange={(e) => setNoteForm((v) => ({ ...v, content: e.target.value }))} placeholder="Your confidential session observations..." />
             <PrimaryBtn disabled={busy || !noteForm.content.trim()} onClick={writeNote}>Save Note</PrimaryBtn>
           </div>
@@ -1217,12 +1217,12 @@ export default function CounsellorPortal() {
       {modal === 'resource' && (
         <Modal title="Share Resource" onClose={() => setModal(null)}>
           <div className="space-y-4">
-            <p className="text-xs text-slate-500">Client: <strong className="text-white">{selectedClient?.name}</strong></p>
+            <p className="text-xs text-slate-500">Guidance Seeker: <strong className="text-white">{selectedClient?.name}</strong></p>
             <Select label="Resource Type" options={RESOURCE_TYPES} value={resourceForm.type} onChange={(e) => setResourceForm((v) => ({ ...v, type: e.target.value }))} />
             <Input label="Title" value={resourceForm.title} onChange={(e) => setResourceForm((v) => ({ ...v, title: e.target.value }))} placeholder="Resource name..." />
             <Input label="Link (optional)" type="url" value={resourceForm.url} onChange={(e) => setResourceForm((v) => ({ ...v, url: e.target.value }))} placeholder="https://..." />
             <Textarea label="Note" rows={3} value={resourceForm.note} onChange={(e) => setResourceForm((v) => ({ ...v, note: e.target.value }))} placeholder="Why this resource is beneficial..." />
-            <PrimaryBtn disabled={busy || !resourceForm.title.trim()} onClick={shareResource}>Share with Client</PrimaryBtn>
+            <PrimaryBtn disabled={busy || !resourceForm.title.trim()} onClick={shareResource}>Share with Guidance Seeker</PrimaryBtn>
           </div>
         </Modal>
       )}
@@ -1231,7 +1231,7 @@ export default function CounsellorPortal() {
       {modal === 'broadcast' && (
         <Modal title="Send Announcement" onClose={() => setModal(null)}>
           <div className="space-y-4">
-            <Select label="Audience" options={['Clients', 'All Users', 'Counsellors']} value={broadcastForm.audience} onChange={(e) => setBroadcastForm((v) => ({ ...v, audience: e.target.value }))} />
+            <Select label="Audience" options={['Guidance Seekers', 'All Users', 'Support Providers']} value={broadcastForm.audience} onChange={(e) => setBroadcastForm((v) => ({ ...v, audience: e.target.value }))} />
             <Input label="Title" value={broadcastForm.title} onChange={(e) => setBroadcastForm((v) => ({ ...v, title: e.target.value }))} placeholder="Announcement title..." />
             <Textarea label="Message" rows={5} value={broadcastForm.body} onChange={(e) => setBroadcastForm((v) => ({ ...v, body: e.target.value }))} placeholder="Your message..." />
             <PrimaryBtn disabled={busy || !broadcastForm.title.trim() || !broadcastForm.body.trim()} onClick={sendBroadcast} tone="amber">Send Announcement</PrimaryBtn>
@@ -1243,7 +1243,7 @@ export default function CounsellorPortal() {
       {modal === 'followup' && (
         <Modal title="Flag Follow-Up" onClose={() => setModal(null)}>
           <div className="space-y-4">
-            <p className="text-xs text-slate-500">Client: <strong className="text-white">{selectedClient?.name}</strong></p>
+            <p className="text-xs text-slate-500">Guidance Seeker: <strong className="text-white">{selectedClient?.name}</strong></p>
             <Select label="Follow-Up Type" options={FOLLOW_UP_TYPES} value={followUpForm.type} onChange={(e) => setFollowUpForm((v) => ({ ...v, type: e.target.value }))} />
             <Input label="Due Date (optional)" type="date" value={followUpForm.dueDate} onChange={(e) => setFollowUpForm((v) => ({ ...v, dueDate: e.target.value }))} />
             <Textarea label="Note" rows={3} value={followUpForm.note} onChange={(e) => setFollowUpForm((v) => ({ ...v, note: e.target.value }))} placeholder="What needs to happen..." />
@@ -1258,7 +1258,7 @@ export default function CounsellorPortal() {
           <div className="space-y-4">
             <div className="rounded-xl border border-rose-400/20 bg-rose-400/5 p-4">
               <p className="text-sm text-rose-200">
-                You are about to close the case for <strong>{selectedClient?.name}</strong>. This marks the counselling relationship as complete. You can always re-open a new request if needed.
+                You are about to close the case for <strong>{selectedClient?.name}</strong>. This marks the guidance support request as complete. You can always re-open a new request if needed.
               </p>
             </div>
             <PrimaryBtn disabled={busy} onClick={closeCase} tone="rose">Confirm — Close Case</PrimaryBtn>

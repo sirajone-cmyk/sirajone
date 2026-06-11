@@ -1,12 +1,12 @@
-export const ROLES = Object.freeze({
+﻿export const ROLES = Object.freeze({
   STUDENT: 'Student',
   TEACHER: 'Teacher',
   ADMIN: 'Admin',
   CO_ADMIN: 'Co-Admin',
   COUNSELLOR: 'Counsellor',
-  // Legacy spelling kept for backwards compat with seeded data
+  // Legacy spelling kept for backwards compatibility with seeded data.
   COUNSELOR: 'Counselor',
-  // Person seeking counselling sessions (distinct from COUNSELLOR therapist)
+  // Person seeking Islamic guidance/support; stored value is preserved for live data compatibility.
   COUNSELLING_CLIENT: 'counsellingClient',
 });
 
@@ -31,19 +31,21 @@ export const APPROVED_TEACHER_ROLES = Object.freeze([
 ]);
 
 export const COUNSELLOR_CATEGORIES = Object.freeze([
-  'Child Counselling',
-  'Teen Counselling',
-  'Adult Counselling',
-  'Marriage Counselling',
-  'Family Counselling',
-  'Parenting Support',
-  'Spiritual Counselling',
   'Islamic Guidance',
+  'Spiritual Support',
+  'Marriage Guidance',
+  'Premarital Guidance',
+  'Family Support',
+  'Parenting Support',
   'Youth Mentorship',
   'Student Support',
-  'Academic Stress Support',
-  'Grief Support',
-  'Lifestyle & Wellbeing Support',
+  "Da'wah & Revert Support",
+  'Emotional Wellbeing Support',
+  "Women's Guidance",
+  "Men's Guidance",
+  'Community Support',
+  "Du'a & Spiritual Advice",
+  'Islamic Learning Support',
 ]);
 
 export const SERVICE_DELIVERY_OPTIONS = Object.freeze([
@@ -51,7 +53,7 @@ export const SERVICE_DELIVERY_OPTIONS = Object.freeze([
   'In-Person',
   'Phone',
   'WhatsApp',
-  'Group Sessions',
+  'Group Guidance',
 ]);
 
 export function normalizeEmail(email = '') {

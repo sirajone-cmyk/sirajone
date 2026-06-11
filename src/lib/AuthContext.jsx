@@ -282,8 +282,6 @@ export const AuthProvider = ({ children }) => {
     await signOut(auth);
     setUser(null);
     setIsAuthenticated(false);
-    // Hard redirect clears any stale route state and forces a clean page load
-    window.location.href = '/';
   };
 
   const resetPassword = async (email) => {

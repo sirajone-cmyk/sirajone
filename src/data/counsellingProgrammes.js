@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Counselling Programme Data
+// Islamic Guidance Programme Data
 // Edit content here — no need to touch UI components.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -147,7 +147,7 @@ export const PROGRAMMES = [
     title: 'Community Workshops',
     sub: 'Group Learning',
     accent: 'rose',
-    desc: 'Short, impactful workshops on marriage, mental health, parenting, and community wellbeing.',
+    desc: 'Short, impactful workshops on marriage guidance, parenting, spiritual support, and community wellbeing.',
     weeks: [],
   },
 ];

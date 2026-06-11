@@ -917,7 +917,7 @@ export function SupportSystemsSection() {
                     >
                       <option value={roles.STUDENT}>Student</option>
                       <option value={roles.TEACHER}>Teacher</option>
-                      <option value={roles.COUNSELOR}>Counselor</option>
+                      <option value={roles.COUNSELOR}>Support Provider</option>
                       <option value={roles.DRIVER}>Driver / Transport Provider</option>
                     </select>
                   </div>
@@ -1347,7 +1347,7 @@ export function SupportSystemsSection() {
                     required
                     disabled={approvedTeachers.length === 0}
                   >
-                    <option value="">Select teacher/counselor</option>
+                    <option value="">Select teacher/support provider</option>
                     {approvedTeachers
                       .filter((teacher) => teacher.id !== sessionForm.studentId)
                       .map((teacher) => (
@@ -1434,7 +1434,7 @@ export function SupportSystemsSection() {
                 </div>
                 {approvedTeachers.length === 0 ? (
                   <p className="mt-2 text-sm text-[rgba(217,251,232,0.62)]">
-                    No approved teachers/counselors available yet.
+                    No approved teachers/support providers available yet.
                   </p>
                 ) : null}
                 {approvedStudents.length === 0 ? (

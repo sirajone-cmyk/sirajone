@@ -28,7 +28,7 @@ const NAV_LINKS = [
   { label: 'Dashboard', href: '#dashboard', icon: LayoutDashboard },
   { label: 'Contact', href: '#contact', icon: Phone },
   { label: 'Messages', href: '#messages', icon: MessageCircle },
-  { label: 'Counselling', href: '#support', icon: LifeBuoy },
+  { label: 'Guidance', href: '#support', icon: LifeBuoy },
   { label: 'Transport', href: '#transport', icon: BusFront },
   { label: 'Roles', href: '#roles', icon: Shield },
   { label: 'Finance', href: '#finance', icon: DollarSign },

@@ -18,4 +18,4 @@
   },
 };
 
-export const COUNSELLOR_NAME = 'Counsellor Aisha Peer';
+export const COUNSELLOR_NAME = 'Support Provider Aisha Peer';

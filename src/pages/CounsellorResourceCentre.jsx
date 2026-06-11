@@ -1,14 +1,14 @@
 /**
- * CounsellorResourceCentre — Part 3 of the Counsellor Experience Redesign.
+ * CounsellorResourceCentre — Part 3 of the Support Provider Experience Redesign.
  *
- * Route: /counsellor-resources
- * Access: Counsellor role only (guarded in App.jsx)
+ * Route: /support provider-resources
+ * Access: Support Provider role only (guarded in App.jsx)
  *
  * Four expandable categories:
- *  1. Prophetic Counselling
+ *  1. Prophetic Islamic Guidance
  *  2. Khulafa al-Rashidun
  *  3. Classical Scholars
- *  4. Professional Counselling
+ *  4. Professional Islamic Guidance
  */
 
 import { useState } from 'react';
@@ -144,7 +144,7 @@ export default function CounsellorResourceCentre() {
 
         {/* Back link */}
         <Link
-          to="/counsellor"
+          to="/support provider"
           className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-300 transition"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -156,11 +156,11 @@ export default function CounsellorResourceCentre() {
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-3 py-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             <span className="text-[11px] font-black uppercase tracking-widest text-emerald-300">
-              Counsellor Resource Centre
+              Support Provider Resource Centre
             </span>
           </div>
           <h1 className="mt-2 font-serif text-3xl font-black text-white sm:text-4xl">
-            Foundations of Islamic Counselling
+            Foundations of Islamic Islamic Guidance
           </h1>
           <p className="mt-2 text-sm text-slate-400 max-w-lg">
             Rooted in Prophetic wisdom, the Khulafā, classical scholarship, and professional ethics.
@@ -171,7 +171,7 @@ export default function CounsellorResourceCentre() {
           <div className="mt-5 flex items-start gap-3 rounded-xl border border-rose-400/15 bg-rose-400/5 px-4 py-3">
             <Lock className="h-4 w-4 shrink-0 text-rose-400 mt-0.5" />
             <p className="text-xs text-slate-400 leading-5">
-              These materials are for counsellors only. They are part of your professional development
+              These materials are for support providers only. They are part of your professional development
               and must not be shared publicly without authorisation.
             </p>
           </div>
@@ -193,14 +193,14 @@ export default function CounsellorResourceCentre() {
           </p>
           <div className="mt-4 flex justify-center gap-3">
             <Link
-              to="/counsellor-library"
+              to="/support provider-library"
               className="flex items-center gap-1.5 rounded-lg border border-sky-400/20 bg-sky-400/8 px-4 py-2 text-xs font-bold text-sky-300 hover:bg-sky-400/15 transition"
             >
               <BookOpen className="h-3.5 w-3.5" />
-              Counsellor Library
+              Support Provider Library
             </Link>
             <Link
-              to="/counsellor"
+              to="/support provider"
               className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2 text-xs font-bold text-slate-400 hover:text-white transition"
             >
               Back to Dashboard

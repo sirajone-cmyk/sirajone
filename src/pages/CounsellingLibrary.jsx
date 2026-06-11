@@ -1,10 +1,10 @@
 /**
- * CounsellingLibrary — 13-category spiritual and counselling resource library.
+ * CounsellingLibrary — 13-category spiritual and guidance resource library.
  *
  * Scope: COUNSELLING_CLIENT and COUNSELLOR roles only.
- * App.jsx must guard this route with isCounsellingUser.
+ * App.jsx must guard this route with isIslamic GuidanceUser.
  *
- * Firestore: counsellingResources collection
+ * Firestore: guidanceResources collection
  * Resource shape:
  *   {
  *     id: string,
@@ -46,8 +46,8 @@ import Navbar from '@/components/Navbar';
 
 export const LIBRARY_CATEGORIES = [
   { id: 'all',               label: 'All Resources',    icon: BookOpen     },
-  { id: 'client-guidance',   label: 'Client Guidance',  icon: Heart        },
-  { id: 'counsellor-guidance', label: 'Counsellor Guidance', icon: Users   },
+  { id: 'client-guidance',   label: 'Guidance Seeker Support',  icon: Heart        },
+  { id: 'support provider-guidance', label: 'Support Provider Guidance', icon: Users   },
   { id: 'marriage',          label: 'Marriage',         icon: Heart        },
   { id: 'parenting',         label: 'Parenting',        icon: Users        },
   { id: 'anxiety',           label: 'Anxiety',          icon: Wind         },
@@ -194,12 +194,12 @@ export default function CounsellingLibrary() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    document.title = `Counselling Library — SirajOne`;
+    document.title = `Islamic Guidance Library — SirajOne`;
   }, []);
 
   useEffect(() => {
     const q = query(
-      collection(db, 'counsellingResources'),
+      collection(db, 'guidanceResources'),
       orderBy('publishedAt', 'desc')
     );
     const unsub = onSnapshot(
@@ -249,7 +249,7 @@ export default function CounsellingLibrary() {
 
         {/* Page header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Counselling Library</h1>
+          <h1 className="text-2xl font-bold text-white">Islamic Guidance Library</h1>
           <p className="mt-1 text-sm text-slate-400">
             Curated Islamic resources for healing, growth, and spiritual strength.
           </p>
@@ -307,7 +307,7 @@ export default function CounsellingLibrary() {
 
         {/* Footer note */}
         <p className="mt-10 text-center text-xs text-slate-600">
-          All resources are vetted by the SirajOne counselling team.
+          All resources are vetted by the SirajOne guidance team.
           For personal support, visit the Support tab in Daily Spiritual.
         </p>
       </div>

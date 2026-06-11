@@ -8,16 +8,16 @@ const PENDING_COPY = {
     body: 'Your teacher application is pending review. Please wait for an administrator to activate your account.',
   },
   [ROLES.COUNSELLOR]: {
-    eyebrow: 'Counsellor Application Received',
-    body: 'Your counsellor application is pending review. Please wait for an administrator to activate your account.',
+    eyebrow: 'Support Provider Application Received',
+    body: 'Your Islamic Guidance & Support provider application is pending review. Please wait for an administrator to activate your account.',
   },
   [ROLES.COUNSELOR]: {
-    eyebrow: 'Counsellor Application Received',
-    body: 'Your counsellor application is pending review. Please wait for an administrator to activate your account.',
+    eyebrow: 'Support Provider Application Received',
+    body: 'Your Islamic Guidance & Support provider application is pending review. Please wait for an administrator to activate your account.',
   },
   [ROLES.COUNSELLING_CLIENT]: {
-    eyebrow: 'Counselling Request Received',
-    body: 'Your counselling support account is pending review. Please wait for an administrator to approve your access.',
+    eyebrow: 'Guidance Request Received',
+    body: 'Your Islamic Guidance & Support account is pending review. Please wait for an administrator to approve your access.',
   },
   [ROLES.STUDENT]: {
     eyebrow: 'Account Pending',

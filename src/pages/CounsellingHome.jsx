@@ -35,11 +35,11 @@ const WEEK_HEX = {
 /* ─── Services data ──────────────────────────────────────────────────────── */
 const SERVICES = [
   {
-    title: 'Marriage Counselling',
+    title: 'Marriage Islamic Guidance & Support',
     icon: Heart,
     cat: 'Relationship',
     desc: 'Navigate challenges and strengthen your marriage through Islamic guidance.',
-    fullDesc: 'Marriage counselling at SirajOne provides a confidential, Islamically-grounded space for couples to address communication challenges, restore trust, and rebuild their connection. Our practitioners combine professional counselling methods with Qur\'ānic wisdom and Sunnah-based principles.',
+    fullDesc: 'Marriage guidance at SirajOne provides a confidential, Islamically-grounded space for couples to address communication challenges, restore trust, and rebuild their connection. Our support providers combine Islamic guidance, mentorship, Quranic wisdom, and Sunnah-based principles.',
     suitableFor: 'Married couples experiencing conflict, communication breakdown, or emotional distance. Also suitable for couples seeking to strengthen a healthy marriage.',
     benefits: [
       'Confidential one-to-one or couples sessions',
@@ -67,11 +67,11 @@ const SERVICES = [
     duration: '4–6 sessions',
   },
   {
-    title: 'Family Counselling',
+    title: 'Family Islamic Guidance & Support',
     icon: Home,
     cat: 'Family',
     desc: 'Restore harmony, trust, and communication within the family unit.',
-    fullDesc: 'Family counselling addresses relationship dynamics, communication breakdowns, and conflict within the family unit. Sessions are guided by Islamic principles of consultation (shūrā), mercy, and justice — helping families reconnect and grow together.',
+    fullDesc: 'Family support addresses relationship dynamics, communication breakdowns, and conflict within the family unit. Guidance sessions are shaped by Islamic principles of consultation, mercy, and justice - helping families reconnect and grow together.',
     suitableFor: 'Families experiencing conflict, estrangement, or communication difficulties. Also suitable for families going through major life transitions.',
     benefits: [
       'Improved family communication and listening skills',
@@ -99,11 +99,11 @@ const SERVICES = [
     duration: '4–8 sessions',
   },
   {
-    title: 'Teen Counselling',
+    title: 'Teen Islamic Guidance & Support',
     icon: TrendingUp,
     cat: 'Youth',
     desc: 'Safe space for teenagers navigating identity, pressure, and purpose.',
-    fullDesc: 'Teen counselling provides a safe, non-judgmental space for young Muslims aged 13–17 to explore their identity, manage pressure from peers and social media, and develop a strong sense of Islamic purpose. All sessions are fully confidential.',
+    fullDesc: 'Youth mentorship provides a safe, respectful space for young Muslims aged 13-17 to explore their identity, manage pressure from peers and social media, and develop a strong sense of Islamic purpose. Guidance is handled with care and confidentiality.',
     suitableFor: 'Teenagers aged 13–17 experiencing anxiety, identity confusion, peer pressure, academic stress, or family conflict.',
     benefits: [
       'Confidential space to speak freely without judgment',
@@ -147,11 +147,11 @@ const SERVICES = [
     duration: '4–6 sessions',
   },
   {
-    title: 'Adult Counselling',
+    title: 'Adult Islamic Guidance & Support',
     icon: Heart,
     cat: 'Adult',
     desc: 'Personal support for life challenges, transitions, and inner growth.',
-    fullDesc: 'Adult counselling provides dedicated support for individuals navigating personal challenges, life transitions, and emotional wellbeing. Sessions are person-centred, confidential, and grounded in both professional and Islamic frameworks.',
+    fullDesc: 'Adult guidance provides dedicated support for individuals navigating personal challenges, life transitions, and emotional wellbeing. Sessions are respectful, confidential, and grounded in Islamic guidance, mentorship, and practical support.',
     suitableFor: 'Adults experiencing anxiety, depression, life changes, relationship difficulties, low self-worth, or general emotional wellbeing challenges.',
     benefits: [
       'Safe, confidential space for personal exploration',
@@ -167,7 +167,7 @@ const SERVICES = [
     icon: Moon,
     cat: 'Spiritual',
     desc: 'Reconnect with your purpose, your deen, and your Lord.',
-    fullDesc: 'Islamic spiritual support sessions help individuals who feel disconnected from their faith, struggling with doubts (waswās), or seeking to deepen their relationship with Allāh. Our practitioners guide clients through spiritual reflection and Islamic self-care.',
+    fullDesc: 'Islamic spiritual support sessions help individuals who feel disconnected from their faith, struggling with doubts, or seeking to deepen their relationship with Allah. Our support providers guide guidance seekers through spiritual reflection, dua, and Islamic self-care.',
     suitableFor: 'Individuals experiencing a weakening of faith, spiritual emptiness, waswās, or seeking to rebuild their connection with Allāh and Islamic practice.',
     benefits: [
       'Exploring the root causes of spiritual disconnect',
@@ -215,7 +215,7 @@ const SERVICES = [
     icon: Leaf,
     cat: 'Wellbeing',
     desc: 'Holistic wellbeing: sleep, routine, nutrition, and spiritual balance.',
-    fullDesc: 'Lifestyle and wellbeing support addresses the holistic dimensions of Muslim health — sleep, routine, nutrition, exercise, and spiritual practice. We help clients build sustainable daily habits that support their mental, physical, and spiritual wellbeing.',
+    fullDesc: 'Lifestyle and wellbeing support addresses the holistic dimensions of Muslim life - sleep, routine, nutrition, exercise, and spiritual practice. We help guidance seekers build sustainable daily habits that support emotional, physical, and spiritual wellbeing.',
     suitableFor: 'Individuals experiencing burnout, poor sleep, lack of routine, or seeking to build a balanced, Islamically-aligned lifestyle.',
     benefits: [
       'Identifying and addressing lifestyle imbalances',
@@ -231,12 +231,12 @@ const SERVICES = [
 const BENEFITS = [
   { icon: Shield,         title: 'Fully Confidential',         desc: 'Everything shared stays private. Your trust is our covenant.' },
   { icon: Moon,           title: 'Islamic Foundation',          desc: 'Every approach is rooted in Qur\'an, Sunnah, and Islamic scholarship.' },
-  { icon: Brain,          title: 'Islamic Psychology',          desc: 'Understanding the nafs, the heart, and emotional wellbeing through an Islamic lens.' },
+  { icon: Brain,          title: 'Islamic Guidance',          desc: 'Understanding the nafs, the heart, and emotional wellbeing through an Islamic lens.' },
   { icon: Monitor,        title: 'Private Online & In-Person',  desc: 'Flexible, private sessions wherever you are — no compromise on comfort.' },
   { icon: TrendingUp,     title: 'Personal Development Focus',  desc: 'Not just talking — building real, lasting change in your life.' },
-  { icon: Heart,          title: 'Family & Marriage Support',   desc: 'Specialised support for the most important relationships in your life.' },
+  { icon: Heart,          title: 'Family & Marriage Guidance',   desc: 'Specialised support for the most important relationships in your life.' },
   { icon: CheckCircle,    title: 'Structured Follow-Up',        desc: 'Sessions, reminders, and follow-ups so nothing falls through the cracks.' },
-  { icon: HeartHandshake, title: 'Trusted Counsellors',         desc: 'Verified, approved practitioners who understand your faith and culture.' },
+  { icon: HeartHandshake, title: 'Trusted Support Providers',         desc: 'Verified, approved practitioners who understand your faith and culture.' },
 ];
 
 /* ─── Shared section headings ─────────────────────────────────────────────── */
@@ -257,7 +257,7 @@ function WeekCard({ mod, totalWeeks, isExpanded, onToggle }) {
   const isLocked = mod.status === 'locked';
   const isComingSoon = mod.status === 'coming-soon';
 
-  useEffect(() => { document.title = `Islamic Counselling | SirajOne — Faith-Based Support`; }, []);
+  useEffect(() => { document.title = `Islamic Islamic Guidance & Support | SirajOne — Faith-Based Support`; }, []);
 
   return (
     <div
@@ -426,7 +426,7 @@ export default function CounsellingHome() {
   const [expandedWeek, setExpandedWeek] = useState(null);
 
   // ── Disclaimer gate ──────────────────────────────────────────────────────
-  // Only authenticated counselling clients must accept. Public visitors skip.
+  // Only authenticated guidance seekers must accept. Public visitors skip.
   const isCounsellingClient = isAuthenticated && isCounsellingClientRole(user?.role);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(null); // null=loading
 
@@ -451,7 +451,7 @@ export default function CounsellingHome() {
     setExpandedWeek(expandedWeek === weekNum ? null : weekNum);
   };
 
-  // Show gate for counselling clients who haven't accepted yet
+  // Show gate for guidance seekers who have not accepted yet
   if (isCounsellingClient && disclaimerAccepted === false) {
     return <DisclaimerGate uid={user.uid} onAccept={() => setDisclaimerAccepted(true)} />;
   }
@@ -488,7 +488,7 @@ export default function CounsellingHome() {
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-400/20 bg-teal-400/10 px-4 py-1.5">
             <HeartHandshake size={13} className="text-teal-400" />
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">SirajOne Counselling</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">SirajOne Islamic Guidance & Support</span>
           </div>
 
           {firstName && (
@@ -500,14 +500,14 @@ export default function CounsellingHome() {
           <h1 className="max-w-3xl text-4xl font-black leading-tight text-white sm:text-6xl">
             Private Islamic{' '}
             <span className="bg-gradient-to-r from-teal-300 to-cyan-400 bg-clip-text text-transparent">
-              Counselling
+              Islamic Guidance & Support
             </span>{' '}
             Support
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">
             Access confidential support, guidance, and personal development through a trusted
-            counselling pathway rooted in Qur'ān, Sunnah, and Islamic psychology.
+            Islamic guidance pathway rooted in Qur'ān, Sunnah, adab, and practical mentorship.
           </p>
 
           <p className="mt-4 text-sm italic text-slate-500">
@@ -520,14 +520,14 @@ export default function CounsellingHome() {
               className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-teal-900/40 transition hover:bg-teal-400"
             >
               <Sparkles size={16} />
-              Explore Counselling Support
+              Explore Islamic Guidance & Support Support
             </a>
             <Link
               to="/counselling-client"
               className="inline-flex items-center gap-2 rounded-xl border border-teal-400/30 bg-teal-400/10 px-6 py-3 text-sm font-bold text-teal-200 transition hover:bg-teal-400/20"
             >
               <MessageCircle size={16} />
-              Request Private Counselling
+              Request Private Islamic Guidance & Support
             </Link>
             <WhatsAppButton
               label="Chat on WhatsApp"
@@ -555,12 +555,12 @@ export default function CounsellingHome() {
         </div>
       </section>
 
-      {/* ══ SECTION 1 — COUNSELLING SERVICES ══════════════════════════════ */}
+      {/* ══ SECTION 1 — GUIDANCE SERVICES ══════════════════════════════ */}
       <section id="services" className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
-            <SectionLabel>Counselling Support</SectionLabel>
-            <SectionHeading>Counselling Support Services</SectionHeading>
+            <SectionLabel>Islamic Guidance & Support Support</SectionLabel>
+            <SectionHeading>Islamic Guidance & Support Support Services</SectionHeading>
             <SectionSub>
               Every service is confidential, Islamically grounded, and delivered by verified practitioners.
               Select a service below to learn more or make a request.
@@ -599,12 +599,12 @@ export default function CounsellingHome() {
         </div>
       </section>
 
-      {/* ══ SECTION 2 — COUNSELLING PROGRAMMES ════════════════════════════ */}
+      {/* ══ SECTION 2 — GUIDANCE PROGRAMMES ════════════════════════════ */}
       <section id="programmes" className="border-t border-white/5 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <SectionLabel>Structured Programmes</SectionLabel>
-            <SectionHeading>Counselling Programmes</SectionHeading>
+            <SectionHeading>Islamic Guidance & Support Programmes</SectionHeading>
             <SectionSub>
               Structured, time-bound programmes for specific life situations. Each is delivered by approved
               practitioners in a confidential, Islamically-grounded environment.
@@ -705,15 +705,15 @@ export default function CounsellingHome() {
         </div>
       </section>
 
-      {/* ══ SECTION 3 — WHY SIRAJONE COUNSELLING ══════════════════════════ */}
+      {/* ══ SECTION 3 — WHY SIRAJONE GUIDANCE ══════════════════════════ */}
       <section id="why" className="border-t border-white/5 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <SectionLabel>Why Choose Us</SectionLabel>
-            <SectionHeading>Why Choose SirajOne Counselling?</SectionHeading>
+            <SectionHeading>Why Choose SirajOne Islamic Guidance & Support?</SectionHeading>
             <SectionSub>
-              We combine professional counselling practice with a deep Islamic foundation — so your
-              support is both clinically informed and spiritually grounded.
+              We combine Islamic guidance support service with a deep Islamic foundation — so your
+              support is both faith-informed and spiritually grounded.
             </SectionSub>
           </div>
 
@@ -741,16 +741,16 @@ export default function CounsellingHome() {
             <SectionLabel>How We Meet</SectionLabel>
             <SectionHeading>Support Options</SectionHeading>
             <SectionSub>
-              Choose how you'd like to receive your support. All options offer the same quality of care.
+              Choose how you'd like to receive your support. All options offer the same Islamic guidance, mentorship, and support standards.
             </SectionSub>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Monitor, label: 'Online Counselling',  desc: 'Video-based private sessions from anywhere.'            },
-              { icon: Phone,   label: 'Voice Sessions',      desc: 'Telephone counselling — no video required.'             },
-              { icon: MapPin,  label: 'In-Person Sessions',  desc: 'Face-to-face at our counselling centre.'                },
-              { icon: Users,   label: 'Group Workshops',     desc: 'Community group sessions with guided support.'          },
+              { icon: Monitor, label: 'Online Islamic Guidance & Support',  desc: 'Video-based private sessions from anywhere.'            },
+              { icon: Phone,   label: 'Voice Sessions',      desc: 'Telephone guidance - no video required.'             },
+              { icon: MapPin,  label: 'In-Person Sessions',  desc: 'Face-to-face support where available.'                },
+              { icon: Users,   label: 'Group Workshops',     desc: 'Community group guidance with structured support.'          },
             ].map(({ icon: Icon, label, desc }) => (
               <div key={label} className="rounded-2xl border border-white/8 bg-white/[0.02] p-6 text-center">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-teal-400/20 bg-teal-400/10">
@@ -790,7 +790,7 @@ export default function CounsellingHome() {
             <SectionLabel>Your Private Space</SectionLabel>
             <h2 className="text-2xl font-black text-white sm:text-3xl">Access Your Support Dashboard</h2>
             <p className="mt-3 text-slate-400">
-              View your sessions, messages from your counsellor, shared resources, and upcoming reminders — all in one private space.
+              View your sessions, messages from your support provider, shared resources, and upcoming reminders — all in one private space.
             </p>
             <Link
               to="/counselling-client"
@@ -838,8 +838,8 @@ export default function CounsellingHome() {
       <div className="border-t border-white/5 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-center text-xs text-slate-600">
-            All counselling services are subject to our{' '}
-            <Link to="/counselling-disclaimer" className="text-teal-500 hover:text-teal-400">Counselling Disclaimer</Link>
+            All Islamic Guidance & Support services are subject to our{' '}
+            <Link to="/counselling-disclaimer" className="text-teal-500 hover:text-teal-400">Islamic Guidance & Support Disclaimer</Link>
             {' '}·{' '}
             <Link to="/privacy" className="text-teal-500 hover:text-teal-400">Privacy Policy</Link>
             {' '}·{' '}

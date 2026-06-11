@@ -1,13 +1,13 @@
 /**
- * CounsellorLibrary — Part 4 of the Counsellor Experience Redesign.
+ * CounsellorLibrary — Part 4 of the Support Provider Experience Redesign.
  *
- * Route: /counsellor-library
- * Access: Counsellor role only (guarded in App.jsx)
+ * Route: /support provider-library
+ * Access: Support Provider role only (guarded in App.jsx)
  *
- * Separate from the client-facing CounsellingLibrary.
- * 8 sections specifically for counsellor professional reading:
+ * Separate from the client-facing Islamic GuidanceLibrary.
+ * 8 sections specifically for support provider professional reading:
  *  1. Handbook
- *  2. Prophetic Counselling
+ *  2. Prophetic Islamic Guidance
  *  3. Islamic Psychology
  *  4. Marriage & Family
  *  5. Parenting
@@ -15,7 +15,7 @@
  *  7. Emotional Wellbeing
  *  8. Professional Practice
  *
- * Resources come from Firestore (counsellorLibrary collection).
+ * Resources come from Firestore (support providerLibrary collection).
  * Falls back gracefully to empty state per section.
  */
 
@@ -34,14 +34,14 @@ import Navbar from '@/components/Navbar';
 const LIBRARY_SECTIONS = [
   {
     id: 'handbook',
-    label: 'Counsellor Handbook',
-    description: 'Core procedures, ethics, and policies for SirajOne counsellors.',
+    label: 'Support Provider Handbook',
+    description: 'Core procedures, ethics, and policies for SirajOne support providers.',
     icon: BookMarked,
     colour: 'emerald',
   },
   {
-    id: 'prophetic-counselling',
-    label: 'Prophetic Counselling',
+    id: 'prophetic-guidance',
+    label: 'Prophetic Islamic Guidance',
     description: 'Methods of the Prophet ﷺ — listening, mercy, gradual guidance.',
     icon: BookOpen,
     colour: 'amber',
@@ -209,12 +209,12 @@ export default function CounsellorLibrary() {
   const [activeSection, setActiveSection] = useState('all');
 
   useEffect(() => {
-    document.title = 'Counsellor Library — SirajOne';
+    document.title = 'Support Provider Library — SirajOne';
   }, []);
 
   useEffect(() => {
     const q = query(
-      collection(db, 'counsellorLibrary'),
+      collection(db, 'support providerLibrary'),
       orderBy('publishedAt', 'desc'),
     );
     const unsub = onSnapshot(
@@ -254,7 +254,7 @@ export default function CounsellorLibrary() {
 
         {/* Back */}
         <Link
-          to="/counsellor"
+          to="/support provider"
           className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-300 transition"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -266,21 +266,21 @@ export default function CounsellorLibrary() {
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/8 px-3 py-1">
             <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
             <span className="text-[11px] font-black uppercase tracking-widest text-sky-300">
-              Counsellor Library
+              Support Provider Library
             </span>
           </div>
           <h1 className="mt-2 font-serif text-3xl font-black text-white sm:text-4xl">
             Professional Reading & Resources
           </h1>
           <p className="mt-2 text-sm text-slate-400 max-w-xl">
-            Curated materials for counsellor development — Islamic and professional. For your eyes only.
+            Curated materials for support provider development — Islamic and professional. For your eyes only.
           </p>
 
           {/* Confidentiality notice */}
           <div className="mt-5 flex items-start gap-3 rounded-xl border border-rose-400/15 bg-rose-400/5 px-4 py-3">
             <Lock className="h-4 w-4 shrink-0 text-rose-400 mt-0.5" />
             <p className="text-xs text-slate-400 leading-5">
-              This library is restricted to counsellors. Resources here support your professional practice
+              This library is restricted to support providers. Resources here support your professional practice
               and are not intended for distribution to clients without review.
             </p>
           </div>
@@ -353,19 +353,19 @@ export default function CounsellorLibrary() {
         {/* Footer */}
         <div className="mt-10 flex flex-col items-center gap-3 text-center">
           <p className="text-xs text-slate-600">
-            Resources are added and reviewed by the SirajOne counselling team.
+            Resources are added and reviewed by the SirajOne guidance team.
             Contact us to suggest a resource.
           </p>
           <div className="flex gap-3">
             <Link
-              to="/counsellor-resources"
+              to="/support provider-resources"
               className="flex items-center gap-1.5 rounded-lg border border-emerald-400/15 bg-emerald-400/8 px-4 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-400/12 transition"
             >
               <BookOpen className="h-3.5 w-3.5" />
               Resource Centre
             </Link>
             <Link
-              to="/counsellor"
+              to="/support provider"
               className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2 text-xs font-bold text-slate-400 hover:text-white transition"
             >
               Back to Dashboard

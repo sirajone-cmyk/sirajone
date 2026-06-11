@@ -1,7 +1,7 @@
 export const SUPPORT_PROFILE = {
-  name: 'Counsellor Aisha Peer',
+  name: 'Support Provider Aisha Peer',
   title: 'Student Support & Guidance',
-  bio: 'Counsellor Aisha Peer supports students and families in an educational setting with calm, practical guidance. She helps learners stay emotionally steady, focused, and motivated through structured Islamic learning journeys.',
+  bio: 'Support Provider Aisha Peer supports students and families in an educational setting with calm, practical guidance. She helps learners stay emotionally steady, focused, and motivated through structured Islamic learning journeys.',
   highlights: [
     'Supports student communities with calm practical guidance',
     'Trusted by learners and parents for steady support',

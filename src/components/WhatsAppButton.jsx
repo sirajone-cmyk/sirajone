@@ -1,12 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// WhatsAppButton — reusable WhatsApp contact button for SirajOne Counselling
+// WhatsAppButton — reusable WhatsApp contact button for SirajOne Islamic Guidance & Support
 // Usage:
-//   <WhatsAppButton />                          → general counselling message
-//   <WhatsAppButton service="Marriage Counselling" />  → service-specific message
+//   <WhatsAppButton />                          → general Islamic guidance message
+//   <WhatsAppButton service="Marriage Guidance" />  → service-specific message
 //   <WhatsAppButton variant="outline" size="sm" />
 // ─────────────────────────────────────────────────────────────────────────────
 
-const WA_NUMBER = '27676340225'; // +27 67 634 0225 — SirajOne Counselling
+const WA_NUMBER = '27676340225'; // +27 67 634 0225 — SirajOne Islamic Guidance & Support
 
 function WhatsAppIcon({ size = 16 }) {
   return (
@@ -33,7 +33,7 @@ export default function WhatsAppButton({
 }) {
   const defaultText = service
     ? `As-salāmu ʿalaykum, I am interested in ${service} at SirajOne. Could you please provide more information?`
-    : `As-salāmu ʿalaykum, I would like to request counselling support from SirajOne.`;
+    : `As-salāmu ʿalaykum, I would like to request Islamic Guidance & Support from SirajOne.`;
 
   const text = message || defaultText;
   const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;

@@ -204,15 +204,15 @@ export function AuthGateway({ onAuthenticated }) {
 
     if (registerType === REGISTER_TYPES.COUNSELLOR) {
       if (!counsellorForm.mobileNumber.trim() || !counsellorForm.country.trim() || !counsellorForm.city.trim()) {
-        setError('Add mobile number, country, and city for the counsellor application.');
+        setError('Add mobile number, country, and city for the support provider application.');
         return false;
       }
       if (!counsellorForm.highestQualification.trim() || !counsellorForm.institution.trim()) {
-        setError('Add your highest qualification and institution for counsellor verification.');
+        setError('Add your Islamic qualification and institution for support provider verification.');
         return false;
       }
       if (counsellorForm.categories.length === 0) {
-        setError('Choose at least one counselling category.');
+        setError('Choose at least one area of guidance.');
         return false;
       }
       if (!Object.values(counsellorForm.serviceDeliveryModes).some(Boolean)) {
@@ -221,7 +221,7 @@ export function AuthGateway({ onAuthenticated }) {
       }
     }
 
-    // Counselling Client has no extra required fields — name/email/password validation above is enough.
+    // Guidance seeker has no lesson-stage required fields — name/email/password validation above is enough.
 
     return true;
   }
@@ -316,10 +316,10 @@ export function AuthGateway({ onAuthenticated }) {
           displayName: counsellorForm.displayName || fullName,
           email,
         });
-        setInfo('Counsellor application submitted. Your account is pending review.');
+        setInfo('Support provider application submitted. Your account is pending review.');
       } else if (registerType === REGISTER_TYPES.COUNSELLING_CLIENT) {
         await registerCounsellingClient(email, registerForm.password, fullName, registerForm.counsellingNotes);
-        setInfo('Your counselling request has been submitted. An administrator will review and approve your account shortly.');
+        setInfo('Your Islamic Guidance & Support request has been submitted. An administrator will review and approve your account shortly.');
       } else {
         await registerStudent(email, registerForm.password, fullName, { parentGuardianConsent: true });
         setInfo('Student account created successfully.');
@@ -357,7 +357,7 @@ export function AuthGateway({ onAuthenticated }) {
                   Welcome to SirajOne
                 </h2>
                 <p className="max-w-[560px] text-base leading-relaxed text-[rgba(228,253,240,0.82)] sm:text-lg">
-                  Your secure platform for Islamic education, counselling support, and guided learning. Sign in to continue or apply for a verified role.
+                  Your secure platform for Islamic education, Islamic guidance, mentorship, and guided learning. Sign in to continue or apply for a verified role.
                 </p>
               </div>
             </div>
@@ -414,9 +414,9 @@ export function AuthGateway({ onAuthenticated }) {
                   <div className="grid grid-cols-3 gap-2 rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(6,16,12,0.72)] p-1">
                     {[
                       { id: REGISTER_TYPES.STUDENT, label: 'Student' },
-                      { id: REGISTER_TYPES.COUNSELLING_CLIENT, label: 'Counselling Client' },
+                      { id: REGISTER_TYPES.COUNSELLING_CLIENT, label: 'Guidance Seeker' },
                       { id: REGISTER_TYPES.TEACHER, label: 'Teach' },
-                      { id: REGISTER_TYPES.COUNSELLOR, label: 'Counsellor' },
+                      { id: REGISTER_TYPES.COUNSELLOR, label: 'Support Provider' },
                     ].map((option) => (
                       <button
                         key={option.id}
@@ -482,16 +482,16 @@ export function AuthGateway({ onAuthenticated }) {
   
                 {registerType === REGISTER_TYPES.COUNSELLING_CLIENT && (
                   <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
-                    <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">Counselling support only</p>
+                    <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">Islamic Guidance & Support only</p>
                     <p className="mt-2 text-sm leading-6 text-slate-300">
-                      This registration is for personal counselling sessions. No lesson stages, workbook recordings, or Qur'an learning fields will be requested.
+                      This registration is for Islamic guidance, mentorship, and support only. No lesson stages, workbook recordings, or Qur'an learning fields will be requested.
                     </p>
                     <div className="mt-4">
-                      <FieldLabel>Optional note for the counselling team</FieldLabel>
+                      <FieldLabel>Optional note for the guidance team</FieldLabel>
                       <FormTextArea
                         value={registerForm.counsellingNotes}
                         onChange={(event) => updateRegisterField('counsellingNotes', event.target.value)}
-                        placeholder="Share what kind of support you are looking for. You can keep this brief."
+                        placeholder="Share what kind of Islamic guidance or support you are looking for. Do not use this form for emergencies."
                         rows={4}
                         disabled={busy}
                       />
@@ -502,7 +502,7 @@ export function AuthGateway({ onAuthenticated }) {
                 {registerType === REGISTER_TYPES.COUNSELLOR && (
                     <div className="max-h-[80vh] space-y-4 overflow-y-auto rounded-2xl border border-[rgba(34,197,94,0.18)] bg-[rgba(6,16,12,0.42)] px-1 pb-6 pt-4 sm:max-h-full sm:px-4">
                       <div className="grid gap-4 px-3 sm:grid-cols-2 sm:px-0">
-                        <div><FieldLabel>Display Name</FieldLabel><Input value={counsellorForm.displayName} onBlur={() => updateCounsellorField('displayName', normalizeCounsellorName(counsellorForm.displayName || registerForm.fullName, { allowTitle: true }))} onChange={(event) => updateCounsellorField('displayName', event.target.value)} placeholder="Counsellor Aisha Peer" autoComplete="name" disabled={busy} /></div>
+                        <div><FieldLabel>Display Name</FieldLabel><Input value={counsellorForm.displayName} onBlur={() => updateCounsellorField('displayName', normalizeCounsellorName(counsellorForm.displayName || registerForm.fullName, { allowTitle: true }))} onChange={(event) => updateCounsellorField('displayName', event.target.value)} placeholder="Support Provider Aisha Peer" autoComplete="name" disabled={busy} /></div>
                         <div><FieldLabel>Mobile Number</FieldLabel><Input value={counsellorForm.mobileNumber} onChange={(event) => updateCounsellorField('mobileNumber', event.target.value)} placeholder="+27 ..." autoComplete="tel" disabled={busy} /></div>
                         <div><FieldLabel>Country</FieldLabel><Input value={counsellorForm.country} onChange={(event) => updateCounsellorField('country', event.target.value)} placeholder="South Africa" autoComplete="country-name" disabled={busy} /></div>
                         <div><FieldLabel>City</FieldLabel><Input value={counsellorForm.city} onChange={(event) => updateCounsellorField('city', event.target.value)} placeholder="Durban" autoComplete="address-level2" disabled={busy} /></div>
@@ -512,14 +512,14 @@ export function AuthGateway({ onAuthenticated }) {
                         <div><FieldLabel>Institution</FieldLabel><Input value={counsellorForm.institution} onChange={(event) => updateCounsellorField('institution', event.target.value)} placeholder="Institution" autoComplete="organization" disabled={busy} /></div>
                         <div><FieldLabel>Certifications</FieldLabel><Input value={counsellorForm.certifications} onChange={(event) => updateCounsellorField('certifications', event.target.value)} placeholder="Comma separated" disabled={busy} /></div>
                         <div><FieldLabel>Years of Experience</FieldLabel><Input type="number" min="0" value={counsellorForm.yearsOfExperience} onChange={(event) => updateCounsellorField('yearsOfExperience', event.target.value)} placeholder="0" disabled={busy} /></div>
-                        <div><FieldLabel>Registration Body</FieldLabel><Input value={counsellorForm.registrationBody} onChange={(event) => updateCounsellorField('registrationBody', event.target.value)} placeholder="Professional registration body" disabled={busy} /></div>
-                        <div><FieldLabel>Professional Memberships</FieldLabel><Input value={counsellorForm.professionalMemberships} onChange={(event) => updateCounsellorField('professionalMemberships', event.target.value)} placeholder="Comma separated" disabled={busy} /></div>
+                        <div><FieldLabel>Registration Body</FieldLabel><Input value={counsellorForm.registrationBody} onChange={(event) => updateCounsellorField('registrationBody', event.target.value)} placeholder="Islamic qualification body or reference" disabled={busy} /></div>
+                        <div><FieldLabel>Memberships / References</FieldLabel><Input value={counsellorForm.professionalMemberships} onChange={(event) => updateCounsellorField('professionalMemberships', event.target.value)} placeholder="Comma separated" disabled={busy} /></div>
                       </div>
 
-                      <div className="px-3 sm:px-0"><FieldLabel>Bio</FieldLabel><FormTextArea value={counsellorForm.bio || ''} onChange={(event) => updateCounsellorField('bio', event.target.value)} placeholder="Write a short public counselling support bio." disabled={busy} /></div>
+                      <div className="px-3 sm:px-0"><FieldLabel>Bio</FieldLabel><FormTextArea value={counsellorForm.bio || ''} onChange={(event) => updateCounsellorField('bio', event.target.value)} placeholder="Write a short public Islamic guidance and support bio." disabled={busy} /></div>
 
                       <div className="px-3 sm:px-0">
-                        <FieldLabel>Counselling Categories</FieldLabel>
+                        <FieldLabel>Areas of Guidance</FieldLabel>
                         <div className="grid gap-2 sm:grid-cols-2">
                           {COUNSELLOR_CATEGORIES.map((category) => <TogglePill key={category} checked={counsellorForm.categories.includes(category)} onChange={() => toggleCounsellorCategory(category)} disabled={busy}>{category}</TogglePill>)}
                         </div>
@@ -544,7 +544,7 @@ export function AuthGateway({ onAuthenticated }) {
                   )}
 
                   <Button type="submit" className="mt-8 w-full justify-center" disabled={busy}>
-                    {busy ? 'Creating account...' : registerType === REGISTER_TYPES.TEACHER ? 'Submit Teacher Application' : registerType === REGISTER_TYPES.COUNSELLOR ? 'Submit Counsellor Application' : registerType === REGISTER_TYPES.COUNSELLING_CLIENT ? 'Submit Counselling Request' : 'Create Student Account'}
+                    {busy ? 'Creating account...' : registerType === REGISTER_TYPES.TEACHER ? 'Submit Teacher Application' : registerType === REGISTER_TYPES.COUNSELLOR ? 'Submit Support Provider Application' : registerType === REGISTER_TYPES.COUNSELLING_CLIENT ? 'Submit Guidance Request' : 'Create Student Account'}
                     <ArrowRight size={16} />
                   </Button>
                 </div>

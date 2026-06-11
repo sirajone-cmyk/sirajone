@@ -30,7 +30,7 @@ const primaryLinks = [
 const hubLinks = [
   { to: '/library', label: 'Library', icon: Library },
   { to: '/teachers', label: 'Teachers', icon: Users },
-  { to: '/counsellors', label: 'Counsellors', icon: HeartHandshake },
+  { to: '/counsellors', label: 'Guidance', icon: HeartHandshake },
   { to: '/contact', label: 'Contact', icon: Phone },
   { to: '/letters', label: 'Letter Guide', icon: BookOpen },
   { to: '/practice-workbook', label: 'Practice Book', icon: PenTool },
@@ -79,7 +79,7 @@ export default function Navbar() {
       isAdmin
         ? { to: '/admin', label: 'Admin Panel', icon: LayoutDashboard }
         : isCounsellor
-          ? { to: '/counsellor', label: 'Counsellor', icon: HeartHandshake }
+          ? { to: '/counsellor', label: 'Provider', icon: HeartHandshake }
           : isCounsellingClient
             ? { to: '/counselling-client', label: 'My Support', icon: HeartHandshake }
             : { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -88,7 +88,7 @@ export default function Navbar() {
 
   const messagePath = isAdmin ? '/admin/messages' : '/messages';
 
-  // Counselling clients and counsellors must not see student learning links
+  // Guidance seekers and counsellors must not see student learning links
   const isCounsellingUser = isCounsellingClient || isCounsellor;
 
   const counsellingDesktopLinks = [
@@ -96,11 +96,11 @@ export default function Navbar() {
     dashboardLink,
     { to: '/daily-spiritual',     label: 'Daily',     icon: Heart          },
     { to: '/counselling-library', label: 'Library',   icon: Library        },
-    { to: '/counsellors',         label: 'Counsellors', icon: HeartHandshake },
+    { to: '/counsellors',         label: 'Guidance', icon: HeartHandshake },
     { to: '/contact',             label: 'Contact',   icon: Phone          },
   ];
 
-  // Counsellors: remove public counsellors directory, add counsellor-specific pages
+  // Support providers: remove public counsellors directory, add counsellor-specific pages
   const counsellorDesktopLinks = [
     { to: '/',                        label: 'Home',      icon: Home           },
     dashboardLink,

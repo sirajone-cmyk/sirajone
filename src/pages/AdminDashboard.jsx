@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import {
   Users,
@@ -122,8 +122,8 @@ async function syncTeacherPublicProfile(user, profileStatus = 'approved', existi
 }
 
 const buildSafeCounsellorProfile = (user, profileStatus = 'approved', existingProfile = null) => ({
-  fullName: existingProfile?.fullName || user.full_name || user.name || user.email || 'SirajOne Counsellor',
-  displayName: existingProfile?.displayName || user.displayName || user.full_name || user.name || user.email || 'SirajOne Counsellor',
+  fullName: existingProfile?.fullName || user.full_name || user.name || user.email || 'SirajOne Support Provider',
+  displayName: existingProfile?.displayName || user.displayName || user.full_name || user.name || user.email || 'SirajOne Support Provider',
   email: existingProfile?.email || user.email || '',
   mobileNumber: existingProfile?.mobileNumber || user.mobileNumber || '',
   country: existingProfile?.country || user.country || '',
@@ -133,7 +133,7 @@ const buildSafeCounsellorProfile = (user, profileStatus = 'approved', existingPr
   categories: Array.isArray(existingProfile?.categories) ? existingProfile.categories : [],
   serviceDeliveryModes: existingProfile?.serviceDeliveryModes || {},
   availability: existingProfile?.availability || {},
-  bio: existingProfile?.bio || 'Approved SirajOne counsellor profile. Profile details will be completed soon.',
+  bio: existingProfile?.bio || 'Approved SirajOne support provider profile. Profile details will be completed soon.',
   profileStatus,
   updated_at: serverTimestamp(),
 });
@@ -336,11 +336,11 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
       <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-white/10 bg-[#102018] shadow-2xl shadow-black/50">
         <div className="sticky top-0 z-10 flex items-start justify-between border-b border-white/10 bg-[#102018]/95 px-5 py-4 backdrop-blur">
           <div>
-            <p className="mb-1 text-xs font-bold uppercase tracking-[0.22em] text-emerald-400">Counsellor Application Review</p>
+            <p className="mb-1 text-xs font-bold uppercase tracking-[0.22em] text-emerald-400">Support Provider Application Review</p>
             <h2 className="text-2xl font-bold text-white">
-              {publicProfile?.displayName || publicProfile?.fullName || normalizedUser?.full_name || normalizedUser?.name || normalizedUser?.email || 'Counsellor Profile'}
+              {publicProfile?.displayName || publicProfile?.fullName || normalizedUser?.full_name || normalizedUser?.name || normalizedUser?.email || 'Support Provider Profile'}
             </h2>
-            <p className="mt-1 text-sm text-slate-400">Review public and private counsellor details before approving.</p>
+            <p className="mt-1 text-sm text-slate-400">Review public profile, Islamic qualifications, areas of guidance, and private verification details before approving.</p>
           </div>
           <button
             type="button"
@@ -356,7 +356,7 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
           {loading && (
             <div className="flex items-center gap-3 rounded-2xl border border-emerald-900/60 bg-emerald-950/30 p-4 text-emerald-200">
               <Loader2 className="h-5 w-5 animate-spin" />
-              Loading counsellor profile details...
+              Loading support provider profile details...
             </div>
           )}
 
@@ -371,7 +371,7 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
             <div className="grid gap-4 md:grid-cols-2">
               <DetailItem label="Full Name" value={normalizedUser?.full_name || normalizedUser?.name || publicProfile?.fullName} />
               <DetailItem label="Email" value={normalizedUser?.email || publicProfile?.email} />
-              <DetailItem label="Role" value={normalizedUser?.role || 'Counsellor'} />
+              <DetailItem label="Role" value={normalizedUser?.role || 'Support Provider'} />
               <DetailItem label="Account Status" value={normalizedUser?.status || 'pending'} />
             </div>
           </section>
@@ -379,7 +379,7 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
           <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-bold text-white">Public Counsellor Profile</h3>
+                <h3 className="text-lg font-bold text-white">Public Support Provider Profile</h3>
                 <p className="text-sm text-slate-500">This is the safe profile students will see after approval.</p>
               </div>
               <span className={`rounded-full border px-3 py-1 text-xs font-bold capitalize ${statusStyle[publicProfile?.profileStatus] || statusStyle.pending}`}>
@@ -396,7 +396,7 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
                 <DetailItem label="Country" value={publicProfile.country} />
                 <DetailItem label="City" value={publicProfile.city} />
                 <DetailItem label="Languages Spoken" value={publicProfile.languagesSpoken} wide />
-                <DetailItem label="Counselling Categories" value={publicProfile.categories} wide />
+                <DetailItem label="Areas of Guidance" value={publicProfile.categories} wide />
                 <DetailItem label="Service Delivery" value={publicProfile.serviceDeliveryModes} wide />
                 <DetailItem label="Availability" value={publicProfile.availability} wide />
                 <DetailItem label="Bio" value={publicProfile.bio} wide />
@@ -404,7 +404,7 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
               </div>
             ) : (
               <div className="rounded-2xl border border-amber-900/60 bg-amber-950/25 p-4 text-sm text-amber-200">
-                No public counsellor profile document exists yet. Approving this counsellor will create a safe public profile from the user record.
+                No public support provider profile document exists yet. Approving this applicant will create a safe public profile from the user record.
               </div>
             )}
           </section>
@@ -424,7 +424,7 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
               </div>
             ) : (
               <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4 text-sm text-slate-400">
-                No private verification document was found for this counsellor account.
+                No private verification document was found for this support provider account.
               </div>
             )}
           </section>
@@ -443,7 +443,7 @@ function CounsellorReviewModal({ preview, loading, error, onClose, onApprove }) 
                 onClick={() => onApprove(normalizedUser, publicProfile)}
                 className="rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-600"
               >
-                {normalizedUser?.status === 'approved' ? 'Publish Counsellor Profile' : 'Approve Counsellor'}
+                {normalizedUser?.status === 'approved' ? 'Publish Support Provider Profile' : 'Approve Support Provider'}
               </button>
             )}
           </div>
@@ -565,7 +565,7 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
   const pendingRequests = counsellingRequests.filter((request) => request.status === 'pending');
 
   const cards = [
-    { label: 'Counsellor Accounts', value: counsellorUsers.length, icon: HeartHandshake, tone: 'text-emerald-300' },
+    { label: 'Support Provider Accounts', value: counsellorUsers.length, icon: HeartHandshake, tone: 'text-emerald-300' },
     { label: 'Pending Applications', value: pendingApplications.length, icon: Clock, tone: 'text-amber-300' },
     { label: 'Approved Public Profiles', value: approvedProfiles.length, icon: CheckCircle, tone: 'text-sky-300' },
     { label: 'Open Support Requests', value: pendingRequests.length, icon: ReceiptText, tone: 'text-violet-300' },
@@ -585,14 +585,14 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
 
       <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
         <div className="border-b border-white/10 px-5 py-4">
-          <h2 className="text-lg font-bold text-white">Pending Counsellor Registrations</h2>
-          <p className="text-sm text-slate-500">Approve or suspend counsellor applications after verification.</p>
+          <h2 className="text-lg font-bold text-white">Pending Support Provider Registrations</h2>
+          <p className="text-sm text-slate-500">Approve or suspend support provider applications after verifying Islamic qualifications, areas of guidance, and absence of clinical claims.</p>
         </div>
         {pendingApplications.length === 0 ? (
           <div className="p-5">
             <AdminEmptyState
-              title="No pending counsellor applications"
-              body="New counsellor applications will appear here with clean approval actions. No placeholder counsellors are shown."
+              title="No pending support provider applications"
+              body="New support provider applications will appear here with clean approval actions. No placeholder providers are shown."
             />
           </div>
         ) : (
@@ -610,11 +610,11 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
                 {pendingApplications.map((user) => (
                   <tr key={user.id} className="transition-colors hover:bg-white/3">
                     <td className="px-5 py-4">
-                      <div className="font-semibold text-white">{user.full_name || user.name || user.email || 'Counsellor Applicant'}</div>
+                      <div className="font-semibold text-white">{user.full_name || user.name || user.email || 'Support Provider Applicant'}</div>
                       <div className="text-xs text-slate-500">{user.email}</div>
                     </td>
                     <td className="px-5 py-4 text-slate-300">
-                      {isCounsellorRole(user.role) ? user.role : 'Counsellor (role repair pending)'}
+                      {isCounsellorRole(user.role) ? user.role : 'Support Provider (role repair pending)'}
                     </td>
                     <td className="px-5 py-4">
                       <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle[user.status] || statusStyle.pending}`}>
@@ -627,7 +627,7 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
                           type="button"
                           onClick={() => onViewProfile(user)}
                           className="rounded-lg bg-sky-900/50 p-1.5 text-sky-300 transition-colors hover:bg-sky-800"
-                          title="Review counsellor profile before approval"
+                          title="Review support provider profile before approval"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
@@ -635,7 +635,7 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
                           type="button"
                           onClick={() => onSuspend(user)}
                           className="rounded-lg bg-amber-900/60 p-1.5 text-amber-400 transition-colors hover:bg-amber-800"
-                          title="Suspend counsellor"
+                          title="Suspend support provider"
                         >
                           <XCircle className="h-4 w-4" />
                         </button>
@@ -651,14 +651,14 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
 
       <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
         <div className="border-b border-white/10 px-5 py-4">
-          <h2 className="text-lg font-bold text-white">Approved Counsellor Profiles</h2>
-          <p className="text-sm text-slate-500">Public counsellor profiles visible to students.</p>
+          <h2 className="text-lg font-bold text-white">Approved Support Provider Profiles</h2>
+          <p className="text-sm text-slate-500">Public Islamic Guidance & Support provider profiles visible to guidance seekers.</p>
         </div>
         {approvedProfiles.length === 0 ? (
           <div className="p-5">
             <AdminEmptyState
-              title="No approved counsellor profiles"
-              body="Approved counsellors will appear here once an application is verified. We are intentionally not using fake profile records."
+              title="No approved support provider profiles"
+              body="Approved support providers will appear here once an application is verified. We are intentionally not using fake profile records."
             />
           </div>
         ) : (
@@ -667,7 +667,7 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
               <article key={profile.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-bold text-white">{profile.displayName || profile.fullName || 'SirajOne Counsellor'}</h3>
+                    <h3 className="font-bold text-white">{profile.displayName || profile.fullName || 'SirajOne Support Provider'}</h3>
                     <p className="text-sm text-slate-500">{[profile.city, profile.country].filter(Boolean).join(', ') || 'Location not provided'}</p>
                   </div>
                   <span className="rounded-full border border-emerald-800 bg-emerald-950/60 px-2.5 py-1 text-xs font-bold text-emerald-300">
@@ -690,14 +690,14 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
 
       <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
         <div className="border-b border-white/10 px-5 py-4">
-          <h2 className="text-lg font-bold text-white">Counselling Requests</h2>
-          <p className="text-sm text-slate-500">Student support cases and counselling activity pipeline.</p>
+          <h2 className="text-lg font-bold text-white">Guidance Requests</h2>
+          <p className="text-sm text-slate-500">Guidance requests and support activity pipeline.</p>
         </div>
         {counsellingRequests.length === 0 ? (
           <div className="p-5">
             <AdminEmptyState
-              title="No counselling requests yet"
-              body="Student support requests will appear here after learners request counselling support from a public counsellor profile."
+              title="No guidance requests yet"
+              body="Guidance requests will appear here after users request support from a public support provider profile."
             />
           </div>
         ) : (
@@ -706,7 +706,7 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
               <thead>
                 <tr className="border-b border-white/10 text-left">
                   <th className="px-5 py-4 font-semibold text-slate-400">Student</th>
-                  <th className="px-5 py-4 font-semibold text-slate-400">Counsellor</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Support Provider</th>
                   <th className="px-5 py-4 font-semibold text-slate-400">Categories</th>
                   <th className="px-5 py-4 font-semibold text-slate-400">Status</th>
                   <th className="px-5 py-4 font-semibold text-slate-400">Submitted</th>
@@ -738,14 +738,14 @@ function CounsellorAdminPanel({ users, counsellorProfiles, counsellingRequests, 
   );
 }
 
-// â”€â”€ Allocation Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Allocation Panel ──────────────────────────────────────────────────────────
 
 /**
  * AllocationPanel
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ─────────────────────────────────────────────────────────────────────────────
  * Renders two sections:
- *   1. Summary Matrix  â€” every approved educator with their live active count.
- *   2. Placement Board â€” all pending_admin assignments with educator dropdown.
+ *   1. Summary Matrix  — every approved educator with their live active count.
+ *   2. Placement Board — all pending_admin assignments with educator dropdown.
  */
 function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
   const [pendingAssignments, setPendingAssignments] = useState([]);
@@ -796,7 +796,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
       .filter((p) => p.profileStatus === 'approved')
       .map((p) => ({
         id:   p.id,
-        name: p.displayName || p.fullName || 'Counsellor',
+        name: p.displayName || p.fullName || 'Support Provider',
         type: 'counsellor',
       })),
     [counsellorProfiles],
@@ -836,7 +836,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
   return (
     <div className="space-y-8">
 
-      {/* â”€â”€ Summary Matrix â”€â”€ */}
+      {/* ── Summary Matrix ── */}
       <section>
         <div className="mb-4">
           <h2 className="text-xl font-bold text-white">Educator Capacity Matrix</h2>
@@ -876,7 +876,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
         )}
       </section>
 
-      {/* â”€â”€ Placement Board â”€â”€ */}
+      {/* ── Placement Board ── */}
       <section>
         <div className="mb-4">
           <h2 className="text-xl font-bold text-white">Placement Board</h2>
@@ -902,7 +902,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left">
-                  <th className="px-5 py-4 font-semibold text-slate-400">Student / Client</th>
+                  <th className="px-5 py-4 font-semibold text-slate-400">Student / Guidance Seeker</th>
                   <th className="px-5 py-4 font-semibold text-slate-400">Type</th>
                   <th className="px-5 py-4 font-semibold text-slate-400">Note</th>
                   <th className="px-5 py-4 font-semibold text-slate-400">Assign to</th>
@@ -932,15 +932,15 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
                       </td>
                       <td className="px-5 py-4">
                         <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300 capitalize">
-                          {assignment.type || 'â€”'}
+                          {assignment.type || '—'}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-slate-400 text-xs max-w-[180px]">
-                        <p className="line-clamp-2">{assignment.note || 'â€”'}</p>
+                        <p className="line-clamp-2">{assignment.note || '—'}</p>
                       </td>
                       <td className="px-5 py-4">
                         {isConfirmed ? (
-                          <span className="text-xs text-emerald-400 font-semibold">âœ“ Assigned</span>
+                          <span className="text-xs text-emerald-400 font-semibold">✓ Assigned</span>
                         ) : (
                           <select
                             value={selectedId}
@@ -949,7 +949,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
                             }
                             className="rounded-xl border border-white/10 bg-[#0b1a12] px-3 py-2 text-xs text-white outline-none focus:border-emerald-600 min-w-[180px]"
                           >
-                            <option value="">â€” Select educator â€”</option>
+                            <option value="">— Select educator —</option>
                             {options.map((opt) => (
                               <option key={opt.id} value={opt.id}>
                                 {opt.name} ({activeCountFor(opt.id)} active)
@@ -986,7 +986,7 @@ function AllocationPanel({ teacherProfiles, counsellorProfiles }) {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const [students, setStudents] = useState([]);
@@ -1157,7 +1157,7 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error(error);
-      setCounsellorPreviewError('Unable to load counsellor profile details right now. Please check Firestore permissions and try again.');
+      setCounsellorPreviewError('Unable to load support provider profile details right now. Please check Firestore permissions and try again.');
       setCounsellorPreview((current) => current || { user: normalizedUser, publicProfile: null, privateData: null });
     } finally {
       setCounsellorPreviewLoading(false);
@@ -1200,7 +1200,7 @@ export default function AdminDashboard() {
         <div className="mb-8 flex flex-wrap gap-2">
           {[
             { id: 'users',      label: 'Users' },
-            { id: 'counsellors',label: 'Counsellors' },
+            { id: 'counsellors',label: 'Support Providers' },
             { id: 'allocation', label: 'Roster Allocation' },
             { id: 'financial',  label: 'Financial Tracker' },
           ].map(tab => (
@@ -1229,7 +1229,7 @@ export default function AdminDashboard() {
             teacherProfiles={(() => {
               // Build from the teacher collection stream via users list
               const teacherUsers = students.filter(u => isTeacherRole(u.role) && u.status === 'approved');
-              // Prefer counsellorProfiles pattern â€” create teacher profile objects from users
+              // Prefer counsellorProfiles pattern — create teacher profile objects from users
               return teacherUsers.map(u => ({
                 id:            u.id,
                 name:          u.full_name || u.name || u.email || 'Teacher',
@@ -1305,13 +1305,13 @@ export default function AdminDashboard() {
                               <button
                                 onClick={() => viewCounsellorProfile(s)}
                                 className="rounded-lg bg-sky-900/50 p-1.5 text-sky-300 transition-colors hover:bg-sky-800"
-                                title="View counsellor profile"
+                                title="View support provider profile"
                               >
                                 <Eye className="h-4 w-4" />
                               </button>
                             )}
                             {s.status !== 'approved' && (
-                              <button onClick={() => hasCounsellorApplicationIntent(s) ? viewCounsellorProfile(s) : approve(s)} className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800" title={hasCounsellorApplicationIntent(s) ? "Review counsellor before approval" : "Approve"}>
+                              <button onClick={() => hasCounsellorApplicationIntent(s) ? viewCounsellorProfile(s) : approve(s)} className="rounded-lg bg-emerald-900/60 p-1.5 text-emerald-400 transition-colors hover:bg-emerald-800" title={hasCounsellorApplicationIntent(s) ? "Review support provider before approval" : "Approve"}>
                                 <CheckCircle className="h-4 w-4" />
                               </button>
                             )}
@@ -1339,7 +1339,7 @@ export default function AdminDashboard() {
               <div className="mt-6 flex items-center gap-3 rounded-2xl border border-amber-800 bg-amber-900/30 p-4">
                 <Clock className="h-5 w-5 flex-shrink-0 text-amber-400" />
                 <p className="text-sm text-amber-300">
-                  <strong>{stats.pending} user{stats.pending > 1 ? 's' : ''}</strong> awaiting approval. Review counsellor applications before activation.
+                  <strong>{stats.pending} user{stats.pending > 1 ? 's' : ''}</strong> awaiting approval. Review support provider applications before activation.
                 </p>
               </div>
             )}
@@ -1349,6 +1349,7 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
 
 

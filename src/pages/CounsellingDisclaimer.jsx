@@ -2,10 +2,13 @@ import { Link } from 'react-router-dom';
 import { HeartHandshake, ArrowLeft, AlertTriangle, Phone } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
-const LAST_UPDATED = '7 June 2026';
+const LAST_UPDATED = '11 June 2026';
 const CONTACT_EMAIL = 'sirajone7@gmail.com';
-const EMERGENCY_SA = '0800 456 789'; // SADAG toll-free
-const LIFELINE_SA = '0861 322 322'; // Lifeline SA
+const EMERGENCY_SA = '0800 456 789';
+const LIFELINE_SA = '0861 322 322';
+
+const PLATFORM_DISCLAIMER = 'SirajOne provides Islamic guidance, mentorship, spiritual support, and educational services. SirajOne does not provide emergency services, psychiatric treatment, psychological diagnosis, psychotherapy, or medical care.';
+const EMERGENCY_WARNING = 'This form is not monitored as an emergency service. Do not use SirajOne for urgent danger, abuse, suicide risk, self-harm, violence, or medical emergencies. If your situation is urgent, contact your local emergency services, police, ambulance, or a qualified professional immediately.';
 
 function Section({ title, children, highlight = false }) {
   return (
@@ -27,160 +30,116 @@ export default function CounsellingDisclaimer() {
     <div className="min-h-screen bg-[#060e09] text-white">
       <Navbar />
       <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
-
-        {/* Header */}
         <div className="mb-12">
-          <Link
-            to="/"
-            className="mb-6 inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300"
-          >
+          <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300">
             <ArrowLeft size={14} /> Back to Home
           </Link>
           <div className="flex items-center gap-3 mb-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10">
               <HeartHandshake size={18} className="text-amber-400" />
             </div>
-            <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Counselling Disclaimer</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Islamic Guidance & Support Notice</span>
           </div>
-          <h1 className="text-3xl font-bold text-white sm:text-4xl">Counselling Services — Important Notice</h1>
+          <h1 className="text-3xl font-bold text-white sm:text-4xl">Islamic Guidance & Support - Important Notice</h1>
           <p className="mt-3 text-sm text-[rgba(215,245,228,0.55)]">Last updated: {LAST_UPDATED}</p>
           <p className="mt-2 text-sm text-[rgba(215,245,228,0.55)]">
-            Please read this disclaimer carefully before accessing any counselling feature on SirajOne.
+            Please read this notice carefully before using any Islamic Guidance & Support feature on SirajOne.
           </p>
         </div>
 
-        {/* Emergency warning */}
         <div className="mb-8 rounded-2xl border border-red-500/40 bg-red-950/30 p-6">
           <div className="flex items-start gap-3">
             <AlertTriangle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-red-300 mb-2">If You Are in Crisis</p>
-              <p className="text-sm text-[rgba(255,200,200,0.85)] leading-6">
-                If you are experiencing a mental health crisis, thoughts of self-harm, or a medical emergency, please do not use this platform. Contact emergency services (<strong>10111</strong>), the SADAG 24-hour helpline (<strong>{EMERGENCY_SA}</strong>), or Lifeline SA (<strong>{LIFELINE_SA}</strong>) immediately.
+              <p className="font-bold text-red-300 mb-2">Emergency Warning</p>
+              <p className="text-sm text-[rgba(255,200,200,0.85)] leading-6">{EMERGENCY_WARNING}</p>
+              <p className="mt-3 text-sm text-[rgba(255,200,200,0.85)] leading-6">
+                In South Africa, contact police on <strong>10111</strong>, ambulance on <strong>10177</strong>, SADAG on <strong>{EMERGENCY_SA}</strong>, or Lifeline SA on <strong>{LIFELINE_SA}</strong>.
               </p>
             </div>
           </div>
         </div>
 
         <div className="space-y-0">
-
-          <Section title="1. Nature of Counselling on SirajOne" highlight>
+          <Section title="1. Nature of Islamic Guidance & Support" highlight>
+            <P><strong className="text-white">{PLATFORM_DISCLAIMER}</strong></P>
             <P>
-              Counselling services offered through SirajOne are <strong className="text-white">Islamic-oriented peer support and guidance sessions</strong> provided by verified counsellors. These services are intended to offer emotional support, Islamic guidance, and a safe space for conversation.
+              SirajOne support is intended for Islamic guidance, mentorship, spiritual encouragement, family and community support, educational direction, and practical naseehah within a Muslim learning environment.
             </P>
-            <P>
-              <strong className="text-amber-300">This is NOT:</strong>
-            </P>
+            <P><strong className="text-amber-300">This is NOT:</strong></P>
             <ul className="ml-4 space-y-1 list-disc text-[rgba(255,220,150,0.85)]">
-              <li>A registered clinical psychology or psychotherapy service.</li>
-              <li>Medical advice or psychiatric treatment.</li>
-              <li>A substitute for professional, regulated mental health care.</li>
-              <li>A crisis intervention or emergency service.</li>
+              <li>An emergency response service.</li>
+              <li>A medical, psychological, psychiatric, or diagnostic service.</li>
+              <li>A substitute for a qualified doctor, psychologist, psychiatrist, social worker, police officer, or emergency authority.</li>
+              <li>A place to report urgent danger, abuse, violence, suicide risk, self-harm, or medical emergencies.</li>
             </ul>
           </Section>
 
-          <Section title="2. Counsellor Qualifications">
+          <Section title="2. Support Provider Scope">
             <P>
-              SirajOne verifies that counsellors on the platform have submitted their qualifications, registration details, and references. However, SirajOne does not itself employ or regulate counsellors and is not responsible for the specific advice, guidance, or recommendations given during sessions.
+              Support providers on SirajOne may include Ulama, Muftis, Muallimahs, Islamic teachers, mentors, Da'wah workers, and experienced community support personnel.
             </P>
             <P>
-              Counsellors on SirajOne operate within their own stated scope of competence. They are not required to be registered with the Health Professions Council of South Africa (HPCSA) unless they explicitly state so.
+              Provider profiles show Islamic qualifications, institutions or teachers studied under, areas of guidance, languages spoken, years of community experience, availability, and gender served where relevant.
             </P>
             <P>
-              If you require a registered clinical psychologist or psychiatrist, please contact the{' '}
-              <strong className="text-white">HPCSA</strong> at{' '}
-              <a href="https://www.hpcsa.co.za" className="text-emerald-400 underline" target="_blank" rel="noopener noreferrer">www.hpcsa.co.za</a>{' '}
-              or consult your GP for a referral.
+              This provider is not presented as a medical or psychological practitioner unless separately verified.
             </P>
           </Section>
 
-          <Section title="3. Confidentiality">
+          <Section title="3. Confidentiality and Safety Limits">
             <P>
-              Counsellors on SirajOne maintain confidentiality of session content. However, confidentiality has limits. A counsellor may breach confidentiality if:
+              SirajOne expects support providers to treat guidance conversations with care and discretion. Confidentiality may be limited where there is risk of harm, risk to a child, suspected abuse, legal obligation, or immediate danger.
             </P>
-            <ul className="ml-4 space-y-1 list-disc">
-              <li>There is a reasonable risk of harm to you or another person.</li>
-              <li>Disclosure is required by law or a court order.</li>
-              <li>The safety of a child is at risk.</li>
-            </ul>
             <P>
-              Session notes written by counsellors are private — you as the client cannot access the counsellor's private notes. This is standard professional practice and is designed to protect the quality and integrity of the support process.
+              Private support notes may be restricted to authorised support providers and administrators for safeguarding, continuity, and supervision purposes.
             </P>
           </Section>
 
-          <Section title="4. Limitations of Online Support">
+          <Section title="4. Online Support Limitations">
             <P>
-              Online support sessions have inherent limitations compared to in-person professional therapy:
+              Online Islamic guidance has natural limitations. A provider may not see your full situation, may not be able to verify facts, and may need to direct you to local emergency services, family structures, community leadership, qualified professionals, or authorities.
             </P>
-            <ul className="ml-4 space-y-1 list-disc">
-              <li>Non-verbal cues and body language may be missed.</li>
-              <li>Technical issues may interrupt sessions.</li>
-              <li>Online support is not appropriate for severe mental health conditions, psychosis, acute suicidality, or complex trauma requiring clinical intervention.</li>
-            </ul>
             <P>
-              If at any point your counsellor or SirajOne determines that your needs exceed what can be safely provided on this platform, we will encourage you to seek appropriate professional help.
+              If your situation appears urgent or outside the safe scope of SirajOne, you should seek appropriate local help immediately.
             </P>
           </Section>
 
           <Section title="5. Children and Minors">
             <P>
-              Counselling sessions involving children under 18 require the knowledge and implied consent of a parent or guardian. SirajOne recommends that parents are made aware if their child is accessing counselling support through the platform.
+              Support involving children or minors should involve parent or guardian awareness where appropriate. Safeguarding concerns must be escalated to the relevant responsible adults, authorities, or qualified professionals.
             </P>
           </Section>
 
-          <Section title="6. No Formal Therapeutic Relationship">
-            <P>
-              Engaging with a counsellor on SirajOne does not establish a formal therapeutic relationship as defined by the HPCSA or any regulatory body. It is a voluntary support relationship within an Islamic educational and community platform.
-            </P>
-          </Section>
-
-          <Section title="7. Your Responsibility">
-            <P>By using the counselling feature, you acknowledge that:</P>
+          <Section title="6. User Responsibility">
+            <P>By using Islamic Guidance & Support on SirajOne, you acknowledge that:</P>
             <ul className="ml-4 space-y-1 list-disc">
-              <li>You have read and understood this disclaimer.</li>
-              <li>You are seeking support of your own free will.</li>
-              <li>You understand that this is not clinical or regulated therapy.</li>
-              <li>You will seek emergency or professional help if your situation requires it.</li>
+              <li>You have read and understood this notice.</li>
+              <li>You understand the service is Islamic guidance, mentorship, spiritual support, and education.</li>
+              <li>You understand it is not emergency, medical, psychiatric, psychological, diagnostic, or psychotherapy care.</li>
+              <li>You will contact emergency services, authorities, or qualified professionals if your situation requires it.</li>
             </ul>
           </Section>
 
-          <Section title="8. Useful Resources in South Africa">
+          <Section title="7. Useful Resources in South Africa">
             <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <Phone size={14} className="text-emerald-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="font-semibold text-white">SADAG 24-Hour Crisis Helpline</p>
-                  <p className="text-emerald-400">{EMERGENCY_SA}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Phone size={14} className="text-emerald-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="font-semibold text-white">Lifeline South Africa</p>
-                  <p className="text-emerald-400">{LIFELINE_SA}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Phone size={14} className="text-emerald-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="font-semibold text-white">Emergency Services</p>
-                  <p className="text-emerald-400">10111 (Police) · 10177 (Ambulance)</p>
-                </div>
-              </div>
+              <div className="flex items-start gap-3"><Phone size={14} className="text-emerald-400 flex-shrink-0 mt-1" /><div><p className="font-semibold text-white">SADAG 24-Hour Crisis Helpline</p><p className="text-emerald-400">{EMERGENCY_SA}</p></div></div>
+              <div className="flex items-start gap-3"><Phone size={14} className="text-emerald-400 flex-shrink-0 mt-1" /><div><p className="font-semibold text-white">Lifeline South Africa</p><p className="text-emerald-400">{LIFELINE_SA}</p></div></div>
+              <div className="flex items-start gap-3"><Phone size={14} className="text-emerald-400 flex-shrink-0 mt-1" /><div><p className="font-semibold text-white">Emergency Services</p><p className="text-emerald-400">10111 (Police) - 10177 (Ambulance)</p></div></div>
             </div>
           </Section>
 
-          <Section title="9. Contact">
+          <Section title="8. Contact">
             <P>
-              If you have questions about counselling services or this disclaimer, email us at{' '}
+              If you have questions about Islamic Guidance & Support or this notice, email us at{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-emerald-400 underline">{CONTACT_EMAIL}</a>.
             </P>
           </Section>
         </div>
 
         <div className="mt-8 flex flex-wrap gap-4 text-sm">
-          <Link to="/privacy" className="text-emerald-400 hover:text-emerald-300">Privacy Policy →</Link>
-          <Link to="/terms" className="text-emerald-400 hover:text-emerald-300">Terms of Service →</Link>
+          <Link to="/privacy" className="text-emerald-400 hover:text-emerald-300">Privacy Policy -&gt;</Link>
+          <Link to="/terms" className="text-emerald-400 hover:text-emerald-300">Terms of Service -&gt;</Link>
         </div>
       </main>
     </div>

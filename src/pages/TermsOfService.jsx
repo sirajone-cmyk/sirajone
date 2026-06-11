@@ -109,11 +109,11 @@ export default function TermsOfService() {
             </ul>
           </Section>
 
-          <Section title="7. Counselling Services">
+          <Section title="7. Islamic Guidance & Support Services">
             <P>
-              Counselling services on SirajOne are provided by individual counsellors and are subject to the{' '}
-              <Link to="/counselling-disclaimer" className="text-emerald-400 underline">Counselling Disclaimer</Link>{' '}
-              which forms part of these terms. By accessing counselling features, you acknowledge and accept the disclaimer in full.
+              Islamic Guidance & Support services on SirajOne are provided by approved support providers, Islamic mentors, Ulama, Muallimahs, Islamic teachers, and community support personnel where applicable, and are subject to the{' '}
+              <Link to="/counselling-disclaimer" className="text-emerald-400 underline">Islamic Guidance & Support Disclaimer</Link>{' '}
+              which forms part of these terms. By accessing Islamic Guidance & Support features, you acknowledge and accept the disclaimer in full.
             </P>
           </Section>
 
@@ -170,7 +170,7 @@ export default function TermsOfService() {
 
         <div className="mt-8 flex flex-wrap gap-4 text-sm">
           <Link to="/privacy" className="text-emerald-400 hover:text-emerald-300">Privacy Policy →</Link>
-          <Link to="/counselling-disclaimer" className="text-emerald-400 hover:text-emerald-300">Counselling Disclaimer →</Link>
+          <Link to="/counselling-disclaimer" className="text-emerald-400 hover:text-emerald-300">Guidance Disclaimer</Link>
         </div>
       </main>
     </div>

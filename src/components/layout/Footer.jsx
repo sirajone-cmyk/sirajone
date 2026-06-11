@@ -56,7 +56,7 @@ export function Footer({ className }) {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <Link to="/privacy" className="text-xs text-[rgba(134,239,172,0.45)] hover:text-[#86EFAC] transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="text-xs text-[rgba(134,239,172,0.45)] hover:text-[#86EFAC] transition-colors">Terms of Service</Link>
-            <Link to="/counselling-disclaimer" className="text-xs text-[rgba(134,239,172,0.45)] hover:text-[#86EFAC] transition-colors">Counselling Disclaimer</Link>
+            <Link to="/counselling-disclaimer" className="text-xs text-[rgba(134,239,172,0.45)] hover:text-[#86EFAC] transition-colors">Guidance Disclaimer</Link>
             <span className="text-xs text-[rgba(134,239,172,0.35)]">· Built for the Ummah</span>
             <span className="text-sm text-[#D4A843]" style={{ fontFamily: "'Amiri', serif" }} dir="rtl" lang="ar">بُنِيَ لِلْأُمَّة</span>
           </div>
